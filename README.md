@@ -1,8 +1,8 @@
 # kb-prep
 
-Prepare, score, fix, and upload documents to [anam.ai](https://anam.ai) knowledge base for RAG-powered AI personas.
+Prepare, score, fix, and upload documents for RAG. Includes built-in upload support for [anam.ai](https://anam.ai) knowledge base.
 
-Takes unstructured documents (DOCX, PDF, TXT, Markdown), scores them for RAG readiness using heuristic analysis, builds an in-memory knowledge graph for cross-document understanding, optionally auto-fixes issues with an LLM, recommends a folder structure, and uploads to anam.ai's knowledge base API.
+Takes unstructured documents (DOCX, PDF, TXT, Markdown), scores them for RAG readiness using heuristic analysis, builds an in-memory knowledge graph for cross-document understanding, optionally auto-fixes issues with an LLM, and recommends a folder structure. Can upload directly to anam.ai or be used standalone to prep docs for any vector database or RAG pipeline.
 
 ## Install
 
@@ -162,6 +162,27 @@ The tool proposes a folder structure using a 4-tier priority: graph clusters + L
 ```
 
 With `upload`, these folders are created automatically via the anam.ai API, and each document is uploaded to its assigned folder.
+
+## Using Without anam.ai
+
+Most of the pipeline is platform-agnostic. The `score`, `analyze`, and `fix` commands work entirely independently of anam.ai and can prep documents for any RAG system (Pinecone, Weaviate, Qdrant, LlamaIndex, etc.).
+
+| Command | anam.ai required? | What you get |
+|---------|-------------------|--------------|
+| `score` | No | RAG readiness scores, issue detection |
+| `analyze` | No | Knowledge graph, topic clusters, folder recommendations |
+| `fix` | No | Auto-fixed documents written to output directory |
+| `upload` | Yes | Folder creation, file upload, persona tool attachment |
+
+A typical non-anam workflow:
+
+```bash
+python cli.py score ./my-docs/                                    # check quality
+python cli.py fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/  # fix issues
+# upload ./fixed/ to your vector DB of choice
+```
+
+The folder recommendations from `analyze` can guide how you organize chunks or namespaces in any vector store, even without using the upload command.
 
 ## How anam.ai Upload Works
 
