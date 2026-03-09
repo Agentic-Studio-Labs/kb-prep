@@ -37,6 +37,8 @@ logger = logging.getLogger(__name__)
 # Allow imports from project root (parent of eval/)
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from analyzer import extract_json
+
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
@@ -321,16 +323,9 @@ async def judge_answer(
         )}],
     )
     text = resp.content[0].text.strip()
-    # Parse JSON from response
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        match = re.search(r"\{[^}]+\}", text)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
+    data = extract_json(text)
+    if data is not None:
+        return data
     return {"context_precision": 0.0, "faithfulness": 0.0, "answer_correctness": 0.0}
 
 

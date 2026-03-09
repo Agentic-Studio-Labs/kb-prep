@@ -1,0 +1,202 @@
+[
+  {
+    "id": "q01",
+    "question": "What is a SMART goal and how do I set one?",
+    "expected_source": "4-5.FL.2",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "student",
+    "ground_truth": "A SMART goal is Specific, Measurable, Achievable, Relevant, and Time-bound. To set one, identify exactly what you want to achieve, how you'll measure progress, make sure it's realistic, ensure it matters to you, and set a deadline."
+  },
+  {
+    "id": "q02",
+    "question": "How do I create a budget?",
+    "expected_source": "4-5.FL.1",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "student",
+    "ground_truth": "A budget is a plan for how you will use your money. You list your income (money you earn) and your expenses (money you spend), then make sure your spending doesn't exceed your income. Separate needs from wants and prioritize accordingly."
+  },
+  {
+    "id": "q03",
+    "question": "What is the difference between saving for now and saving for later?",
+    "expected_source": "4-5.FL.5",
+    "topic": "Saving",
+    "audience": "student",
+    "ground_truth": "Short-term saving is for things you want soon (weeks or months away), like a toy or game. Long-term saving is for bigger goals further in the future, like college or a car. Both require planning but use different strategies and timeframes."
+  },
+  {
+    "id": "q04",
+    "question": "What is the difference between a credit card and a loan?",
+    "expected_source": "4-5.FL.6",
+    "topic": "Credit & Debt",
+    "audience": "student",
+    "ground_truth": "A credit card lets you borrow money repeatedly up to a limit and pay it back monthly, while a loan gives you a fixed amount of money at once that you repay in regular installments over time. Both charge interest on borrowed money."
+  },
+  {
+    "id": "q05",
+    "question": "What happens when you don't pay back borrowed money on time?",
+    "expected_source": "4-5.FL.7",
+    "topic": "Credit & Debt",
+    "audience": "student",
+    "ground_truth": "When you don't pay back money on time, you get charged extra money called interest, your credit score goes down, and it becomes harder to borrow money in the future. This is like letting your 'credit monster' run wild."
+  },
+  {
+    "id": "q06",
+    "question": "How can I protect my personal information online?",
+    "expected_source": "4-5.FL.8",
+    "topic": "Digital Financial Safety",
+    "audience": "student",
+    "ground_truth": "Protect your personal information by creating strong passwords, never sharing passwords or personal details online, being careful about what websites you visit, and telling a trusted adult if someone asks for your personal information."
+  },
+  {
+    "id": "q07",
+    "question": "What is identity theft?",
+    "expected_source": "4-5.FL.8",
+    "topic": "Digital Financial Safety",
+    "audience": "student",
+    "ground_truth": "Identity theft is when someone steals and misuses your personal information, like your name, address, or account numbers, to pretend to be you or steal your money."
+  },
+  {
+    "id": "q08",
+    "question": "What is interest and how does it help my savings grow?",
+    "expected_source": "4-5.FL.3",
+    "topic": "Banking & Investing",
+    "audience": "student",
+    "ground_truth": "Interest is extra money a bank pays you for keeping your money in a savings account. It makes your savings grow over time like a 'magic money tree' — the longer you save, the more interest you earn."
+  },
+  {
+    "id": "q09",
+    "question": "What is investing and how is it different from saving?",
+    "expected_source": "4-5.FL.9",
+    "topic": "Banking & Investing",
+    "audience": "student",
+    "ground_truth": "Investing means putting your money into something (like stocks or bonds) that can grow in value over time. Unlike saving in a bank, investments can earn more money but also carry risk — you might lose some of what you put in."
+  },
+  {
+    "id": "q10",
+    "question": "What types of insurance are there and why do we need them?",
+    "expected_source": "4-5.FL.10",
+    "topic": "Insurance & Risk",
+    "audience": "student",
+    "ground_truth": "Types of insurance include health insurance, car insurance, home insurance, and life insurance. Insurance protects you financially when bad things happen — you pay a small amount regularly so that if something goes wrong, the insurance company helps cover the big costs."
+  },
+  {
+    "id": "q11",
+    "question": "How can my hobbies and skills lead to a career?",
+    "expected_source": "4-5.FL.11",
+    "topic": "Career & Education",
+    "audience": "student",
+    "ground_truth": "Your hobbies and skills can point you toward careers you'd enjoy. For example, if you love drawing, you could become a graphic designer. Identifying what you're good at and what you enjoy helps you explore careers that match your talents and interests."
+  },
+  {
+    "id": "q12",
+    "question": "What is an entrepreneur?",
+    "expected_source": "4-5.FL.4",
+    "topic": "Entrepreneurship",
+    "audience": "student",
+    "ground_truth": "An entrepreneur is a person who owns and runs their own business. They come up with ideas for products or services, take risks to start their business, and work to make it successful."
+  },
+  {
+    "id": "q13",
+    "question": "What activities can I do at home with my child to teach them about saving money?",
+    "expected_source": "4-5.FL.3 Handout A",
+    "topic": "Saving",
+    "audience": "parent",
+    "ground_truth": "You can set savings goals together, compare interest rates at different banks, discuss the difference between needs and wants when shopping, and help your child track their savings progress over time."
+  },
+  {
+    "id": "q14",
+    "question": "How should I teach lesson 6 about credit cards vs loans?",
+    "expected_source": "4-5.FL.6 Lesson",
+    "topic": "Credit & Debt",
+    "audience": "teacher",
+    "ground_truth": "The lesson plan includes comparing credit cards and personal loans using real scenarios, having students sort borrowing situations, and using the Borrowing Bonanza activity to make the concepts engaging and interactive."
+  },
+  {
+    "id": "q15",
+    "question": "What rubric should I use to grade the SMART goal assignment?",
+    "expected_source": "4-5.FL.2 Rubric",
+    "topic": "Assessment",
+    "audience": "teacher",
+    "ground_truth": "Use the rubric for Handout B (SMART Goal Brainstorm and Planning) which evaluates whether students correctly identified all five SMART goal components: Specific, Measurable, Achievable, Relevant, and Time-bound."
+  },
+  {
+    "id": "q16",
+    "question": "What does prioritize mean in the context of budgeting?",
+    "expected_source": "4-5.FL.1",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "student",
+    "ground_truth": "To prioritize means to treat something as more important than other things. In budgeting, it means deciding which expenses matter most and making sure you spend money on needs before wants."
+  },
+  {
+    "id": "q17",
+    "question": "How do I help my child explore career options and connect them to financial planning?",
+    "expected_source": "4-5.FL.12 Handout A",
+    "topic": "Career & Education",
+    "audience": "parent",
+    "ground_truth": "Discuss different careers and their salaries, help your child research jobs they're interested in, talk about how education connects to career opportunities, and explore how financial goals relate to future career choices."
+  },
+  {
+    "id": "q18",
+    "question": "What is the final assessment for the financial literacy unit?",
+    "expected_source": "4-5.FL Band Final Assessment",
+    "topic": "Assessment",
+    "audience": "teacher",
+    "ground_truth": "The Smart Money Decisions final assessment is a summative test covering all financial literacy concepts including budgeting, SMART goals, saving, credit, insurance, investing, identity theft, entrepreneurship, and career planning. It includes multiple-choice questions and short answer sections."
+  },
+  {
+    "id": "q19",
+    "question": "What is income and what are examples of it?",
+    "expected_source": "4-5.FL.1",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "student",
+    "ground_truth": "Income is money that you earn. Examples include money from a job, allowance, money earned from selling things, or gifts of money."
+  },
+  {
+    "id": "q20",
+    "question": "What should I know about college before applying?",
+    "expected_source": "4-5.FL.13",
+    "topic": "Career & Education",
+    "audience": "student",
+    "ground_truth": "College is a place you can go after high school to learn more about subjects you're interested in and prepare for a career. You need to fill out applications, and it's helpful to start thinking about what you want to study and how to pay for it."
+  },
+  {
+    "id": "q21",
+    "question": "What is the anchor chart for lesson 1 about?",
+    "expected_source": "4-5.FL.1 Anchor Chart",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "teacher",
+    "ground_truth": "The lesson 1 anchor chart covers Goals and Budgeting — it reinforces the concepts of creating a financial goal, using that goal to create a budget, and creating a budget based on income and expenses. It should be created as a class on chart paper."
+  },
+  {
+    "id": "q22",
+    "question": "How can I build a strong password?",
+    "expected_source": "4-5.FL.8 Handout B",
+    "topic": "Digital Financial Safety",
+    "audience": "student",
+    "ground_truth": "A strong password uses a mix of uppercase and lowercase letters, numbers, and special characters. It should be at least 8 characters long, not use personal information like your name or birthday, and be different for each account."
+  },
+  {
+    "id": "q23",
+    "question": "What is the difference between needs and wants?",
+    "expected_source": "4-5.FL.1",
+    "topic": "Goal Setting & Budgeting",
+    "audience": "student",
+    "ground_truth": "Needs are things you must have to survive, like food, water, and shelter. Wants are things you'd like to have but can live without, like video games or new shoes for fun. When budgeting, needs should come before wants."
+  },
+  {
+    "id": "q24",
+    "question": "How do I assess whether a student understands career exploration concepts?",
+    "expected_source": "4-5.FL.11 Rubric",
+    "topic": "Assessment",
+    "audience": "teacher",
+    "ground_truth": "Use the rubric for Handout B (Exploring Careers Through Hobbies and Skills) which evaluates whether students can connect their personal hobbies and skills to potential career paths and explain the relationship between interests and careers."
+  },
+  {
+    "id": "q25",
+    "question": "What is a credit score and why does it matter?",
+    "expected_source": "4-5.FL.7",
+    "topic": "Credit & Debt",
+    "audience": "student",
+    "ground_truth": "A credit score is a number that shows how responsible you are with borrowed money. A high score means you pay back money on time and can borrow more easily. A low score makes it harder to borrow and means you'll pay more in interest."
+  }
+]
