@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anam-prep"
+version = "0.1.0"
+description = "Prepare, score, fix, and upload documents to anam.ai knowledge base for RAG-powered AI personas"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Jonathan Major", email = "jonathan.r.major@gmail.com" },
+]
+keywords = ["rag", "anam", "document-preparation", "knowledge-base", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: General",
+]
+dependencies = [
+    "python-docx>=1.2.0",
+    "PyMuPDF>=1.27.1",
+    "click>=8.3.1",
+    "rich>=14.3.3",
+    "requests>=2.32.5",
+    "anthropic>=0.84.0",
+    "networkx>=3.4.2,<=3.6.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9.0",
+]
+
+[project.scripts]
+anam-prep = "cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/jonathan-major/anam-prep"
+Repository = "https://github.com/jonathan-major/anam-prep"
+Issues = "https://github.com/jonathan-major/anam-prep/issues"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

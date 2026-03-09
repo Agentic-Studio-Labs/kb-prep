@@ -1,0 +1,48 @@
+"""Configuration and API key management."""
+
+import os
+from dataclasses import dataclass, field
+from typing import Optional
+
+
+@dataclass
+class Config:
+    """Application configuration."""
+
+    # anam.ai
+    anam_api_key: Optional[str] = None
+    anam_base_url: str = "https://api.anam.ai"
+
+    # LLM (Anthropic Claude)
+    anthropic_api_key: Optional[str] = None
+    llm_model: str = "claude-sonnet-4-20250514"
+    llm_max_tokens: int = 4096
+
+    # Processing defaults
+    output_dir: str = "./fixed"
+    convert_to_markdown: bool = True  # Convert DOCX/PDF → MD before upload
+    min_score_for_upload: float = 50.0  # Don't upload below this score
+    concurrency: int = 5  # Max parallel LLM calls
+    folder_hints: str = ""  # Domain-specific guidance for folder organization
+
+    @classmethod
+    def from_env(cls) -> "Config":
+        """Load config from environment variables."""
+        return cls(
+            anam_api_key=os.environ.get("ANAM_API_KEY"),
+            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
+            anam_base_url=os.environ.get("ANAM_BASE_URL", "https://api.anam.ai"),
+            llm_model=os.environ.get("ANAM_PREP_MODEL", "claude-sonnet-4-20250514"),
+        )
+
+    def with_overrides(self, **kwargs) -> "Config":
+        """Return a new Config with specified overrides.
+
+        Validates that all keys are actual Config fields to catch typos.
+        """
+        import dataclasses
+        valid_fields = {f.name for f in dataclasses.fields(self)}
+        invalid = set(kwargs.keys()) - valid_fields
+        if invalid:
+            raise ValueError(f"Invalid config fields: {invalid}. Valid: {sorted(valid_fields)}")
+        return dataclasses.replace(self, **{k: v for k, v in kwargs.items() if v is not None})

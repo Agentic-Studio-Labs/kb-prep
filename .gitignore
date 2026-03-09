@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.local
+
+# Test / tool artifacts
+.pytest_cache/
+pytest-cache-files-*/
+htmlcov/
+.coverage
+
+# Output directories (user-generated)
+fixed/
+rag-files-*/
+anam-prep-*.md
+.worktrees/
