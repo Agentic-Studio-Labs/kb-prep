@@ -1,0 +1,106 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from models import ScoreCard, ScoringResult, Issue, Severity, Readiness
+
+
+def _make_card(filename="test.docx", score=85.0, issues=None):
+    """Helper to build a ScoreCard for testing."""
+    card = ScoreCard(file_path=f"/tmp/{filename}")
+    card.results = [
+        ScoringResult(
+            category="structure",
+            label="Document Structure",
+            score=score,
+            weight=0.15,
+            issues=issues or [],
+        )
+    ]
+    card.overall_score = score
+    return card
+
+
+def test_report_header():
+    """_report_header returns markdown header with timestamp and file count."""
+    from cli import _report_header
+    lines = _report_header(command="score", file_count=5)
+    text = "\n".join(lines)
+    assert "# anam-prep" in text
+    assert "score" in text.lower()
+    assert "5" in text
+
+
+def test_report_scores():
+    """_report_scores returns markdown table rows."""
+    from cli import _report_scores
+    cards = [_make_card("a.docx", 90), _make_card("b.docx", 60)]
+    lines = _report_scores(cards, detail=False)
+    text = "\n".join(lines)
+    assert "| a.docx" in text
+    assert "| b.docx" in text
+    assert "90" in text
+    assert "Average score" in text
+
+
+def test_report_scores_detail():
+    """_report_scores with detail includes issue breakdown."""
+    from cli import _report_scores
+    issue = Issue(severity=Severity.WARNING, category="structure", message="Bad heading")
+    cards = [_make_card("a.docx", 70, issues=[issue])]
+    lines = _report_scores(cards, detail=True)
+    text = "\n".join(lines)
+    assert "Bad heading" in text
+
+
+def test_generate_report_path():
+    """_generate_report_path returns timestamped filename."""
+    from cli import _generate_report_path
+    path = _generate_report_path("analyze")
+    assert path.startswith("anam-prep-analyze-")
+    assert path.endswith(".md")
+    # Verify timestamp format YYYYMMDD-HHMMSS
+    parts = path.replace("anam-prep-analyze-", "").replace(".md", "")
+    assert len(parts) == 15  # YYYYMMDD-HHMMSS
+
+
+import os
+from click.testing import CliRunner
+
+
+def test_score_generates_report(tmp_path):
+    """score command auto-generates a markdown report file."""
+    # Create a test DOCX
+    from tests.test_scoring import _create_test_docx
+    from cli import cli
+
+    test_file = str(tmp_path / "test.docx")
+    _create_test_docx(test_file)
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as td:
+        result = runner.invoke(cli, ["score", test_file])
+        assert result.exit_code == 0, f"Exit code {result.exit_code}: {result.output}"
+        # Find the generated report
+        reports = [f for f in os.listdir(td) if f.startswith("anam-prep-score-")]
+        assert len(reports) == 1, f"Expected 1 report, found: {reports}"
+        content = open(reports[0]).read()
+        assert "# anam-prep score Report" in content
+        assert "test.docx" in content
+
+
+def test_score_no_report_flag(tmp_path):
+    """--no-report suppresses report generation."""
+    from tests.test_scoring import _create_test_docx
+    from cli import cli
+
+    test_file = str(tmp_path / "test.docx")
+    _create_test_docx(test_file)
+
+    runner = CliRunner()
+    with runner.isolated_filesystem() as td:
+        result = runner.invoke(cli, ["score", "--no-report", test_file])
+        assert result.exit_code == 0, f"Exit code {result.exit_code}: {result.output}"
+        reports = [f for f in os.listdir(td) if f.startswith("anam-prep-")]
+        assert len(reports) == 0
