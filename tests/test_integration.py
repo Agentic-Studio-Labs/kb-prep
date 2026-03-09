@@ -47,11 +47,10 @@ def test_full_analyze_pipeline_concurrent():
         assert mock.messages.create.call_count == 5
         # All analyses should have domain "education"
         assert all(a.domain == "education" for a in analyses)
-        # Graph should have entities — deduplicated across docs
-        # (each doc produces the same entities, so total unique count is 2:
-        #  topic:math and concept:fractions)
+        # Graph should have entities — only explicit entities from analysis
+        # (each doc produces the same entity "Fractions", deduplicated to 1)
         summary = graph.summarize()
-        assert summary.total_entities >= 2
+        assert summary.total_entities >= 1
 
 
 def test_concurrent_analysis_with_failures():

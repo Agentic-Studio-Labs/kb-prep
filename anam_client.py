@@ -1,11 +1,10 @@
 """anam.ai REST API client for knowledge base management.
 
-Handles folder creation, 3-step presigned file upload, and
+Handles folder creation, direct multipart file upload, and
 document status polling. Also supports attaching multiple
 folders to a persona's knowledge tool.
 """
 
-import os
 import re
 import time
 from pathlib import Path
@@ -20,7 +19,6 @@ from models import (
     FolderRecommendation,
     UploadReport,
     UploadResult,
-    UploadSession,
 )
 
 # Network timeouts (seconds)
@@ -66,7 +64,8 @@ class AnamClient:
             timeout=API_TIMEOUT,
         )
         resp.raise_for_status()
-        return resp.json().get("groups", [])
+        data = resp.json()
+        return data if isinstance(data, list) else data.get("groups", [])
 
     def search_folder(self, folder_id: str, query: str, limit: int = 5) -> list[dict]:
         """Search a knowledge folder using vector similarity."""
@@ -87,84 +86,39 @@ class AnamClient:
     def create_folder_tree(
         self, recommendation: FolderRecommendation
     ) -> dict[str, str]:
-        """Create all folders from a recommendation, return name->ID mapping."""
+        """Create all folders from a recommendation, return name->ID mapping.
+
+        anam.ai uses a flat folder structure (no nesting), so we only create
+        leaf folders. The path hierarchy is encoded into the folder name
+        (e.g. "Parent Engagement - Goal Setting") for readability.
+        """
         folder_map: dict[str, str] = {}
 
-        def create_recursive(node: FolderNode, path_prefix: str = ""):
+        def collect_leaves(node: FolderNode, path_prefix: str = ""):
+            """Walk the tree, only creating folders for leaf nodes."""
             path = f"{path_prefix}/{node.name}" if path_prefix else node.name
             if node.name == "Knowledge Base":
-                # Skip root node, just process children
                 for child in node.children:
-                    create_recursive(child, "")
+                    collect_leaves(child, "")
                 return
 
-            folder_id = self.create_folder(node.name, node.description)
-            folder_map[path] = folder_id
+            if node.children:
+                # Has children — recurse, don't create a folder for this node
+                for child in node.children:
+                    collect_leaves(child, path)
+            else:
+                # Leaf node — create a flat folder with path encoded in name
+                parts = [p for p in path.split("/") if p]
+                display_name = " - ".join(p.replace("_", " ") for p in parts)
+                folder_id = self.create_folder(display_name, node.description)
+                folder_map[path] = folder_id
 
-            for child in node.children:
-                create_recursive(child, path)
-
-        create_recursive(recommendation.root)
+        collect_leaves(recommendation.root)
         return folder_map
 
     # ------------------------------------------------------------------
-    # File upload (3-step presigned flow)
+    # File upload (direct multipart)
     # ------------------------------------------------------------------
-
-    def request_upload(self, folder_id: str, filename: str, file_size: int) -> UploadSession:
-        """Step 1: Request a presigned upload URL."""
-        resp = self.session.post(
-            f"{self.base_url}/v1/knowledge/groups/{folder_id}/presigned-upload",
-            json={
-                "fileName": filename,
-                "fileSize": file_size,
-            },
-            timeout=API_TIMEOUT,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-        # Extract session ID with explicit validation
-        session_id = data.get("uploadId") or data.get("id")
-        if not session_id:
-            raise ValueError(
-                f"Upload response missing uploadId/id. Response keys: {list(data.keys())}"
-            )
-
-        presigned_url = data.get("presignedUrl")
-        if not presigned_url:
-            raise ValueError(
-                f"Upload response missing presignedUrl. Response keys: {list(data.keys())}"
-            )
-
-        return UploadSession(
-            session_id=session_id,
-            presigned_url=presigned_url,
-            filename=filename,
-        )
-
-    def upload_file(self, presigned_url: str, file_path: str, content_type: str) -> bool:
-        """Step 2: PUT the file to the presigned URL."""
-        with open(file_path, "rb") as f:
-            # Presigned URLs don't need auth headers — only content-type
-            resp = requests.put(
-                presigned_url,
-                data=f,
-                headers={"Content-Type": content_type},
-                timeout=UPLOAD_TIMEOUT,
-            )
-        resp.raise_for_status()
-        return True
-
-    def confirm_upload(self, folder_id: str, upload_id: str) -> dict:
-        """Step 3: Confirm the upload to start processing."""
-        resp = self.session.post(
-            f"{self.base_url}/v1/knowledge/groups/{folder_id}/confirm-upload",
-            json={"uploadId": upload_id},
-            timeout=API_TIMEOUT,
-        )
-        resp.raise_for_status()
-        return resp.json()
 
     def upload_document(
         self,
@@ -173,31 +127,31 @@ class AnamClient:
         folder_name: str = "",
         progress_callback: Optional[Callable[[str], None]] = None,
     ) -> UploadResult:
-        """Execute the full 3-step upload for one file."""
+        """Upload a file directly via multipart POST."""
         filename = Path(file_path).name
-        file_size = os.path.getsize(file_path)
         content_type = self._get_content_type(file_path)
 
         # Validate filename before upload
         self._validate_filename(filename)
 
         try:
-            # Step 1
-            if progress_callback:
-                progress_callback(f"Requesting upload URL for {filename}...")
-            session = self.request_upload(folder_id, filename, file_size)
-
-            # Step 2
             if progress_callback:
                 progress_callback(f"Uploading {filename}...")
-            self.upload_file(session.presigned_url, file_path, content_type)
 
-            # Step 3
-            if progress_callback:
-                progress_callback(f"Confirming {filename}...")
-            result = self.confirm_upload(folder_id, session.session_id)
-
-            doc_id = result.get("documentId") or result.get("id") or ""
+            with open(file_path, "rb") as f:
+                resp = self.session.post(
+                    f"{self.base_url}/v1/knowledge/groups/{folder_id}/documents",
+                    files={"file": (filename, f, content_type)},
+                    headers={"Content-Type": None},  # let requests set multipart boundary
+                    timeout=UPLOAD_TIMEOUT,
+                )
+            resp.raise_for_status()
+            data = resp.json()
+            doc_id = data.get("id") or data.get("documentId") or ""
+            if not doc_id:
+                raise ValueError(
+                    f"Upload response missing document ID. Keys: {list(data.keys())}"
+                )
 
             return UploadResult(
                 file_path=file_path,
@@ -207,9 +161,8 @@ class AnamClient:
                 status=DocumentStatus.PROCESSING,
             )
         except (requests.HTTPError, requests.ConnectionError, requests.Timeout, ValueError) as e:
-            # Sanitize error message to avoid leaking presigned URLs or tokens
             error_msg = str(e)
-            if "presigned" in error_msg.lower() or "https://" in error_msg:
+            if "https://" in error_msg:
                 error_msg = f"{type(e).__name__}: Upload failed for {filename}"
             return UploadResult(
                 file_path=file_path,
@@ -239,8 +192,7 @@ class AnamClient:
             f"{self.base_url}/v1/tools",
             json={
                 "name": name,
-                "type": "server",
-                "subtype": "knowledge",
+                "type": "SERVER_RAG",
                 "description": description,
                 "documentFolderIds": folder_ids,
             },

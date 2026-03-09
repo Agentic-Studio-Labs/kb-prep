@@ -86,12 +86,15 @@ for r in results:
 |-----------|--------|----------|
 | List folders | GET | `/v1/knowledge/groups` |
 | Create folder | POST | `/v1/knowledge/groups` |
+| Get folder | GET | `/v1/knowledge/groups/{id}` |
 | Search folder | POST | `/v1/knowledge/groups/{id}/search` |
-| Request upload | POST | `/v1/knowledge/groups/{id}/presigned-upload` |
-| Confirm upload | POST | `/v1/knowledge/groups/{id}/confirm-upload` |
-| Create tool | POST | `/v1/tools` |
+| Upload document | POST (multipart) | `/v1/knowledge/groups/{id}/documents` |
+| Create tool | POST | `/v1/tools` (type: `SERVER_RAG`) |
+| Get persona | GET | `/v1/personas/{id}` |
 
 Base URL: `https://api.anam.ai` (override with `ANAM_BASE_URL`)
+
+**Note:** Folders are flat — no nesting. The old presigned upload flow (`presigned-upload` / `confirm-upload`) has been replaced with direct multipart POST to `/documents`.
 
 ## Troubleshooting
 

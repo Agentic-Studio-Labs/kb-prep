@@ -1,4 +1,4 @@
-# kb-prep
+# 3kb-prep
 
 Prepare, score, fix, and upload documents to [anam.ai](https://anam.ai) knowledge base for RAG-powered AI personas.
 
@@ -77,17 +77,19 @@ export ANTHROPIC_API_KEY=your-anthropic-key
 
 The scorer runs 8 heuristic checks (no LLM needed) plus 1 graph-powered check when LLM analysis is available.
 
-| Criterion | Weight | What It Checks |
-|---|---|---|
-| Self-Containment | 25% | Dangling references ("as mentioned above", "see section X") that break paragraph independence |
-| Heading Quality | 20% | Hierarchy gaps, generic headings ("Content", "Notes"), heading density |
-| Paragraph Length | 15% | Too short (<15 words, no context) or too long (>300 words, diluted) |
-| File Focus | 15% | Topic coherence — flags sprawling multi-topic documents |
-| Filename Quality | 10% | Generic names ("doc-v2.docx"), too short, no word separators |
-| Structure Completeness | 10% | Presence of headings, substantive body text, multiple sections |
-| Acronym Definitions | 5% | Uppercase acronyms used repeatedly without "(definition)" nearby |
-| Knowledge Completeness | 5% | Orphan references to undefined entities, isolated documents with no cross-document connections (graph-powered, only when LLM analysis is run) |
-| File Size | info | Warns at 25MB, blocks at 50MB (anam.ai limit) |
+
+| Criterion              | Weight | What It Checks                                                                                                                                |
+| ---------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Self-Containment       | 25%    | Dangling references ("as mentioned above", "see section X") that break paragraph independence                                                 |
+| Heading Quality        | 20%    | Hierarchy gaps, generic headings ("Content", "Notes"), heading density                                                                        |
+| Paragraph Length       | 15%    | Too short (<15 words, no context) or too long (>300 words, diluted)                                                                           |
+| File Focus             | 15%    | Topic coherence — flags sprawling multi-topic documents                                                                                       |
+| Filename Quality       | 10%    | Generic names ("doc-v2.docx"), too short, no word separators                                                                                  |
+| Structure Completeness | 10%    | Presence of headings, substantive body text, multiple sections                                                                                |
+| Acronym Definitions    | 5%     | Uppercase acronyms used repeatedly without "(definition)" nearby                                                                              |
+| Knowledge Completeness | 5%     | Orphan references to undefined entities, isolated documents with no cross-document connections (graph-powered, only when LLM analysis is run) |
+| File Size              | info   | Warns at 25MB, blocks at 50MB (anam.ai limit)                                                                                                 |
+
 
 **Readiness levels:** EXCELLENT (85+), GOOD (70-84), FAIR (50-69), POOR (<50)
 
@@ -95,13 +97,15 @@ The scorer runs 8 heuristic checks (no LLM needed) plus 1 graph-powered check wh
 
 When you run `fix` or `upload` with `--llm-key`, the tool sends targeted prompts to Claude to fix each detected issue:
 
-| Issue | Fix Applied |
-|---|---|
+
+| Issue               | Fix Applied                                             |
+| ------------------- | ------------------------------------------------------- |
 | Dangling references | Rewrites paragraph to include referenced context inline |
-| Generic headings | Generates descriptive heading from paragraph content |
-| Long paragraphs | Splits into 2-4 focused sub-paragraphs |
-| Undefined acronyms | Inserts "(Full Name)" after first occurrence |
-| Generic filename | Generates descriptive filename from content |
+| Generic headings    | Generates descriptive heading from paragraph content    |
+| Long paragraphs     | Splits into 2-4 focused sub-paragraphs                  |
+| Undefined acronyms  | Inserts "(Full Name)" after first occurrence            |
+| Generic filename    | Generates descriptive filename from content             |
+
 
 Originals are never modified. Fixed files are written as clean Markdown to the output directory.
 
@@ -109,40 +113,66 @@ Originals are never modified. Fixed files are written as clean Markdown to the o
 
 When LLM analysis runs (`analyze`, `fix`, or `upload` with `--llm-key`), the tool automatically builds an in-memory knowledge graph across all documents. This is not a separate step or flag — it happens as part of standard analysis and improves every downstream stage.
 
-During analysis, the LLM extracts entities (topics, standards, skills, concepts) and relationships (prerequisites, assessments, part-of) from each document. These are merged into a shared [networkx](https://networkx.org/) directed graph with entity deduplication and fuzzy name matching.
+### How it works
 
-The graph is consumed by three components:
+The LLM extracts **entities** and **relationships** from each document. Only explicitly extracted entities are added to the graph — topics and key concepts from the analysis metadata are kept separate to avoid over-connecting unrelated documents through generic terms.
 
-- **Scorer** — detects orphan references (entities mentioned but never defined in any document) and isolated documents with no cross-document connections, surfaced as the Knowledge Completeness criterion.
-- **Fixer** — enriches dangling reference resolution with cross-document context. When a paragraph says "see Unit 2", the graph provides the actual content from Unit 2's document to inline.
-- **Recommender** — uses graph community detection (connected components) to cluster related documents into folders, then uses the LLM to generate descriptive folder names. Falls back gracefully if the graph is empty.
+Entities are merged into a shared [networkx](https://networkx.org/) directed graph using two-tier deduplication:
 
-The graph is lightweight (in-memory, no database) and adds negligible overhead since the LLM is already analyzing each document. A summary panel is printed showing entity counts, relationship types, cross-document edges, topic clusters, and any orphan references.
+1. **Exact match** — O(1) lookup via a normalized (lowercase, stripped) name index
+2. **Substring fallback** — for names **8+ characters** only, checks if one name contains another (e.g., "Financial Planning" matches "Financial Planning Basics"). Short names like "Goal" or "Credit" are excluded to prevent false merges.
+
+
+| Entity types                                          | Relationship types                                      |
+| ----------------------------------------------------- | ------------------------------------------------------- |
+| concept, skill, lesson, resource, assessment, process | prerequisite, related_to, part_of, assesses, influences |
+
+
+### Downstream consumers
+
+- **Scorer** — detects orphan references (entities mentioned but never defined in any document) and isolated documents with no cross-document co**Fixer** — enriches dangling reference resolution with cross-document context. When a paragraph says "see Unit 2", the graph provides the actual content from Unit 2's document to inline.
+- **Recommender** — uses [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) to cluster related documents into folders, then uses the LLM to generate descriptive folder names. Louvain finds densely-connected communities even when they share weak bridges — unlike connected components, which would merge everything reachable into a single cluster. Fnnections, surfaced as the Knowledge Completeness criterion.
+- alls back gracefully if the graph is empty.
+
+### Example output
+
+The graph is lightweight (in-memory, no database) and adds negligible overhead since the LLM is already analyzing each document. A summary panel is printed after analysis:
+
+```
+╭────────────────────────────── Knowledge Graph ───────────────────────────────╮
+│ Entities: 520                                                                │
+│ Relationships: 614                                                           │
+│ Cross-document edges: 236                                                    │
+│ Topic clusters: 43                                                           │
+│ Entity types: concept: 181, skill: 97, lesson: 57, resource: 53,            │
+│ assessment: 41, process: 32                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
 
 ## Folder Recommendations
 
-The tool proposes an anam.ai folder hierarchy using a 4-tier priority: graph clusters + LLM naming (best), LLM-only, graph-only, or heuristic fallback. For example, a batch of lesson plans might produce:
+The tool proposes a folder structure using a 4-tier priority: graph clusters + LLM naming (best), LLM-only, graph-only, or heuristic fallback. Since anam.ai uses a flat folder structure (no nesting), the path hierarchy is encoded into folder names. For example:
 
 ```
-📁 Mathematics
-  📁 Fractions
-  📁 Geometry
-📁 Science
-  📁 Weather & Climate
-  📁 Life Cycles
+📁 Curriculum - Grade 3 Math
+📁 Curriculum - Grade 4 Science
+📁 Teacher Resources - Lesson Plans
+📁 Teacher Resources - Rubrics
+📁 Parent Guides
 ```
 
 With `upload`, these folders are created automatically via the anam.ai API, and each document is uploaded to its assigned folder.
 
 ## How anam.ai Upload Works
 
-anam.ai uses a 3-step presigned upload flow:
+anam.ai uses a direct multipart upload:
 
-1. **Request upload URL** — tool sends filename + size, gets a presigned S3 URL
-2. **PUT file** — uploads the file directly to the presigned URL
-3. **Confirm** — tells anam.ai to start processing the document
+1. **Create folder** — POST to `/v1/knowledge/groups` with name and description
+2. **Upload file** — multipart POST to `/v1/knowledge/groups/{id}/documents`
 
-Documents transition from `PROCESSING` → `READY` (typically ~30 seconds). The tool handles all three steps automatically.
+Documents transition from `PROCESSING` → `READY` (typically ~30 seconds). The tool handles folder creation and file upload automatically.
+
+When `--persona-id` is provided, a **knowledge tool** (type `SERVER_RAG`) is created that links all uploaded folders to the persona. The tool's description tells the avatar's LLM when to search the knowledge base.
 
 ## Project Structure
 
@@ -162,7 +192,7 @@ kb-prep/
 ├── requirements.txt
 ├── eval/
 │   ├── run_eval.py               # RAG evaluation script (BM25 + anam vector search)
-│   └── finlit-test-questions.json # Test questions with ground truth
+│   └── test-questions.json        # Test questions with ground truth
 └── tests/
     └── test_scoring.py # Scoring validation with synthetic docs
 ```
@@ -191,12 +221,14 @@ With `--anam-key`, the eval searches all anam.ai knowledge base folders using ve
 
 ## Supported File Types
 
-| Format | Parsing | Upload to anam.ai |
-|---|---|---|
-| .docx | Full (headings, paragraphs, metadata) | Yes |
-| .pdf | Full (font-based heading detection, paragraph merging) | Yes |
-| .md | Full (Markdown heading syntax) | Yes |
-| .txt | Basic (paragraph splitting) | Yes |
+
+| Format | Parsing                                                | Upload to anam.ai |
+| ------ | ------------------------------------------------------ | ----------------- |
+| .docx  | Full (headings, paragraphs, metadata)                  | Yes               |
+| .pdf   | Full (font-based heading detection, paragraph merging) | Yes               |
+| .md    | Full (Markdown heading syntax)                         | Yes               |
+| .txt   | Basic (paragraph splitting)                            | Yes               |
+
 
 ## Requirements
 
@@ -207,3 +239,12 @@ With `--anam-key`, the eval searches all anam.ai knowledge base folders using ve
 - `requests` — HTTP client for anam.ai API
 - `anthropic` — Claude API (only needed for analyze/fix/LLM features)
 - `networkx` — in-memory knowledge graph (used automatically during LLM analysis)
+
+## TODO
+
+- **Structured LLM output** — replace JSON-in-markdown prompts with tool_use / structured output for reliable entity and relationship extraction
+- **Incremental analysis** — cache per-file analysis results so re-runs only process changed files
+- **Relationship deduplication** — merge duplicate edges (same source, target, type) and track edge weight/frequency
+- **Configurable thresholds** — expose scoring weights, fuzzy match length, and cluster resolution as CLI flags or config
+- **Export graph** — add `cli.py graph export` command to write the knowledge graph as GraphML, JSON, or DOT for external visualization
+

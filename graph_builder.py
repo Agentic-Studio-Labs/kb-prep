@@ -47,23 +47,6 @@ class KnowledgeGraph:
             rel.source_file = rel.source_file or source_file
             self._add_relationship(rel)
 
-        # Also add implicit entities from topics and key_concepts
-        for topic in analysis.topics:
-            implicit = Entity(
-                name=topic,
-                entity_type="topic",
-                source_file=source_file,
-            )
-            self._add_entity(implicit, source_file)
-
-        for concept in analysis.key_concepts:
-            implicit = Entity(
-                name=concept,
-                entity_type="concept",
-                source_file=source_file,
-            )
-            self._add_entity(implicit, source_file)
-
     def _add_entity(self, entity: Entity, source_file: str):
         """Add or merge an entity into the graph."""
         key = entity.key
@@ -131,10 +114,10 @@ class KnowledgeGraph:
             return self._name_index[normalized]
 
         # Partial match (name contains or is contained by)
-        # Require minimum length of 4 chars to avoid false positives on short names
-        if len(normalized) >= 4:
+        # Require minimum length of 8 chars to avoid false positives on short names
+        if len(normalized) >= 8:
             for norm_name, key in self._name_index.items():
-                if len(norm_name) >= 4 and (normalized in norm_name or norm_name in normalized):
+                if len(norm_name) >= 8 and (normalized in norm_name or norm_name in normalized):
                     return key
 
         return None
@@ -231,13 +214,13 @@ class KnowledgeGraph:
         return sorted(set(orphans))
 
     def _get_components(self) -> list[set]:
-        """Return connected components (cached, invalidated on graph mutation)."""
+        """Return communities via Louvain detection (cached, invalidated on graph mutation)."""
         if self._cached_components is None:
             if self.graph.number_of_nodes() == 0:
                 self._cached_components = []
             else:
                 undirected = self.graph.to_undirected()
-                self._cached_components = list(nx.connected_components(undirected))
+                self._cached_components = list(nx.community.louvain_communities(undirected))
         return self._cached_components
 
     def find_clusters(self) -> list[list[str]]:

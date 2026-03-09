@@ -13,7 +13,7 @@ Metrics:
 Usage:
     python eval/run_eval.py <rag-folder> --llm-key $ANTHROPIC_API_KEY
     python eval/run_eval.py rag-files-20260302-094034/ --llm-key $KEY --top-k 5
-    python eval/run_eval.py rag-files-20260302-094034/ --llm-key $KEY --questions eval/finlit-test-questions.json
+    python eval/run_eval.py rag-files-20260302-094034/ --llm-key $KEY --questions eval/test-questions.json
 """
 
 import asyncio
@@ -525,7 +525,7 @@ def print_report(results: list[EvalResult], folder: str) -> str:
 @click.argument("folder", type=click.Path(exists=True))
 @click.option("--llm-key", envvar="ANTHROPIC_API_KEY", required=True, help="Anthropic API key")
 @click.option("--model", default="claude-sonnet-4-20250514", help="Model for generation and judging")
-@click.option("--questions", default="eval/finlit-test-questions.json", help="Test questions JSON file")
+@click.option("--questions", default="eval/test-questions.json", help="Test questions JSON file")
 @click.option("--top-k", default=5, help="Number of chunks to retrieve per question")
 @click.option("--concurrency", default=5, help="Max parallel LLM calls")
 @click.option("--output", "-o", default=None, help="Save report to file")

@@ -248,14 +248,6 @@ class FolderRecommendation:
 # Upload models
 # ---------------------------------------------------------------------------
 
-@dataclass
-class UploadSession:
-    """Tracks a presigned upload session."""
-    session_id: str
-    presigned_url: str
-    filename: str
-
-
 class DocumentStatus(str, Enum):
     PROCESSING = "PROCESSING"
     READY = "READY"
