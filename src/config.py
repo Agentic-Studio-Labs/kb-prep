@@ -1,8 +1,22 @@
-"""Configuration and API key management."""
+"""Configuration and API key management.
+
+Loads .env file from the project root if python-dotenv is installed.
+Falls back silently if not — env vars and CLI flags still work.
+"""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
+
+# Load .env from project root (if python-dotenv is available)
+try:
+    from dotenv import load_dotenv
+
+    _env_path = Path(__file__).resolve().parent.parent / ".env"
+    load_dotenv(_env_path)
+except ImportError:
+    pass
 
 
 @dataclass
@@ -41,6 +55,7 @@ class Config:
         Validates that all keys are actual Config fields to catch typos.
         """
         import dataclasses
+
         valid_fields = {f.name for f in dataclasses.fields(self)}
         invalid = set(kwargs.keys()) - valid_fields
         if invalid:
