@@ -5,51 +5,59 @@ semaphore-based concurrency, and preserves fix logic.
 """
 
 import asyncio
-import sys
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def test_fix_is_async():
     """DocumentFixer.fix is a coroutine."""
     import inspect
-    from fixer import DocumentFixer
+
+    from src.fixer import DocumentFixer
+
     assert inspect.iscoroutinefunction(DocumentFixer.fix)
 
 
 def test_call_llm_is_async():
     """DocumentFixer._call_llm is a coroutine."""
     import inspect
-    from fixer import DocumentFixer
+
+    from src.fixer import DocumentFixer
+
     assert inspect.iscoroutinefunction(DocumentFixer._call_llm)
 
 
 def test_fix_methods_are_async():
     """All _fix_* methods are coroutines."""
     import inspect
-    from fixer import DocumentFixer
-    for name in ['_fix_dangling_reference', '_fix_generic_heading', '_fix_long_paragraph', '_fix_acronym', '_generate_filename']:
+
+    from src.fixer import DocumentFixer
+
+    for name in [
+        "_fix_dangling_reference",
+        "_fix_generic_heading",
+        "_fix_long_paragraph",
+        "_fix_acronym",
+        "_generate_filename",
+    ]:
         method = getattr(DocumentFixer, name)
         assert inspect.iscoroutinefunction(method), f"{name} should be async"
 
 
 def test_call_llm_uses_semaphore():
     """_call_llm uses a semaphore for concurrency control."""
-    from config import Config
-    from fixer import DocumentFixer
+    from src.config import Config
+    from src.fixer import DocumentFixer
 
     config = Config(anthropic_api_key="test-key", concurrency=3)
 
-    with patch("fixer.AsyncAnthropic") as MockClient:
+    with patch("src.fixer.AsyncAnthropic") as MockClient:
         mock_instance = MockClient.return_value
         msg = MagicMock()
         msg.content = [MagicMock(text="fixed text")]
         mock_instance.messages.create = AsyncMock(return_value=msg)
 
         fixer = DocumentFixer(config)
-        assert hasattr(fixer, '_semaphore')
+        assert hasattr(fixer, "_semaphore")
         assert fixer._semaphore._value == 3
 
         result = asyncio.run(fixer._call_llm("test prompt"))
@@ -59,11 +67,16 @@ def test_call_llm_uses_semaphore():
 
 def test_fix_applies_dangling_reference():
     """fix() awaits _fix_dangling_reference for self_containment issues."""
-    from config import Config
-    from fixer import DocumentFixer
-    from models import (
-        DocumentMetadata, Issue, Paragraph, ParsedDocument,
-        ScoreCard, ScoringResult, Severity,
+    from src.config import Config
+    from src.fixer import DocumentFixer
+    from src.models import (
+        DocumentMetadata,
+        Issue,
+        Paragraph,
+        ParsedDocument,
+        ScoreCard,
+        ScoringResult,
+        Severity,
     )
 
     config = Config(anthropic_api_key="test-key", output_dir="/tmp/test-fix-out")
@@ -81,12 +94,14 @@ def test_fix_applies_dangling_reference():
                 label="Self-Containment",
                 score=50.0,
                 weight=0.2,
-                issues=[Issue(severity=Severity.WARNING, category="self_containment", message="Dangling ref", location=0)],
+                issues=[
+                    Issue(severity=Severity.WARNING, category="self_containment", message="Dangling ref", location=0)
+                ],
             ),
         ],
     )
 
-    with patch("fixer.AsyncAnthropic") as MockClient:
+    with patch("src.fixer.AsyncAnthropic") as MockClient:
         mock_instance = MockClient.return_value
         msg = MagicMock()
         msg.content = [MagicMock(text="The details from Unit 2 are as follows.")]
@@ -101,11 +116,16 @@ def test_fix_applies_dangling_reference():
 
 def test_fix_generates_filename():
     """fix() awaits _generate_filename for filename_quality issues."""
-    from config import Config
-    from fixer import DocumentFixer
-    from models import (
-        DocumentMetadata, Issue, Paragraph, ParsedDocument,
-        ScoreCard, ScoringResult, Severity,
+    from src.config import Config
+    from src.fixer import DocumentFixer
+    from src.models import (
+        DocumentMetadata,
+        Issue,
+        Paragraph,
+        ParsedDocument,
+        ScoreCard,
+        ScoringResult,
+        Severity,
     )
 
     config = Config(anthropic_api_key="test-key", output_dir="/tmp/test-fix-out")
@@ -129,7 +149,7 @@ def test_fix_generates_filename():
         ],
     )
 
-    with patch("fixer.AsyncAnthropic") as MockClient:
+    with patch("src.fixer.AsyncAnthropic") as MockClient:
         mock_instance = MockClient.return_value
         msg = MagicMock()
         msg.content = [MagicMock(text="introduction-to-fractions")]
@@ -144,7 +164,9 @@ def test_fix_generates_filename():
 def test_sync_helpers_unchanged():
     """_find_paragraph and _get_graph_context_for_paragraph stay synchronous."""
     import inspect
-    from fixer import DocumentFixer
+
+    from src.fixer import DocumentFixer
+
     assert not inspect.iscoroutinefunction(DocumentFixer._find_paragraph)
     assert not inspect.iscoroutinefunction(DocumentFixer._get_graph_context_for_paragraph)
     assert not inspect.iscoroutinefunction(DocumentFixer._write_fixed)

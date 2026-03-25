@@ -7,10 +7,10 @@ kb-prep is a CLI tool that prepares documents for RAG. It parses DOCX/PDF/TXT/MD
 ## Commands
 
 ```bash
-python cli.py score <path>                          # Heuristic + corpus scoring (no LLM)
-python cli.py analyze <path> --llm-key KEY          # + LLM analysis + knowledge graph
-python cli.py fix <path> --llm-key KEY              # + auto-fix, output Markdown
-python cli.py upload <path> --api-key KEY           # + upload to anam.ai
+python -m src.cli score <path>                          # Heuristic + corpus scoring (no LLM)
+python -m src.cli analyze <path> --llm-key KEY          # + LLM analysis + knowledge graph
+python -m src.cli fix <path> --llm-key KEY              # + auto-fix, output Markdown
+python -m src.cli upload <path> --api-key KEY           # + upload to anam.ai
 ```
 
 ## Running Tests
@@ -34,24 +34,24 @@ Parse → Corpus Analyzer (TF-IDF) → Score → [Analyze (LLM)] → [Fix (LLM)]
 ```
 
 **Pipeline stages:**
-- `parser.py` — DOCX/PDF/TXT/MD → ParsedDocument (paragraphs + heading tree)
-- `corpus_analyzer.py` — TF-IDF matrix, similarity, entropy, coherence, retrieval-aware score
-- `scorer.py` — 9 criteria weighted to 1.0 (+ 1 graph-powered when LLM runs)
-- `analyzer.py` — LLM content analysis, entity/relationship extraction
-- `graph_builder.py` — networkx DiGraph, entity resolution (char n-gram TF-IDF cosine), spectral clustering, PageRank
-- `fixer.py` — LLM-powered fixes (dangling refs, headings, paragraphs, acronyms, filenames)
-- `recommender.py` — folder structure (graph + LLM → heuristic fallback), silhouette validation
-- `anam_client.py` — REST client for anam.ai (folders, multipart upload, knowledge tools)
+- `src/parser.py` — DOCX/PDF/TXT/MD → ParsedDocument (paragraphs + heading tree)
+- `src/corpus_analyzer.py` — TF-IDF matrix, similarity, entropy, coherence, retrieval-aware score
+- `src/scorer.py` — 9 criteria weighted to 1.0 (+ 1 graph-powered when LLM runs)
+- `src/analyzer.py` — LLM content analysis, entity/relationship extraction
+- `src/graph_builder.py` — networkx DiGraph, entity resolution (char n-gram TF-IDF cosine), spectral clustering, PageRank
+- `src/fixer.py` — LLM-powered fixes (dangling refs, headings, paragraphs, acronyms, filenames)
+- `src/recommender.py` — folder structure (graph + LLM → heuristic fallback), silhouette validation
+- `src/anam_client.py` — REST client for anam.ai (folders, multipart upload, knowledge tools)
 
 ## Key Files
 
 | File | Lines | What it does |
 |------|-------|-------------|
-| `cli.py` | ~1000 | Click CLI, Rich output, report generation |
+| `src/cli.py` | ~1000 | Click CLI, Rich output, report generation |
 | `corpus_analyzer.py` | ~300 | TF-IDF, entropy, coherence, TextTiling, BM25 self-retrieval |
 | `scorer.py` | ~860 | 10 scoring criteria with weighted scoring model |
 | `graph_builder.py` | ~350 | Entity graph, cosine resolution, spectral clustering, PageRank |
-| `models.py` | ~330 | All dataclasses (ParsedDocument, ScoreCard, Entity, etc.) |
+| `src/models.py` | ~330 | All dataclasses (ParsedDocument, ScoreCard, Entity, etc.) |
 
 ## Scoring Weights
 
@@ -77,12 +77,12 @@ When the graph is available, weights are auto-scaled proportionally to keep the 
 - Async with `asyncio.Semaphore` for LLM call concurrency
 - `requests.Session` for anam.ai API (sync)
 - `AsyncAnthropic` for Claude API (async)
-- All LLM responses parsed from free-text JSON via `extract_json()` in analyzer.py
+- All LLM responses parsed from free-text JSON via `extract_json()` in src/analyzer.py
 - Reports auto-generated as timestamped Markdown (suppress with `--no-report`)
 
 ## Data Flow
 
-Documents flow through the pipeline as `ParsedDocument` objects (defined in `models.py`). Key properties:
+Documents flow through the pipeline as `ParsedDocument` objects (defined in `src/models.py`). Key properties:
 - `doc.paragraphs` — list of `Paragraph(text, level, style, index)`
 - `doc.headings` — paragraphs where `level > 0`
 - `doc.body_paragraphs` — paragraphs where `level == 0`

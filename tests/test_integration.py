@@ -1,13 +1,8 @@
 import asyncio
-import sys
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from config import Config
-from models import ParsedDocument, DocumentMetadata, Paragraph
-
+from src.config import Config
+from src.models import DocumentMetadata, Paragraph, ParsedDocument
 
 MOCK_ANALYSIS_JSON = '{"domain":"education","topics":["math"],"audience":"students","content_type":"lesson","key_concepts":["fractions"],"suggested_tags":["math"],"summary":"A math lesson.","entities":[{"name":"Fractions","type":"concept","description":"Number parts"}],"relationships":[]}'
 
@@ -30,11 +25,11 @@ def _make_docs(n=3):
 
 def test_full_analyze_pipeline_concurrent():
     """analyze_and_build_graph runs concurrently and builds correct graph."""
-    from analyzer import ContentAnalyzer
+    from src.analyzer import ContentAnalyzer
 
     config = Config(anthropic_api_key="test-key", concurrency=2)
 
-    with patch("analyzer.AsyncAnthropic") as MockClient:
+    with patch("src.analyzer.AsyncAnthropic") as MockClient:
         mock = MockClient.return_value
         mock.messages.create = AsyncMock(return_value=_mock_response(MOCK_ANALYSIS_JSON))
 
@@ -55,7 +50,7 @@ def test_full_analyze_pipeline_concurrent():
 
 def test_concurrent_analysis_with_failures():
     """Pipeline handles mixed success/failure gracefully."""
-    from analyzer import ContentAnalyzer
+    from src.analyzer import ContentAnalyzer
 
     config = Config(anthropic_api_key="test-key", concurrency=3)
 
@@ -68,7 +63,7 @@ def test_concurrent_analysis_with_failures():
             raise Exception("Simulated API error")
         return _mock_response(MOCK_ANALYSIS_JSON)
 
-    with patch("analyzer.AsyncAnthropic") as MockClient:
+    with patch("src.analyzer.AsyncAnthropic") as MockClient:
         mock = MockClient.return_value
         mock.messages.create = AsyncMock(side_effect=mock_create)
 
@@ -86,7 +81,7 @@ def test_concurrent_analysis_with_failures():
 
 def test_semaphore_limits_concurrency():
     """Semaphore actually limits concurrent LLM calls."""
-    from analyzer import ContentAnalyzer
+    from src.analyzer import ContentAnalyzer
 
     config = Config(anthropic_api_key="test-key", concurrency=2)
     max_concurrent = 0
@@ -102,7 +97,7 @@ def test_semaphore_limits_concurrency():
         current_concurrent -= 1
         return original_mock
 
-    with patch("analyzer.AsyncAnthropic") as MockClient:
+    with patch("src.analyzer.AsyncAnthropic") as MockClient:
         mock = MockClient.return_value
         mock.messages.create = AsyncMock(side_effect=mock_create)
 

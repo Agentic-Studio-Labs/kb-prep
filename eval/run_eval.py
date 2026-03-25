@@ -22,9 +22,8 @@ import logging
 import math
 import os
 import re
-import sys
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -34,31 +33,34 @@ from anthropic import AsyncAnthropic
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-# Allow imports from project root (parent of eval/)
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from analyzer import extract_json
+from src.analyzer import extract_json
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Chunk:
     """A retrievable text chunk from a document."""
+
     text: str
     source_file: str
     chunk_index: int
 
+
 @dataclass
 class RetrievalResult:
     """Chunks retrieved for a single query."""
+
     chunks: list[Chunk]
     scores: list[float]
+
 
 @dataclass
 class EvalResult:
     """Evaluation result for a single question."""
+
     question_id: str
     question: str
     expected_source: str
@@ -69,15 +71,16 @@ class EvalResult:
     retrieved_text: str
     generated_answer: str
     # Scores (0.0 - 1.0)
-    retrieval_hit: float = 0.0       # Was expected source in top-k?
-    context_precision: float = 0.0   # How relevant was retrieved context?
-    faithfulness: float = 0.0        # Does answer stick to context?
+    retrieval_hit: float = 0.0  # Was expected source in top-k?
+    context_precision: float = 0.0  # How relevant was retrieved context?
+    faithfulness: float = 0.0  # Does answer stick to context?
     answer_correctness: float = 0.0  # Does answer match ground truth?
 
 
 # ---------------------------------------------------------------------------
 # Chunker: split markdown files into retrievable pieces
 # ---------------------------------------------------------------------------
+
 
 def load_and_chunk(folder: str, chunk_size: int = 500, overlap: int = 100) -> list[Chunk]:
     """Load all .md files from folder (recursively) and split into chunks."""
@@ -102,11 +105,13 @@ def load_and_chunk(folder: str, chunk_size: int = 500, overlap: int = 100) -> li
             words = len(para.split())
             if current_len + words > chunk_size and current_chunk:
                 chunk_text = "\n\n".join(current_chunk)
-                chunks.append(Chunk(
-                    text=chunk_text,
-                    source_file=rel_path,
-                    chunk_index=len(chunks),
-                ))
+                chunks.append(
+                    Chunk(
+                        text=chunk_text,
+                        source_file=rel_path,
+                        chunk_index=len(chunks),
+                    )
+                )
                 # Keep trailing paragraphs for overlap
                 overlap_paras = []
                 overlap_words = 0
@@ -124,11 +129,13 @@ def load_and_chunk(folder: str, chunk_size: int = 500, overlap: int = 100) -> li
 
         # Flush remaining
         if current_chunk:
-            chunks.append(Chunk(
-                text="\n\n".join(current_chunk),
-                source_file=rel_path,
-                chunk_index=len(chunks),
-            ))
+            chunks.append(
+                Chunk(
+                    text="\n\n".join(current_chunk),
+                    source_file=rel_path,
+                    chunk_index=len(chunks),
+                )
+            )
 
     return chunks
 
@@ -136,6 +143,7 @@ def load_and_chunk(folder: str, chunk_size: int = 500, overlap: int = 100) -> li
 # ---------------------------------------------------------------------------
 # BM25 retriever (no external deps)
 # ---------------------------------------------------------------------------
+
 
 class BM25Retriever:
     """Simple BM25 retriever over text chunks."""
@@ -194,16 +202,15 @@ class AnamRetriever:
     """Retriever that searches anam.ai KB folders via vector similarity API."""
 
     def __init__(self, anam_key: str, anam_base_url: str = "https://api.anam.ai"):
-        from anam_client import AnamClient
-        from config import Config
+        from src.anam_client import AnamClient
+        from src.config import Config
 
         config = Config(anam_api_key=anam_key, anam_base_url=anam_base_url)
         self.client = AnamClient(config)
         folders = self.client.list_folders()
         self.folder_ids = [f["id"] for f in folders]
         self.folder_names = {f["id"]: f.get("name", f["id"]) for f in folders}
-        print(f"  AnamRetriever: found {len(self.folder_ids)} folders: "
-              f"{', '.join(self.folder_names.values())}")
+        print(f"  AnamRetriever: found {len(self.folder_ids)} folders: {', '.join(self.folder_names.values())}")
         self._logged_schema = False
 
     def search(self, query: str, top_k: int = 5) -> RetrievalResult:
@@ -215,8 +222,7 @@ class AnamRetriever:
                 logger.warning("Search failed for folder %s: %s", folder_id, e)
                 continue
             if not self._logged_schema and raw:
-                logger.info("Anam search response schema: %s",
-                            json.dumps(raw[0], indent=2, default=str))
+                logger.info("Anam search response schema: %s", json.dumps(raw[0], indent=2, default=str))
                 self._logged_schema = True
             folder_name = self.folder_names.get(folder_id, folder_id)
             for i, hit in enumerate(raw):
@@ -240,17 +246,28 @@ class AnamRetriever:
 
     @staticmethod
     def _hit_to_chunk(hit: dict, folder_name: str, index: int) -> Chunk:
-        text = (hit.get("text") or hit.get("content") or hit.get("chunk_text")
-                or hit.get("passage") or str(hit))
-        source = (hit.get("source_file") or hit.get("document_name")
-                  or hit.get("fileName") or hit.get("file_name")
-                  or hit.get("source") or hit.get("title")
-                  or hit.get("documentName") or folder_name)
+        text = hit.get("text") or hit.get("content") or hit.get("chunk_text") or hit.get("passage") or str(hit)
+        source = (
+            hit.get("source_file")
+            or hit.get("document_name")
+            or hit.get("fileName")
+            or hit.get("file_name")
+            or hit.get("source")
+            or hit.get("title")
+            or hit.get("documentName")
+            or folder_name
+        )
         if isinstance(hit.get("metadata"), dict):
             meta = hit["metadata"]
-            source = (meta.get("source_file") or meta.get("document_name")
-                      or meta.get("fileName") or meta.get("file_name")
-                      or meta.get("source") or meta.get("title") or source)
+            source = (
+                meta.get("source_file")
+                or meta.get("document_name")
+                or meta.get("fileName")
+                or meta.get("file_name")
+                or meta.get("source")
+                or meta.get("title")
+                or source
+            )
         return Chunk(text=text, source_file=source, chunk_index=hit.get("chunk_index", index))
 
 
@@ -301,9 +318,7 @@ async def generate_answer(client: AsyncAnthropic, question: str, context: str, m
     resp = await client.messages.create(
         model=model,
         max_tokens=500,
-        messages=[{"role": "user", "content": ANSWER_PROMPT.format(
-            question=question, context=context
-        )}],
+        messages=[{"role": "user", "content": ANSWER_PROMPT.format(question=question, context=context)}],
     )
     return resp.content[0].text.strip()
 
@@ -320,12 +335,17 @@ async def judge_answer(
     resp = await client.messages.create(
         model=model,
         max_tokens=200,
-        messages=[{"role": "user", "content": JUDGE_PROMPT.format(
-            question=question,
-            context=context,
-            answer=answer,
-            ground_truth=ground_truth,
-        )}],
+        messages=[
+            {
+                "role": "user",
+                "content": JUDGE_PROMPT.format(
+                    question=question,
+                    context=context,
+                    answer=answer,
+                    ground_truth=ground_truth,
+                ),
+            }
+        ],
     )
     text = resp.content[0].text.strip()
     data = extract_json(text)
@@ -337,6 +357,7 @@ async def judge_answer(
 # ---------------------------------------------------------------------------
 # Main evaluation loop
 # ---------------------------------------------------------------------------
+
 
 async def run_evaluation(
     folder: str,
@@ -372,9 +393,7 @@ async def run_evaluation(
             # Retrieve
             result = retriever.search(q["question"], top_k=top_k)
             retrieved_sources = list(dict.fromkeys(c.source_file for c in result.chunks))
-            context = "\n\n---\n\n".join(
-                f"[Source: {c.source_file}]\n{c.text}" for c in result.chunks
-            )
+            context = "\n\n---\n\n".join(f"[Source: {c.source_file}]\n{c.text}" for c in result.chunks)
 
             # Check retrieval hit
             expected = q["expected_source"]
@@ -384,9 +403,7 @@ async def run_evaluation(
             answer = await generate_answer(client, q["question"], context, model)
 
             # Judge
-            scores = await judge_answer(
-                client, q["question"], context, answer, q["ground_truth"], model
-            )
+            scores = await judge_answer(client, q["question"], context, answer, q["ground_truth"], model)
 
             return EvalResult(
                 question_id=q["id"],
@@ -415,15 +432,16 @@ async def run_evaluation(
 # Report generation
 # ---------------------------------------------------------------------------
 
+
 def print_report(results: list[EvalResult], folder: str) -> str:
     """Print and return a markdown evaluation report."""
     lines = []
-    lines.append(f"# RAG Evaluation Report")
-    lines.append(f"")
+    lines.append("# RAG Evaluation Report")
+    lines.append("")
     lines.append(f"**Source:** {folder}")
     lines.append(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Questions:** {len(results)}")
-    lines.append(f"")
+    lines.append("")
 
     # Aggregate scores
     avg = lambda vals: sum(vals) / len(vals) if vals else 0
@@ -509,7 +527,9 @@ def print_report(results: list[EvalResult], folder: str) -> str:
         lines.append("## Retrieval Misses")
         lines.append("")
         for r in misses:
-            lines.append(f"- **{r.question_id}**: Expected `{r.expected_source}`, got: {', '.join(r.retrieved_sources[:3])}")
+            lines.append(
+                f"- **{r.question_id}**: Expected `{r.expected_source}`, got: {', '.join(r.retrieved_sources[:3])}"
+            )
         lines.append("")
 
     report = "\n".join(lines)
@@ -521,6 +541,7 @@ def print_report(results: list[EvalResult], folder: str) -> str:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 @click.command()
 @click.argument("folder", type=click.Path(exists=True))
 @click.option("--llm-key", envvar="ANTHROPIC_API_KEY", required=True, help="Anthropic API key")
@@ -529,16 +550,27 @@ def print_report(results: list[EvalResult], folder: str) -> str:
 @click.option("--top-k", default=5, help="Number of chunks to retrieve per question")
 @click.option("--concurrency", default=5, help="Max parallel LLM calls")
 @click.option("--output", "-o", default=None, help="Save report to file")
-@click.option("--anam-key", envvar="ANAM_API_KEY", default=None,
-              help="Anam API key - uses anam.ai vector search instead of local BM25")
-@click.option("--anam-url", envvar="ANAM_BASE_URL", default="https://api.anam.ai",
-              help="Anam API base URL")
+@click.option(
+    "--anam-key",
+    envvar="ANAM_API_KEY",
+    default=None,
+    help="Anam API key - uses anam.ai vector search instead of local BM25",
+)
+@click.option("--anam-url", envvar="ANAM_BASE_URL", default="https://api.anam.ai", help="Anam API base URL")
 def main(folder, llm_key, model, questions, top_k, concurrency, output, anam_key, anam_url):
     """Evaluate RAG document quality against test questions."""
-    results = asyncio.run(run_evaluation(
-        folder, questions, llm_key, model, top_k, concurrency,
-        anam_key=anam_key, anam_url=anam_url,
-    ))
+    results = asyncio.run(
+        run_evaluation(
+            folder,
+            questions,
+            llm_key,
+            model,
+            top_k,
+            concurrency,
+            anam_key=anam_key,
+            anam_url=anam_url,
+        )
+    )
     report = print_report(results, folder)
 
     if output:

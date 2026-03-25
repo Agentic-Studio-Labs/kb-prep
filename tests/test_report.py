@@ -1,9 +1,4 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from models import ScoreCard, ScoringResult, Issue, Severity, Readiness
+from src.models import Issue, ScoreCard, ScoringResult, Severity
 
 
 def _make_card(filename="test.docx", score=85.0, issues=None):
@@ -24,7 +19,8 @@ def _make_card(filename="test.docx", score=85.0, issues=None):
 
 def test_report_header():
     """_report_header returns markdown header with timestamp and file count."""
-    from cli import _report_header
+    from src.cli import _report_header
+
     lines = _report_header(command="score", file_count=5)
     text = "\n".join(lines)
     assert "# kb-prep" in text
@@ -34,7 +30,8 @@ def test_report_header():
 
 def test_report_scores():
     """_report_scores returns markdown table rows."""
-    from cli import _report_scores
+    from src.cli import _report_scores
+
     cards = [_make_card("a.docx", 90), _make_card("b.docx", 60)]
     lines = _report_scores(cards, detail=False)
     text = "\n".join(lines)
@@ -46,7 +43,8 @@ def test_report_scores():
 
 def test_report_scores_detail():
     """_report_scores with detail includes issue breakdown."""
-    from cli import _report_scores
+    from src.cli import _report_scores
+
     issue = Issue(severity=Severity.WARNING, category="structure", message="Bad heading")
     cards = [_make_card("a.docx", 70, issues=[issue])]
     lines = _report_scores(cards, detail=True)
@@ -56,7 +54,8 @@ def test_report_scores_detail():
 
 def test_generate_report_path():
     """_generate_report_path returns timestamped filename."""
-    from cli import _generate_report_path
+    from src.cli import _generate_report_path
+
     path = _generate_report_path("analyze")
     assert path.startswith("kb-prep-analyze-")
     assert path.endswith(".md")
@@ -66,14 +65,15 @@ def test_generate_report_path():
 
 
 import os
+
 from click.testing import CliRunner
 
 
 def test_score_generates_report(tmp_path):
     """score command auto-generates a markdown report file."""
     # Create a test DOCX
+    from src.cli import cli
     from tests.test_scoring import _create_test_docx
-    from cli import cli
 
     test_file = str(tmp_path / "test.docx")
     _create_test_docx(test_file)
@@ -92,8 +92,8 @@ def test_score_generates_report(tmp_path):
 
 def test_score_no_report_flag(tmp_path):
     """--no-report suppresses report generation."""
+    from src.cli import cli
     from tests.test_scoring import _create_test_docx
-    from cli import cli
 
     test_file = str(tmp_path / "test.docx")
     _create_test_docx(test_file)

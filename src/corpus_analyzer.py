@@ -19,7 +19,7 @@ from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from models import CorpusAnalysis, DocMetrics, ParsedDocument
+from .models import CorpusAnalysis, DocMetrics, ParsedDocument
 
 
 def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:

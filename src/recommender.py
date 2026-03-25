@@ -9,15 +9,15 @@ from typing import Optional
 
 from anthropic import AsyncAnthropic
 
-from analyzer import extract_json
-from config import Config
-from models import (
+from .analyzer import extract_json
+from .config import Config
+from .models import (
     ContentAnalysis,
     FolderNode,
     FolderRecommendation,
     ParsedDocument,
 )
-from prompts import RECOMMEND_FOLDERS
+from .prompts import RECOMMEND_FOLDERS
 
 
 class FolderRecommender:

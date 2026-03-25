@@ -6,15 +6,15 @@ Tests three changes:
 3. Louvain community detection instead of connected components
 """
 
-from graph_builder import KnowledgeGraph
-from models import ContentAnalysis, Entity, ParsedDocument, Relationship
+from src.graph_builder import KnowledgeGraph
+from src.models import ContentAnalysis, Entity, ParsedDocument, Relationship
 
 
 def _make_doc(filename: str, text: str = "Some content") -> ParsedDocument:
     """Create a minimal ParsedDocument for testing."""
     from pathlib import Path
 
-    from models import DocumentMetadata, Paragraph
+    from src.models import DocumentMetadata, Paragraph
 
     ext = Path(filename).suffix.lstrip(".") or "md"
     return ParsedDocument(
@@ -251,7 +251,7 @@ class TestSpectralClustering:
     def test_deterministic_clustering(self):
         import numpy as np
 
-        from graph_builder import spectral_cluster
+        from src.graph_builder import spectral_cluster
 
         sim = np.array(
             [
@@ -289,7 +289,7 @@ def test_bipartite_similarity():
 def test_blend_similarity_matrices():
     import numpy as np
 
-    from graph_builder import blend_similarity
+    from src.graph_builder import blend_similarity
 
     tfidf_sim = np.array([[1.0, 0.5], [0.5, 1.0]])
     entity_sim = np.array([[1.0, 0.8], [0.8, 1.0]])

@@ -15,7 +15,7 @@ from sklearn.cluster import SpectralClustering as SklearnSpectralClustering
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine_similarity
 
-from models import (
+from .models import (
     ContentAnalysis,
     Entity,
     GraphSummary,

@@ -44,7 +44,7 @@ dev = [
 ]
 
 [project.scripts]
-kb-prep = "cli:cli"
+kb-prep = "src.cli:cli"
 
 [project.urls]
 Homepage = "https://github.com/Agentic-Studio-Labs/kb-prep"

@@ -5,15 +5,11 @@ semaphore-based concurrency, and handles failures gracefully.
 """
 
 import asyncio
-import sys
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from analyzer import ContentAnalyzer
-from config import Config
-from models import ParsedDocument, DocumentMetadata, Paragraph
+from src.analyzer import ContentAnalyzer
+from src.config import Config
+from src.models import DocumentMetadata, Paragraph, ParsedDocument
 
 
 def _make_doc(filename="test.docx", text="This is test content about math."):
@@ -32,14 +28,18 @@ def _mock_llm_response(json_str: str):
 def test_analyze_is_async():
     """ContentAnalyzer.analyze is a coroutine."""
     import inspect
-    from analyzer import ContentAnalyzer
+
+    from src.analyzer import ContentAnalyzer
+
     assert inspect.iscoroutinefunction(ContentAnalyzer.analyze)
 
 
 def test_analyze_and_build_graph_is_async():
     """analyze_and_build_graph is a coroutine."""
     import inspect
-    from analyzer import ContentAnalyzer
+
+    from src.analyzer import ContentAnalyzer
+
     assert inspect.iscoroutinefunction(ContentAnalyzer.analyze_and_build_graph)
 
 
@@ -49,11 +49,9 @@ def test_concurrent_analysis():
 
     json_response = '{"domain":"education","topics":["math"],"audience":"students","content_type":"lesson","key_concepts":["fractions"],"suggested_tags":["math"],"summary":"A lesson.","entities":[],"relationships":[]}'
 
-    with patch("analyzer.AsyncAnthropic") as MockClient:
+    with patch("src.analyzer.AsyncAnthropic") as MockClient:
         mock_instance = MockClient.return_value
-        mock_instance.messages.create = AsyncMock(
-            return_value=_mock_llm_response(json_response)
-        )
+        mock_instance.messages.create = AsyncMock(return_value=_mock_llm_response(json_response))
 
         analyzer = ContentAnalyzer(config)
 
@@ -69,11 +67,9 @@ def test_analysis_failure_handled():
     """Failed analysis returns error ContentAnalysis, doesn't crash."""
     config = Config(anthropic_api_key="test-key", concurrency=2)
 
-    with patch("analyzer.AsyncAnthropic") as MockClient:
+    with patch("src.analyzer.AsyncAnthropic") as MockClient:
         mock_instance = MockClient.return_value
-        mock_instance.messages.create = AsyncMock(
-            side_effect=Exception("API error")
-        )
+        mock_instance.messages.create = AsyncMock(side_effect=Exception("API error"))
 
         analyzer = ContentAnalyzer(config)
         docs = [_make_doc("fail.docx")]

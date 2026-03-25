@@ -6,14 +6,13 @@ folders to a persona's knowledge tool.
 """
 
 import re
-import time
 from pathlib import Path
 from typing import Callable, Optional
 
 import requests
 
-from config import Config
-from models import (
+from .config import Config
+from .models import (
     DocumentStatus,
     FolderNode,
     FolderRecommendation,
@@ -38,10 +37,12 @@ class AnamClient:
             raise ValueError("anam.ai API key required. Set ANAM_API_KEY or use --api-key.")
         self.base_url = config.anam_base_url.rstrip("/")
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {config.anam_api_key}",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {config.anam_api_key}",
+                "Content-Type": "application/json",
+            }
+        )
 
     # ------------------------------------------------------------------
     # Folder management
@@ -83,9 +84,7 @@ class AnamClient:
                 return data[key]
         return [data]
 
-    def create_folder_tree(
-        self, recommendation: FolderRecommendation
-    ) -> dict[str, str]:
+    def create_folder_tree(self, recommendation: FolderRecommendation) -> dict[str, str]:
         """Create all folders from a recommendation, return name->ID mapping.
 
         anam.ai uses a flat folder structure (no nesting), so we only create
@@ -149,9 +148,7 @@ class AnamClient:
             data = resp.json()
             doc_id = data.get("id") or data.get("documentId") or ""
             if not doc_id:
-                raise ValueError(
-                    f"Upload response missing document ID. Keys: {list(data.keys())}"
-                )
+                raise ValueError(f"Upload response missing document ID. Keys: {list(data.keys())}")
 
             return UploadResult(
                 file_path=file_path,
@@ -225,9 +222,7 @@ class AnamClient:
                 if folder_map:
                     folder_path = next(iter(folder_map.keys()))
                     if progress_callback:
-                        progress_callback(
-                            f"WARNING: No assignment for {filename}, using {folder_path}"
-                        )
+                        progress_callback(f"WARNING: No assignment for {filename}, using {folder_path}")
                 else:
                     report.results.append(
                         UploadResult(
@@ -273,13 +268,9 @@ class AnamClient:
     def _validate_filename(filename: str) -> None:
         """Validate filename before sending to anam.ai API."""
         if len(filename) > MAX_FILENAME_LENGTH:
-            raise ValueError(
-                f"Filename too long ({len(filename)} chars, max {MAX_FILENAME_LENGTH}): {filename}"
-            )
+            raise ValueError(f"Filename too long ({len(filename)} chars, max {MAX_FILENAME_LENGTH}): {filename}")
         if INVALID_FILENAME_CHARS.search(filename):
-            raise ValueError(
-                f"Filename contains invalid characters: {filename}"
-            )
+            raise ValueError(f"Filename contains invalid characters: {filename}")
 
     @staticmethod
     def _get_content_type(file_path: str) -> str:

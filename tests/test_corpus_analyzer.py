@@ -1,14 +1,11 @@
 """Tests for corpus analysis engine."""
 
-import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from models import CorpusAnalysis, DocMetrics
+from src.models import CorpusAnalysis, DocMetrics
 
 
 def test_doc_metrics_defaults():
@@ -47,7 +44,7 @@ def test_corpus_analysis_structure():
     assert "doc1.md" in ca.doc_metrics
 
 
-from models import DocumentMetadata, Paragraph, ParsedDocument
+from src.models import DocumentMetadata, Paragraph, ParsedDocument
 
 
 def _make_doc(filename: str, text: str) -> ParsedDocument:
@@ -70,7 +67,7 @@ def _make_doc(filename: str, text: str) -> ParsedDocument:
 
 def test_build_tfidf_matrix_shape():
     """TF-IDF matrix has correct shape (n_docs, n_terms)."""
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     docs = [
         _make_doc("fractions.md", "Adding fractions requires common denominators."),
@@ -86,7 +83,7 @@ def test_build_tfidf_matrix_shape():
 
 def test_similarity_matrix_properties():
     """Similarity matrix is square, symmetric, diagonal is ~1.0."""
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     docs = [
         _make_doc("a.md", "Fractions and decimals are important math topics."),
@@ -109,7 +106,7 @@ def test_similarity_matrix_properties():
 
 
 def test_readability_grade_range():
-    from corpus_analyzer import _compute_readability
+    from src.corpus_analyzer import _compute_readability
 
     simple = "The cat sat on the mat. The dog ran in the park. We like to play."
     grade = _compute_readability(simple)
@@ -124,7 +121,7 @@ def test_readability_grade_range():
 
 
 def test_syllable_counting():
-    from corpus_analyzer import _count_syllables
+    from src.corpus_analyzer import _count_syllables
 
     assert _count_syllables("cat") == 1
     assert _count_syllables("money") == 2
@@ -138,7 +135,7 @@ def test_syllable_counting():
 
 
 def test_coherence_high_for_matching_heading():
-    from corpus_analyzer import _compute_coherence
+    from src.corpus_analyzer import _compute_coherence
 
     heading_text = "Adding Fractions with Unlike Denominators"
     content_below = (
@@ -150,7 +147,7 @@ def test_coherence_high_for_matching_heading():
 
 
 def test_coherence_low_for_mismatched_heading():
-    from corpus_analyzer import _compute_coherence
+    from src.corpus_analyzer import _compute_coherence
 
     heading_text = "Content"
     content_below = "Insurance protects families against financial loss from unexpected events."
@@ -164,7 +161,7 @@ def test_coherence_low_for_mismatched_heading():
 
 
 def test_texttiling_finds_topic_shift():
-    from corpus_analyzer import _compute_topic_boundaries
+    from src.corpus_analyzer import _compute_topic_boundaries
 
     paragraphs = [
         "Adding fractions requires finding a common denominator.",
@@ -180,7 +177,7 @@ def test_texttiling_finds_topic_shift():
 
 
 def test_texttiling_no_boundary_in_coherent_text():
-    from corpus_analyzer import _compute_topic_boundaries
+    from src.corpus_analyzer import _compute_topic_boundaries
 
     paragraphs = [
         "Fractions represent parts of a whole number.",
@@ -198,7 +195,7 @@ def test_texttiling_no_boundary_in_coherent_text():
 
 
 def test_retrieval_aware_score_distinct_docs():
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     docs = [
         _make_doc(
@@ -241,7 +238,7 @@ def test_retrieval_aware_score_distinct_docs():
 
 
 def test_select_overlap_sentences_prefers_informative():
-    from corpus_analyzer import select_overlap_sentences
+    from src.corpus_analyzer import select_overlap_sentences
 
     sentences = [
         "SMART goals have five specific components for success.",
@@ -255,7 +252,7 @@ def test_select_overlap_sentences_prefers_informative():
 
 
 def test_info_density_computed():
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     doc = _make_doc(
         "test.md",
@@ -273,7 +270,7 @@ def test_info_density_computed():
 
 
 def test_rocchio_expands_query():
-    from corpus_analyzer import rocchio_expand_query
+    from src.corpus_analyzer import rocchio_expand_query
 
     corpus = [
         "Adding fractions with common denominators and simplifying results",

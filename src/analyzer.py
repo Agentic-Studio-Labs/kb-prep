@@ -9,15 +9,14 @@ folder clustering), and scorer (knowledge completeness).
 
 import asyncio
 import json
-import re
 from typing import Optional
 
 from anthropic import AsyncAnthropic
 
-from config import Config
-from graph_builder import KnowledgeGraph
-from models import ContentAnalysis, Entity, ParsedDocument, Relationship
-from prompts import ANALYZE_DOCUMENT
+from .config import Config
+from .graph_builder import KnowledgeGraph
+from .models import ContentAnalysis, Entity, ParsedDocument, Relationship
+from .prompts import ANALYZE_DOCUMENT
 
 
 def extract_json(text: str) -> Optional[dict]:
@@ -66,7 +65,7 @@ def extract_json(text: str) -> Optional[dict]:
         elif ch == "}":
             depth -= 1
             if depth == 0:
-                candidate = text[start:i + 1]
+                candidate = text[start : i + 1]
                 try:
                     return json.loads(candidate)
                 except json.JSONDecodeError:
@@ -117,24 +116,28 @@ class ContentAnalyzer:
         entities = []
         for e in data.get("entities", []):
             if isinstance(e, dict) and "name" in e:
-                entities.append(Entity(
-                    name=e["name"],
-                    entity_type=e.get("type", "concept"),
-                    source_file=source_file,
-                    description=e.get("description", ""),
-                ))
+                entities.append(
+                    Entity(
+                        name=e["name"],
+                        entity_type=e.get("type", "concept"),
+                        source_file=source_file,
+                        description=e.get("description", ""),
+                    )
+                )
 
         # Parse relationships
         relationships = []
         for r in data.get("relationships", []):
             if isinstance(r, dict) and "source" in r and "target" in r:
-                relationships.append(Relationship(
-                    source=r["source"],
-                    target=r["target"],
-                    rel_type=r.get("type", "related_to"),
-                    source_file=source_file,
-                    context=r.get("context", ""),
-                ))
+                relationships.append(
+                    Relationship(
+                        source=r["source"],
+                        target=r["target"],
+                        rel_type=r.get("type", "related_to"),
+                        source_file=source_file,
+                        context=r.get("context", ""),
+                    )
+                )
 
         return ContentAnalysis(
             domain=data.get("domain", ""),
@@ -148,9 +151,7 @@ class ContentAnalyzer:
             relationships=relationships,
         )
 
-    async def analyze_and_build_graph(
-        self, docs: list[ParsedDocument]
-    ) -> tuple[list[ContentAnalysis], KnowledgeGraph]:
+    async def analyze_and_build_graph(self, docs: list[ParsedDocument]) -> tuple[list[ContentAnalysis], KnowledgeGraph]:
         """Analyze all documents and build a shared knowledge graph.
 
         This is the primary entry point for the pipeline. Returns both
@@ -163,9 +164,7 @@ class ContentAnalyzer:
         analyses = []
         for doc, result in zip(docs, results):
             if isinstance(result, Exception):
-                analysis = ContentAnalysis(
-                    summary=f"Analysis failed: {str(result)}"
-                )
+                analysis = ContentAnalysis(summary=f"Analysis failed: {str(result)}")
             else:
                 analysis = result
             analyses.append(analysis)
@@ -186,7 +185,9 @@ class ContentAnalyzer:
                 )
             except Exception as e:
                 error_str = str(e).lower()
-                if attempt < max_retries - 1 and ("429" in error_str or "529" in error_str or "rate" in error_str or "overloaded" in error_str):
+                if attempt < max_retries - 1 and (
+                    "429" in error_str or "529" in error_str or "rate" in error_str or "overloaded" in error_str
+                ):
                     wait = 2 ** (attempt + 1)
                     await asyncio.sleep(wait)
                     continue

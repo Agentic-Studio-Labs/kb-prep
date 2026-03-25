@@ -11,9 +11,8 @@ from typing import Optional
 
 import fitz  # pymupdf
 from docx import Document as DocxDocument
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from models import (
+from .models import (
     DocumentMetadata,
     HeadingNode,
     Paragraph,
@@ -47,10 +46,7 @@ def discover_files(path: str, exclude_patterns: list[str] | None = None) -> list
             files.extend(str(f) for f in p.rglob(f"*{ext}"))
 
         if exclude_patterns:
-            files = [
-                f for f in files
-                if not any(pat in f for pat in exclude_patterns)
-            ]
+            files = [f for f in files if not any(pat in f for pat in exclude_patterns)]
 
         return sorted(files)
     return []
@@ -159,9 +155,7 @@ class DocumentParser:
 
                     # Estimate heading level from font size
                     max_font_size = max(s["size"] for s in spans)
-                    is_bold = any(
-                        "bold" in s.get("font", "").lower() for s in spans
-                    )
+                    is_bold = any("bold" in s.get("font", "").lower() for s in spans)
                     level = self._estimate_heading_level(max_font_size, is_bold)
 
                     paragraphs.append(
@@ -235,10 +229,7 @@ class DocumentParser:
             else:
                 # Merge if the line looks like a continuation (no sentence-ending punctuation
                 # at the end of current, or current is short)
-                if (
-                    not current.text.endswith((".", "!", "?", ":", ";"))
-                    or len(current.text.split()) < 15
-                ):
+                if not current.text.endswith((".", "!", "?", ":", ";")) or len(current.text.split()) < 15:
                     current = Paragraph(
                         text=current.text + " " + p.text,
                         level=0,
@@ -258,10 +249,7 @@ class DocumentParser:
             merged.append(current)
 
         # Re-index with fresh Paragraph objects to avoid stale references
-        return [
-            Paragraph(text=p.text, level=p.level, style=p.style, index=i)
-            for i, p in enumerate(merged)
-        ]
+        return [Paragraph(text=p.text, level=p.level, style=p.style, index=i) for i, p in enumerate(merged)]
 
     # ------------------------------------------------------------------
     # Plain text / Markdown parsing
@@ -288,9 +276,7 @@ class DocumentParser:
                     block = md_match.group(2)
                     style = f"Heading {level}"
 
-            paragraphs.append(
-                Paragraph(text=block, level=level, style=style, index=idx)
-            )
+            paragraphs.append(Paragraph(text=block, level=level, style=style, index=idx))
 
         file_size = os.path.getsize(file_path)
         metadata = DocumentMetadata(
@@ -341,6 +327,7 @@ class DocumentParser:
 # ---------------------------------------------------------------------------
 # Markdown conversion
 # ---------------------------------------------------------------------------
+
 
 def paragraphs_to_markdown(paragraphs: list[Paragraph]) -> str:
     """Render a list of Paragraphs as clean Markdown text."""

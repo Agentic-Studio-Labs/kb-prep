@@ -1,5 +1,4 @@
-import os
-from config import Config
+from src.config import Config
 
 
 def test_config_defaults():
@@ -19,5 +18,6 @@ def test_config_with_overrides():
 def test_config_invalid_override_raises():
     """with_overrides rejects unknown fields."""
     import pytest
+
     with pytest.raises(ValueError, match="Invalid config fields"):
         Config().with_overrides(fake_field="nope")

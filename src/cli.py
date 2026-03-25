@@ -22,11 +22,11 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from config import Config
-from corpus_analyzer import build_corpus_analysis
-from models import ScoreCard, Severity
-from parser import DocumentParser, discover_files
-from scorer import QualityScorer
+from .config import Config
+from .corpus_analyzer import build_corpus_analysis
+from .models import ScoreCard, Severity
+from .parser import DocumentParser, discover_files
+from .scorer import QualityScorer
 
 console = Console()
 

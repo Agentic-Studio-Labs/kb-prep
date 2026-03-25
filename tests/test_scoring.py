@@ -6,17 +6,12 @@ then scores it and verifies detection.
 """
 
 import os
-import sys
 import tempfile
-from pathlib import Path
-
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from docx import Document
 
-from parser import DocumentParser
-from scorer import QualityScorer
+from src.parser import DocumentParser
+from src.scorer import QualityScorer
 
 
 def _create_test_docx(path: str):
@@ -153,7 +148,7 @@ def test_score_breakdown():
 
 def test_new_scoring_criteria_present():
     """New criteria (readability, retrieval_aware) appear in results."""
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     with tempfile.TemporaryDirectory() as tmpdir:
         test_path = os.path.join(tmpdir, "doc-v2.docx")
@@ -169,7 +164,7 @@ def test_new_scoring_criteria_present():
 
 def test_new_weights_sum_to_one():
     """Updated weights (without graph) should sum to ~1.0."""
-    from corpus_analyzer import build_corpus_analysis
+    from src.corpus_analyzer import build_corpus_analysis
 
     with tempfile.TemporaryDirectory() as tmpdir:
         test_path = os.path.join(tmpdir, "doc-v2.docx")

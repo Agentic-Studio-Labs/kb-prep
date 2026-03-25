@@ -16,15 +16,15 @@ Requires Python 3.10+.
 
 ```bash
 # Score documents (no LLM, no API keys)
-python cli.py score ./my-docs/
-python cli.py score ./my-docs/ --detail        # show every issue
-python cli.py score ./my-docs/ --json-output   # machine-readable
+python -m src.cli score ./my-docs/
+python -m src.cli score ./my-docs/ --detail        # show every issue
+python -m src.cli score ./my-docs/ --json-output   # machine-readable
 
 # Analyze with LLM (topics, knowledge graph, folder recommendations)
-python cli.py analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
+python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 
 # Auto-fix issues and output improved Markdown
-python cli.py fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
+python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
 ```
 
 Set environment variables to avoid passing keys every time:
@@ -47,7 +47,7 @@ Parse (DOCX/PDF/TXT/MD)
   └─ Scorer ── 8 heuristic criteria + 1 retrieval-aware + 1 graph-powered
 ```
 
-The **corpus analyzer** (`corpus_analyzer.py`) computes a TF-IDF matrix across all documents in one pass, then derives per-document metrics: topic entropy, heading-content coherence, readability grade, topic boundaries, and a self-retrieval score. These feed into the scorer alongside the existing heuristic checks.
+The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix across all documents in one pass, then derives per-document metrics: topic entropy, heading-content coherence, readability grade, topic boundaries, and a self-retrieval score. These feed into the scorer alongside the existing heuristic checks.
 
 ### Scoring Criteria
 
@@ -159,30 +159,34 @@ python eval/run_eval.py rag-files-*/ --llm-key $ANTHROPIC_API_KEY
 
 ```
 kb-prep/
-├── cli.py                # CLI entry point (Click) — score, analyze, fix, upload
-├── corpus_analyzer.py    # TF-IDF matrix, entropy, coherence, retrieval-aware scoring
-├── scorer.py             # Heuristic + corpus-powered scoring criteria
-├── parser.py             # DOCX/PDF/TXT/MD parsing + Markdown conversion
-├── analyzer.py           # LLM content analysis (topics, entities, relationships)
-├── graph_builder.py      # Knowledge graph (networkx) + spectral clustering + PageRank
-├── fixer.py              # LLM auto-fix engine (graph-aware)
-├── recommender.py        # Folder recommendation + silhouette validation
-├── anam_client.py        # Upload client (see anam.ai section below)
-├── prompts.py            # LLM prompt templates
-├── config.py             # Settings and API key management
-├── models.py             # All dataclasses
+├── src/                         # Source package
+│   ├── cli.py                   # CLI entry point (Click) — score, analyze, fix, upload
+│   ├── corpus_analyzer.py       # TF-IDF matrix, entropy, coherence, retrieval-aware scoring
+│   ├── scorer.py                # Heuristic + corpus-powered scoring criteria
+│   ├── parser.py                # DOCX/PDF/TXT/MD parsing + Markdown conversion
+│   ├── analyzer.py              # LLM content analysis (topics, entities, relationships)
+│   ├── graph_builder.py         # Knowledge graph (networkx) + spectral clustering + PageRank
+│   ├── fixer.py                 # LLM auto-fix engine (graph-aware)
+│   ├── recommender.py           # Folder recommendation + silhouette validation
+│   ├── anam_client.py           # Upload client (see anam.ai section below)
+│   ├── prompts.py               # LLM prompt templates
+│   ├── config.py                # Settings and API key management
+│   └── models.py                # All dataclasses
+├── tests/
+│   ├── test_corpus_analyzer.py  # TF-IDF, entropy, coherence, retrieval tests
+│   ├── test_scoring.py          # Scoring criteria validation
+│   ├── test_graph.py            # Entity resolution, clustering, PageRank
+│   ├── test_integration.py      # End-to-end pipeline tests
+│   ├── test_async_analyzer.py   # Async LLM analysis tests
+│   ├── test_async_fixer.py      # Async fixer tests
+│   ├── test_config.py           # Configuration tests
+│   └── test_report.py           # Report generation tests
 ├── eval/
-│   ├── run_eval.py       # RAG evaluation (BM25 + vector search)
+│   ├── run_eval.py              # RAG evaluation (BM25 + vector search)
 │   └── test-questions.json
-└── tests/
-    ├── test_corpus_analyzer.py  # TF-IDF, entropy, coherence, retrieval tests
-    ├── test_scoring.py          # Scoring criteria validation
-    ├── test_graph.py            # Entity resolution, clustering, PageRank
-    ├── test_integration.py      # End-to-end pipeline tests
-    ├── test_async_analyzer.py   # Async LLM analysis tests
-    ├── test_async_fixer.py      # Async fixer tests
-    ├── test_config.py           # Configuration tests
-    └── test_report.py           # Report generation tests
+├── pyproject.toml
+├── README.md
+└── CLAUDE.md
 ```
 
 ## Requirements
@@ -222,15 +226,15 @@ export ANAM_API_KEY=your-anam-key
 
 ```bash
 # Full pipeline: fix + recommend folders + upload
-python cli.py upload ./my-docs/ \
+python -m src.cli upload ./my-docs/ \
   --api-key $ANAM_API_KEY \
   --llm-key $ANTHROPIC_API_KEY
 
 # Dry run (preview without uploading)
-python cli.py upload ./my-docs/ --api-key $ANAM_API_KEY --llm-key $ANTHROPIC_API_KEY --dry-run
+python -m src.cli upload ./my-docs/ --api-key $ANAM_API_KEY --llm-key $ANTHROPIC_API_KEY --dry-run
 
 # Upload and attach to a persona
-python cli.py upload ./my-docs/ \
+python -m src.cli upload ./my-docs/ \
   --api-key $ANAM_API_KEY \
   --llm-key $ANTHROPIC_API_KEY \
   --persona-id your-persona-id \

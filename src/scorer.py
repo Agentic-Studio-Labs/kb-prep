@@ -6,14 +6,14 @@ Runs fast and free on any document.
 
 import re
 
-from models import (
+from .models import (
     Issue,
     ParsedDocument,
     ScoreCard,
     ScoringResult,
     Severity,
 )
-from parser import ANAM_MAX_FILE_SIZE, ANAM_WARN_FILE_SIZE
+from .parser import ANAM_MAX_FILE_SIZE, ANAM_WARN_FILE_SIZE
 
 
 class QualityScorer:

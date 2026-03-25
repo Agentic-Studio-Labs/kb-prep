@@ -5,26 +5,23 @@ Original files are never modified — fixed versions go to an output directory.
 """
 
 import asyncio
-import json
 import os
 import re
-from pathlib import Path
 from typing import Optional
 
 from anthropic import AsyncAnthropic
 
-from config import Config
-from models import (
+from .config import Config
+from .models import (
     FixAction,
     FixReport,
     Issue,
     Paragraph,
     ParsedDocument,
     ScoreCard,
-    Severity,
 )
-from parser import paragraphs_to_markdown
-from prompts import (
+from .parser import paragraphs_to_markdown
+from .prompts import (
     FIX_DANGLING_REFERENCES,
     FIX_GENERIC_HEADING,
     FIX_LONG_PARAGRAPH,
@@ -61,10 +58,7 @@ class DocumentFixer:
         """
         actions: list[FixAction] = []
         # Work on a copy of paragraphs
-        paragraphs = [
-            Paragraph(text=p.text, level=p.level, style=p.style, index=p.index)
-            for p in doc.paragraphs
-        ]
+        paragraphs = [Paragraph(text=p.text, level=p.level, style=p.style, index=p.index) for p in doc.paragraphs]
 
         # Group issues by category
         issues_by_cat: dict[str, list[Issue]] = {}
@@ -101,7 +95,8 @@ class DocumentFixer:
         # Phase 2: Structural changes (paragraph splits) — apply in reverse
         # index order so earlier indices stay valid as we insert
         split_issues = [
-            issue for issue in issues_by_cat.get("paragraph_length", [])
+            issue
+            for issue in issues_by_cat.get("paragraph_length", [])
             if issue.location is not None and "Very long" in issue.message
         ]
         # Process in reverse index order so splits at higher indices don't
@@ -135,7 +130,9 @@ class DocumentFixer:
     # ------------------------------------------------------------------
 
     async def _fix_dangling_reference(
-        self, paragraphs: list[Paragraph], para_idx: int,
+        self,
+        paragraphs: list[Paragraph],
+        para_idx: int,
         _index: dict[int, Paragraph] | None = None,
     ) -> Optional[FixAction]:
         """Rewrite a paragraph to remove dangling references.
@@ -158,9 +155,7 @@ class DocumentFixer:
             # Extract potential entity references from the paragraph
             graph_context = self._get_graph_context_for_paragraph(para.text)
             if graph_context:
-                context_paras.append(
-                    f"\n[Related content from other documents:\n{graph_context}]"
-                )
+                context_paras.append(f"\n[Related content from other documents:\n{graph_context}]")
 
         surrounding = "\n\n".join(context_paras)
 
@@ -183,7 +178,9 @@ class DocumentFixer:
         return None
 
     async def _fix_generic_heading(
-        self, paragraphs: list[Paragraph], para_idx: int,
+        self,
+        paragraphs: list[Paragraph],
+        para_idx: int,
         _index: dict[int, Paragraph] | None = None,
     ) -> Optional[FixAction]:
         """Replace a generic heading with a descriptive one."""
@@ -228,7 +225,9 @@ class DocumentFixer:
         return None
 
     async def _fix_long_paragraph(
-        self, paragraphs: list[Paragraph], para_idx: int,
+        self,
+        paragraphs: list[Paragraph],
+        para_idx: int,
         _index: dict[int, Paragraph] | None = None,
     ) -> Optional[FixAction]:
         """Split an overly long paragraph into focused sub-paragraphs."""
@@ -272,15 +271,13 @@ class DocumentFixer:
             description=f"Split into {len(new_paras)} focused paragraphs",
         )
 
-    async def _fix_acronym(
-        self, paragraphs: list[Paragraph], acronym: str, full_text: str
-    ) -> Optional[FixAction]:
+    async def _fix_acronym(self, paragraphs: list[Paragraph], acronym: str, full_text: str) -> Optional[FixAction]:
         """Define an undefined acronym on its first use."""
         # Get context around first occurrence
         context_start = full_text.find(acronym)
         if context_start == -1:
             return None
-        context = full_text[max(0, context_start - 200):context_start + 200]
+        context = full_text[max(0, context_start - 200) : context_start + 200]
 
         prompt = FIX_UNDEFINED_ACRONYM.format(
             acronym=acronym,
@@ -296,9 +293,7 @@ class DocumentFixer:
             if acronym in para.text:
                 original = para.text
                 # Replace first occurrence with "ACRONYM (Full Form)"
-                para.text = para.text.replace(
-                    acronym, f"{acronym} ({expansion})", 1
-                )
+                para.text = para.text.replace(acronym, f"{acronym} ({expansion})", 1)
                 return FixAction(
                     category="acronym_definitions",
                     original_text=original,
@@ -340,7 +335,8 @@ class DocumentFixer:
 
     @staticmethod
     def _find_paragraph(
-        paragraphs: list[Paragraph], index: int,
+        paragraphs: list[Paragraph],
+        index: int,
         _index: dict[int, Paragraph] | None = None,
     ) -> Optional[Paragraph]:
         if _index is not None:
@@ -375,8 +371,7 @@ class DocumentFixer:
             for item in related:
                 if item["description"] and item["depth"] <= 1:
                     context_parts.append(
-                        f"- {item['entity']} ({item['type']}, from {item['source_file']}): "
-                        f"{item['description']}"
+                        f"- {item['entity']} ({item['type']}, from {item['source_file']}): {item['description']}"
                     )
                     if len(context_parts) >= 5:
                         break
@@ -399,7 +394,9 @@ class DocumentFixer:
                 return response.content[0].text.strip()
             except Exception as e:
                 error_str = str(e).lower()
-                if attempt < max_retries - 1 and ("429" in error_str or "529" in error_str or "rate" in error_str or "overloaded" in error_str):
+                if attempt < max_retries - 1 and (
+                    "429" in error_str or "529" in error_str or "rate" in error_str or "overloaded" in error_str
+                ):
                     wait = 2 ** (attempt + 1)
                     await asyncio.sleep(wait)
                     continue
