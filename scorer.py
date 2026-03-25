@@ -774,7 +774,9 @@ class QualityScorer:
                 Issue(
                     severity=Severity.INFO,
                     category="readability",
-                    message=f"Reading level ({grade:.1f}) slightly outside target range ({target_min:.0f}-{target_max:.0f})",
+                    message=(
+                        f"Reading level ({grade:.1f}) slightly outside target range ({target_min:.0f}-{target_max:.0f})"
+                    ),
                     fix="Adjust vocabulary complexity to match target audience.",
                 )
             )

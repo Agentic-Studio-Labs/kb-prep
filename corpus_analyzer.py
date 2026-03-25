@@ -41,7 +41,12 @@ def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:
 
     max_df = 0.95 if len(docs) > 1 else 1.0
     vectorizer = TfidfVectorizer(stop_words="english", min_df=1, max_df=max_df)
-    tfidf_matrix = vectorizer.fit_transform(doc_texts)
+    try:
+        tfidf_matrix = vectorizer.fit_transform(doc_texts)
+    except ValueError:
+        # All terms pruned (e.g., identical documents) — retry with max_df=1.0
+        vectorizer = TfidfVectorizer(stop_words="english", min_df=1, max_df=1.0)
+        tfidf_matrix = vectorizer.fit_transform(doc_texts)
     feature_names = vectorizer.get_feature_names_out().tolist()
 
     similarity_matrix = cosine_similarity(tfidf_matrix)

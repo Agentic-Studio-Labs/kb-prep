@@ -289,7 +289,7 @@ class FolderRecommender:
         unique_labels = list(set(labels))
         if len(unique_labels) < 2:
             return 0.0, []
-        numeric_labels = [unique_labels.index(l) for l in labels]
+        numeric_labels = [unique_labels.index(lbl) for lbl in labels]
         distance_matrix = 1 - np.clip(similarity_matrix, 0, 1)
         score = float(silhouette_score(distance_matrix, numeric_labels, metric="precomputed"))
         per_doc = silhouette_samples(distance_matrix, numeric_labels, metric="precomputed")
