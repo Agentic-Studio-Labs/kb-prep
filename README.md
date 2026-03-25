@@ -179,6 +179,28 @@ python test-data/setup.py
 python3 -m pytest test-data/ -v
 ```
 
+**Datasets downloaded by `setup.py`:**
+
+| Dataset | Source | Size | What it provides |
+|---------|--------|------|-----------------|
+| SQuAD 1.1 | HuggingFace `squad` | 33 MB | 2,067 Wikipedia paragraphs with questions + answers |
+| BEIR/SciFact | HuggingFace `BeIR/scifact-generated-queries` | ~50 MB | 5,183 scientific documents with queries |
+| BEIR/NFCorpus | HuggingFace `BeIR/nfcorpus-generated-queries` | ~30 MB | 3,633 medical documents with queries |
+| BEIR/TREC-COVID | HuggingFace `BeIR/trec-covid-generated-queries` | ~200 MB | 166,944 COVID research documents |
+| CUAD | HuggingFace `theatticusproject/cuad` | 11 MB | 509 legal contract texts with clause annotations |
+| HotpotQA | HuggingFace `hotpotqa` | ~20 MB | 500 multi-hop questions with supporting facts |
+| 20 Newsgroups | scikit-learn built-in | 14 MB | 18,846 documents across 20 labeled categories |
+| Choi Segmentation | GitHub `koomri/text-segmentation` | <5 MB | 920 documents with known topic boundaries |
+| FB15k-237 | GitHub mirror | 27 MB | 310K knowledge graph triples for PageRank validation |
+| STS Benchmark | HuggingFace `sentence-transformers/stsb` | <1 MB | 1,379 sentence pairs with similarity scores |
+| arXiv Sample | HuggingFace `CShorten/ML-ArXiv-Papers` | ~10 MB | 200 ML paper titles + abstracts |
+| Leipzig ER | `dbs.uni-leipzig.de` | ~20 MB | 4 entity resolution benchmarks (Abt-Buy, Amazon-Google, DBLP-ACM, DBLP-Scholar) |
+| SCORE-Bench | HuggingFace `unstructuredio/SCORE-Bench` | 15 MB | 30 real-world PDFs with expert text annotations |
+| OmniDocBench | HuggingFace `opendatalab/OmniDocBench` | 63 MB | 30 documents with layout/section annotations |
+| Kleister NDA | GitHub `applicaai/kleister-nda` | 3.5 MB | 50 real NDA PDFs with entity annotations |
+
+No API keys needed. All datasets are freely available.
+
 **What each layer tests:**
 
 | Layer | What it validates | Datasets | Example threshold |
