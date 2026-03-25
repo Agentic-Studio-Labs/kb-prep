@@ -1,8 +1,17 @@
 # kb-prep
 
-Prepare, score, and fix documents for RAG.
+Document preparation pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database — so retrieval actually works.
 
-Takes unstructured documents (DOCX, PDF, TXT, Markdown), scores them for RAG readiness, builds a knowledge graph for cross-document understanding, and optionally auto-fixes issues with an LLM. Works with any vector database or RAG pipeline.
+Most RAG failures aren't embedding problems or chunk size problems. They're **document problems**: dangling references that make paragraphs meaningless in isolation, buried content that no query can find, headings that don't match the vocabulary users search with. kb-prep catches these issues before upload, not after your users complain.
+
+**What it does:**
+
+- **Scores** documents across 10 criteria including a novel retrieval-aware metric that tests whether each document can actually be found via search
+- **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
+- **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
+- **Organizes** documents into folders using spectral clustering and graph-based community detection
+
+Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.). Includes optional direct upload to [anam.ai](https://anam.ai).
 
 ## Install
 
@@ -10,7 +19,7 @@ Takes unstructured documents (DOCX, PDF, TXT, Markdown), scores them for RAG rea
 pip install -r requirements.txt
 ```
 
-Requires Python 3.10+.
+Python 3.10+ required.
 
 ## Quick Start
 
