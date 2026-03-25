@@ -60,3 +60,4 @@ select = ["E", "F", "W", "I"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+collect_ignore_glob = ["test-data/corpora/*"]

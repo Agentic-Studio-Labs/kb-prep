@@ -330,6 +330,9 @@ def engine():
 # ---------------------------------------------------------------------------
 
 
+collect_ignore_glob = ["corpora/*"]
+
+
 def pytest_configure(config):
     for marker in ["layer1", "layer2", "layer3", "layer4", "layer5", "cross_layer", "slow"]:
         config.addinivalue_line("markers", f"{marker}: {marker} tests")
