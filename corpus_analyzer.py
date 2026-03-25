@@ -226,6 +226,42 @@ def _compute_topic_boundaries(paragraphs: list[str], block_size: int = 3) -> lis
 # ---------------------------------------------------------------------------
 
 
+def rocchio_expand_query(
+    query: str,
+    corpus_texts: list[str],
+    top_k: int = 3,
+    n_expand: int = 5,
+    alpha: float = 1.0,
+    beta: float = 0.75,
+    gamma: float = 0.15,
+) -> str:
+    """Expand a query using Rocchio pseudo-relevance feedback."""
+    vectorizer = TfidfVectorizer(stop_words="english")
+    all_texts = corpus_texts + [query]
+    try:
+        matrix = vectorizer.fit_transform(all_texts)
+    except ValueError:
+        return query
+    query_vec = matrix[-1]
+    doc_matrix = matrix[:-1]
+    sims = cosine_similarity(query_vec, doc_matrix)[0]
+    top_indices = sims.argsort()[-top_k:][::-1]
+    relevant = doc_matrix[top_indices].mean(axis=0)
+    corpus_mean = doc_matrix.mean(axis=0)
+    expanded_vec = alpha * query_vec.toarray() + beta * np.array(relevant) - gamma * np.array(corpus_mean)
+    feature_names = vectorizer.get_feature_names_out()
+    query_terms = set(re.findall(r"\w+", query.lower()))
+    expanded_flat = np.array(expanded_vec).flatten()
+    term_scores = [
+        (feature_names[i], expanded_flat[i])
+        for i in range(len(feature_names))
+        if feature_names[i] not in query_terms and expanded_flat[i] > 0
+    ]
+    term_scores.sort(key=lambda x: -x[1])
+    expansion_terms = [t for t, _ in term_scores[:n_expand]]
+    return query + " " + " ".join(expansion_terms)
+
+
 def _bm25_score(query: str, docs: list[str], k1: float = 1.5, b: float = 0.75) -> list[float]:
     """Compute BM25 scores for a query against all docs."""
     query_terms = re.findall(r"\w+", query.lower())

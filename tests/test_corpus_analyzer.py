@@ -265,3 +265,20 @@ def test_info_density_computed():
     metrics = ca.doc_metrics.get("test.md")
     assert metrics is not None
     assert isinstance(metrics.info_density, list)
+
+
+# ---------------------------------------------------------------------------
+# Task 14: BM25+ with Rocchio Query Expansion
+# ---------------------------------------------------------------------------
+
+
+def test_rocchio_expands_query():
+    from corpus_analyzer import rocchio_expand_query
+
+    corpus = [
+        "Adding fractions with common denominators and simplifying results",
+        "A budget tracks household income expenses and savings goals",
+        "Insurance protects against financial risk and unexpected loss",
+    ]
+    expanded = rocchio_expand_query("money management", corpus, top_k=1, n_expand=3)
+    assert len(expanded.split()) > len("money management".split())
