@@ -16,10 +16,16 @@ Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone,
 ## Install
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Python 3.10+ required.
+Python 3.10+ required. Optionally create a `.env` file for API keys (loaded automatically):
+
+```bash
+echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env
+```
 
 ## Quick Start
 
