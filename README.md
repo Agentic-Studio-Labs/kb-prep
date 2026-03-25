@@ -145,15 +145,64 @@ Product - User Research
 Onboarding
 ```
 
-## RAG Evaluation
+## Testing
 
-Evaluate document quality by testing retrieval + answer generation against questions with known ground truth.
+Two test suites: **unit tests** (fast, no downloads) and an **eval suite** (validates against published benchmarks and real documents).
+
+### Unit tests
 
 ```bash
-python eval/run_eval.py rag-files-*/ --llm-key $ANTHROPIC_API_KEY
+source .venv/bin/activate
+python3 -m pytest tests/ -v          # 58 tests, ~3 seconds
 ```
 
-**Metrics:** Retrieval Hit Rate, Context Precision, Faithfulness, Answer Correctness.
+Tests the scoring pipeline, graph builder, corpus analyzer, parser, and CLI report generation using synthetic documents and mocked LLM calls. No API keys or downloads needed.
+
+### Eval suite
+
+The eval suite validates every algorithm in the analysis engine against real-world datasets. It tests the *components* (entropy, coherence, entity resolution, clustering, chunking, retrieval) against published benchmarks — not the LLM-dependent features (analyze, fix, upload).
+
+```bash
+# Install eval dependencies (one-time)
+pip install -r test-data/requirements-test.txt
+
+# Download datasets (~440MB, one-time, gitignored)
+python test-data/setup.py
+
+# Run all 63 eval tests (~65 seconds)
+python3 -m pytest test-data/ -v
+```
+
+**What each layer tests:**
+
+| Layer | What it validates | Datasets | Example threshold |
+|-------|------------------|----------|-------------------|
+| Layer 1 — Scoring | Entropy distinguishes formulaic vs diverse text; coherence detects mismatched headings (Wilcoxon p<0.01); retrieval-aware scores are non-degenerate | SQuAD, CUAD, BEIR/SciFact, 20 Newsgroups | Contracts entropy < newsgroups entropy |
+| Layer 2 — Graph | Entity resolution F1 against published ER benchmarks; spectral clustering NMI/ARI on labeled categories; PageRank correlates with in-degree | Leipzig ER, FB15k-237, 20 Newsgroups | DBLP-ACM F1 >= 0.80 |
+| Layer 3 — Chunking | TextTiling Pk on annotated segmentation corpus; info-dense overlap selects higher TF-IDF sentences | Choi segmentation | Pk <= 0.44 |
+| Layer 4 — Retrieval | BM25 relevance ordering; Rocchio expansion adds domain terms; silhouette validates clustering quality | SQuAD, 20 Newsgroups | True labels > random labels |
+| Layer 5 — End-to-end | Full round-trip: write .docx/.md files → parse → score → chunk → BM25 retrieve → measure hit rate. Also: parse real PDFs and compare against ground truth annotations | SQuAD (synthetic files), SCORE-Bench (real PDFs), Kleister NDA (real PDFs), OmniDocBench | Parse fidelity F1 >= 0.60 |
+| Cross-layer | Edge cases (empty/unicode/stopwords), TF-IDF consistency across layers, performance benchmarks (<30s for 20K docs) | Synthetic, 20 Newsgroups | No crashes, no NaN |
+
+**Run a single layer:**
+
+```bash
+python3 -m pytest test-data/ -m layer1 -v
+python3 -m pytest test-data/ -m layer5 -v
+python3 -m pytest test-data/ -m cross_layer -v
+```
+
+**Clean up downloaded data:**
+
+```bash
+./test-data/cleanup.sh
+```
+
+### What the eval suite does NOT test
+
+- **LLM features** (analyze, fix) — these call the Claude API, which costs money and is non-deterministic. The unit tests mock these calls.
+- **Upload to anam.ai** — requires an API key and live service.
+- **Knowledge graph quality** — the graph is built from LLM-extracted entities. The eval tests validate the graph *algorithms* (entity resolution, clustering, PageRank) but not the quality of the LLM extraction.
 
 ## Supported File Types
 
@@ -181,17 +230,29 @@ kb-prep/
 │   ├── prompts.py               # LLM prompt templates
 │   ├── config.py                # Settings and API key management
 │   └── models.py                # All dataclasses
-├── tests/
-│   ├── test_corpus_analyzer.py  # TF-IDF, entropy, coherence, retrieval tests
-│   ├── test_scoring.py          # Scoring criteria validation
-│   ├── test_graph.py            # Entity resolution, clustering, PageRank
-│   ├── test_integration.py      # End-to-end pipeline tests
-│   ├── test_async_analyzer.py   # Async LLM analysis tests
-│   ├── test_async_fixer.py      # Async fixer tests
-│   ├── test_config.py           # Configuration tests
-│   └── test_report.py           # Report generation tests
+├── tests/                       # Unit tests (58 tests, no downloads)
+│   ├── test_corpus_analyzer.py
+│   ├── test_scoring.py
+│   ├── test_graph.py
+│   ├── test_integration.py
+│   ├── test_async_analyzer.py
+│   ├── test_async_fixer.py
+│   ├── test_config.py
+│   └── test_report.py
+├── test-data/                   # Eval suite (63 tests, needs setup.py)
+│   ├── setup.py                 # Downloads ~440MB of benchmark datasets
+│   ├── cleanup.sh               # Removes downloaded data
+│   ├── conftest.py              # Fixtures + engine adapter
+│   ├── requirements-test.txt
+│   ├── layer1_information_theoretic/
+│   ├── layer2_spectral_graph/
+│   ├── layer3_semantic_chunking/
+│   ├── layer4_retrieval/
+│   ├── layer5_rag_quality/      # Includes real PDF tests
+│   ├── cross_layer/
+│   └── corpora/                 # Downloaded data (gitignored)
 ├── eval/
-│   ├── run_eval.py              # RAG evaluation (BM25 + vector search)
+│   ├── run_eval.py
 │   └── test-questions.json
 ├── pyproject.toml
 ├── README.md
