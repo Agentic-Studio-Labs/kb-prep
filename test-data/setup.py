@@ -727,10 +727,25 @@ if __name__ == "__main__":
             manifest[label] = {"status": "failed", "error": str(e)}
         _save_manifest(manifest)
 
+    # Prune stale manifest entries from previous runs
+    valid_keys = set()
+    for label, fn in ALL_SETUP_FNS:
+        # Each setup function uses its own key (fn.__doc__ names it, or we check the manifest)
+        valid_keys.add(label)
+    # Also keep keys written by the functions themselves (e.g. "beir_scifact")
+    fn_keys = {k for k in manifest if any(k.startswith(label.split()[0].lower()) for label, _ in ALL_SETUP_FNS)}
+    valid_keys.update(fn_keys)
+    stale = [k for k in manifest if k not in valid_keys]
+    for k in stale:
+        del manifest[k]
+    if stale:
+        _save_manifest(manifest)
+
     # Summary
     print(f"\nManifest written to {MANIFEST_PATH}")
     ready = sum(1 for v in manifest.values() if v.get("status") == "ready")
-    print(f"Ready: {ready}/{len(ALL_SETUP_FNS)} datasets\n")
+    total = len(manifest)
+    print(f"Ready: {ready}/{total} datasets\n")
 
     # File breakdown
     counts: dict[str, int] = {}
