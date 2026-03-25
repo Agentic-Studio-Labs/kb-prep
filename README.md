@@ -17,7 +17,7 @@ Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone,
 
 Most document prep tools check structural quality — paragraph length, heading hierarchy, readability. These are useful but they're proxies. A document can pass every structural check and still be invisible to search if its vocabulary is too generic or too similar to other documents in the corpus.
 
-The retrieval-aware scorer tests this directly: it generates synthetic queries from each document's most characteristic terms, runs them against the full corpus, and measures how often the document appears in the results. A document scoring 90% is easy to find. A document scoring 30% will frustrate your users — and you'll know before you upload it.
+The retrieval-aware scorer tests this directly: it generates synthetic queries from each document's highest TF-IDF terms, runs them against the full corpus, and measures how often the document appears in the results. A document scoring 90% is easy to find. A document scoring 30% will frustrate your users — and you'll know before you upload it.
 
 ## Install
 
