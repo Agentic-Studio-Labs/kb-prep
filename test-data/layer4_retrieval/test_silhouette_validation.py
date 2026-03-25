@@ -12,6 +12,7 @@ def test_task11_true_better_than_random(engine, newsgroups_tfidf):
     n = min(1000, newsgroups_tfidf["matrix"].shape[0])
     sim = cosine_similarity(newsgroups_tfidf["matrix"][:n])
     dist = 1 - np.clip(sim, 0, 1)
+    np.fill_diagonal(dist, 0)
     true_labels = newsgroups_tfidf["labels"][:n]
 
     np.random.seed(42)
@@ -28,6 +29,7 @@ def test_task11_silhouette_valid_range(engine, newsgroups_tfidf):
     n = min(500, newsgroups_tfidf["matrix"].shape[0])
     sim = cosine_similarity(newsgroups_tfidf["matrix"][:n])
     dist = 1 - np.clip(sim, 0, 1)
+    np.fill_diagonal(dist, 0)
     labels = newsgroups_tfidf["labels"][:n]
 
     sil = engine.silhouette_score(dist, labels)

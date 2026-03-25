@@ -16,6 +16,15 @@ F1_AMAZON_GOOGLE = 0.30
 pytestmark = [pytest.mark.layer2, pytest.mark.timeout(120)]
 
 
+def _normalize_id_key(fieldnames):
+    """Return the ID field name, handling BOM and quoted variants."""
+    for name in fieldnames or []:
+        clean = name.strip().lstrip("\ufeff").strip('"').lower()
+        if clean == "id":
+            return name
+    return None
+
+
 def _load_leipzig_dataset(ds_dir: Path):
     """Load a Leipzig ER dataset: find source files and mapping."""
     csv_files = sorted(ds_dir.rglob("*.csv"))
@@ -35,48 +44,81 @@ def _load_leipzig_dataset(ds_dir: Path):
     if not mapping_file or len(source_files) < 2:
         return None, None, None
 
-    # Load sources
+    # Load sources — handle BOM-prefixed ID column names
     def load_source(path):
         records = {}
         try:
             with open(path, encoding="utf-8", errors="replace") as f:
                 reader = csv.DictReader(f)
+                id_key = _normalize_id_key(reader.fieldnames)
                 for row in reader:
-                    rid = row.get("id", row.get("ID", ""))
+                    rid = row.get(id_key, "") if id_key else ""
                     # Concatenate all text fields
-                    text = " ".join(str(v) for k, v in row.items() if k.lower() != "id")
-                    records[rid] = text
+                    text = " ".join(str(v) for k, v in row.items() if k != id_key)
+                    records[str(rid).strip()] = text
         except Exception:
             pass
         return records
 
-    source_a = load_source(source_files[0])
-    source_b = load_source(source_files[1])
-
-    # Load mapping
+    # Load mapping using DictReader to skip the header row and read column names
     matches = set()
+    col_a = col_b = None
     try:
         with open(mapping_file, encoding="utf-8", errors="replace") as f:
-            reader = csv.reader(f)
+            reader = csv.DictReader(f)
+            cols = reader.fieldnames or []
+            if len(cols) >= 2:
+                col_a, col_b = cols[0], cols[1]
             for row in reader:
-                if len(row) >= 2:
-                    matches.add((row[0].strip(), row[1].strip()))
+                if col_a and col_b:
+                    matches.add((row[col_a].strip(), row[col_b].strip()))
     except Exception:
         pass
+
+    # Build id→source mapping to match source files to the right mapping column
+    sources = {f.stem: load_source(f) for f in source_files}
+
+    # Identify which source file corresponds to col_a vs col_b by checking overlap
+    file_a, file_b = source_files[0], source_files[1]
+    sample_a_keys = list(sources[file_a.stem].keys())[:20]
+    col_a_ids = {m[0] for m in matches}
+    overlap_a = sum(1 for k in sample_a_keys if k in col_a_ids)
+    overlap_b = sum(1 for k in sample_a_keys if k in {m[1] for m in matches})
+
+    if overlap_b > overlap_a:
+        # file_a IDs match col_b in the mapping — swap so (source_a, source_b) = (col_a, col_b)
+        source_a = sources[file_b.stem]
+        source_b = sources[file_a.stem]
+    else:
+        source_a = sources[file_a.stem]
+        source_b = sources[file_b.stem]
 
     return source_a, source_b, matches
 
 
 def _evaluate_er(engine, source_a, source_b, true_matches):
     """Sweep thresholds and find best F1."""
-    # Build pairs (sample if too many)
+    # Build a balanced sample: select a_ids that have at least one true match,
+    # then include the corresponding true-match b_ids plus some non-matching b_ids.
+    # A naive prefix-slice can miss all positives when source files aren't
+    # sorted consistently with the mapping (e.g. DBLP-Scholar).
+    a_id_to_matches = {}
+    for a_id, b_id in true_matches:
+        if a_id in source_a and b_id in source_b:
+            a_id_to_matches.setdefault(a_id, []).append(b_id)
+
+    sampled_a = list(a_id_to_matches.keys())[:100]
+    # Collect the true-match b_ids for those a_ids
+    positive_b_ids = {b for a in sampled_a for b in a_id_to_matches[a]}
+    # Add some non-matching b_ids for negatives (up to 3× positives)
+    all_b_ids = list(source_b.keys())
+    negative_b_ids = [b for b in all_b_ids if b not in positive_b_ids][: len(positive_b_ids) * 3]
+    candidate_b_ids = list(positive_b_ids) + negative_b_ids
+
     pairs = []
     labels = []
-    a_ids = list(source_a.keys())[:200]
-    b_ids = list(source_b.keys())[:200]
-
-    for a_id in a_ids:
-        for b_id in b_ids[:50]:  # Limit cross-product
+    for a_id in sampled_a:
+        for b_id in candidate_b_ids[:50]:  # Limit cross-product per a_id
             pairs.append((source_a[a_id], source_b[b_id]))
             labels.append(1 if (a_id, b_id) in true_matches else 0)
 

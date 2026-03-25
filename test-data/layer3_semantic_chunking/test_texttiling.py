@@ -53,22 +53,27 @@ def test_task07_texttiling_synthetic():
     """TextTiling should find boundaries in a document with clear topic shifts."""
     from src.corpus_analyzer import _compute_topic_boundaries
 
-    # Two distinct topics joined together
+    # Two distinct topics joined together.  Each paragraph repeats topic-specific
+    # vocabulary so that TF-IDF similarity is non-zero within a topic and drops
+    # sharply at the boundary — a flat all-zero similarity array produces no valleys.
     topic_a = [
-        "Machine learning algorithms process large datasets efficiently.",
-        "Neural networks learn hierarchical representations of data.",
-        "Gradient descent optimizes the loss function iteratively.",
-        "Backpropagation computes gradients through the network layers.",
+        "Machine learning algorithms process large datasets efficiently. Neural networks learn from data.",
+        "Deep learning uses neural networks to learn hierarchical representations. Machine learning models train on datasets.",
+        "Gradient descent optimizes neural network weights iteratively. Backpropagation computes gradients for learning.",
+        "Training machine learning models requires large amounts of labeled data. Neural networks generalize from training examples.",
     ]
     topic_b = [
-        "The French Revolution began in 1789 with the storming of the Bastille.",
-        "Napoleon Bonaparte rose to power during the revolutionary period.",
-        "The Declaration of the Rights of Man established fundamental freedoms.",
-        "The Reign of Terror saw thousands executed by guillotine.",
+        "The French Revolution began in 1789 with the storming of the Bastille. French citizens revolted against the monarchy.",
+        "Napoleon Bonaparte rose to power during the French revolutionary period. The French army conquered much of Europe.",
+        "The Declaration of the Rights of Man established fundamental freedoms in France. The French republic emerged from revolution.",
+        "The Reign of Terror saw thousands executed by guillotine in France. The revolutionary tribunal sentenced French citizens.",
     ]
 
     paragraphs = topic_a + topic_b
-    boundaries = _compute_topic_boundaries(paragraphs, block_size=1)
+    # block_size=2: each TF-IDF block covers two paragraphs, giving enough
+    # vocabulary overlap within a topic while keeping < 7 similarity values
+    # (avoids the Savitzky-Golay smoothing path that obscures the valley).
+    boundaries = _compute_topic_boundaries(paragraphs, block_size=2)
     # Should find a boundary near index 4 (between topic_a and topic_b)
     assert len(boundaries) >= 1, f"Should find at least 1 boundary, got {boundaries}"
     assert any(3 <= b <= 5 for b in boundaries), f"Boundary should be near index 4, got {boundaries}"

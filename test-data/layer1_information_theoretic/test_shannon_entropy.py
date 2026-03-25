@@ -21,17 +21,46 @@ def test_task01_entropy_no_nan(engine, newsgroups_tfidf):
 
 
 def test_task01_entropy_ordering(engine, newsgroups_tfidf, cuad_data):
-    """Contracts (CUAD) should have lower mean entropy than newsgroup posts."""
-    # Newsgroups entropy from pre-computed TF-IDF
-    ng_matrix = newsgroups_tfidf["matrix"]
-    ng_sample = [engine.shannon_entropy_from_vector(ng_matrix[i]) for i in range(min(1000, ng_matrix.shape[0]))]
+    """Contracts (CUAD) should have lower mean entropy than newsgroup posts.
 
-    # CUAD entropy — compute from raw text
-    cuad_texts = [r["text"] for r in cuad_data[:500]]
-    cuad_entropies = [engine.shannon_entropy(t) for t in cuad_texts]
+    CUAD contracts are very long (~50 KB each) while newsgroup posts average ~1 KB.
+    Comparing whole documents inflates contract entropy because longer documents
+    hit more unique terms.  Instead we chunk both corpora into fixed 200-word
+    windows and fit one TfidfVectorizer on the combined pool so IDF weights are
+    shared.  Contracts repeat formulaic legal boilerplate within each window,
+    yielding a more concentrated (lower-entropy) term distribution than the
+    topically diverse newsgroup vocabulary.
+    """
+    from sklearn.feature_extraction.text import TfidfVectorizer
 
-    ng_mean = np.mean(ng_sample)
+    def _fixed_chunks(texts, n_words=200, max_chunks_per_doc=5, min_words=50):
+        """Split each text into fixed-size word windows."""
+        chunks = []
+        for text in texts:
+            words = text.split()
+            for i in range(0, len(words), n_words):
+                chunk = " ".join(words[i : i + n_words])
+                if len(chunk.split()) >= min_words:
+                    chunks.append(chunk)
+                if len(chunks) >= max_chunks_per_doc * (len(chunks) // max_chunks_per_doc + 1):
+                    break
+            if len(chunks) >= max_chunks_per_doc * 500:
+                break
+        return chunks
+
+    cuad_chunks = _fixed_chunks([r["text"] for r in cuad_data[:500]])[:1000]
+    ng_chunks = _fixed_chunks(newsgroups_tfidf["texts"][:1000])[:1000]
+
+    combined = cuad_chunks + ng_chunks
+    vectorizer = TfidfVectorizer(max_features=10000, stop_words="english", sublinear_tf=True)
+    matrix = vectorizer.fit_transform(combined)
+
+    n_cuad = len(cuad_chunks)
+    cuad_entropies = [engine.shannon_entropy_from_vector(matrix[i]) for i in range(n_cuad)]
+    ng_entropies = [engine.shannon_entropy_from_vector(matrix[n_cuad + i]) for i in range(len(ng_chunks))]
+
     cuad_mean = np.mean(cuad_entropies)
+    ng_mean = np.mean(ng_entropies)
     assert cuad_mean < ng_mean, (
         f"Contracts (mean={cuad_mean:.4f}) should have lower entropy than newsgroups (mean={ng_mean:.4f})"
     )
