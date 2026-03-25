@@ -39,7 +39,8 @@ def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:
     doc_labels = [doc.metadata.filename for doc in docs]
     doc_texts = [doc.full_text for doc in docs]
 
-    vectorizer = TfidfVectorizer(stop_words="english", min_df=1, max_df=0.95)
+    max_df = 0.95 if len(docs) > 1 else 1.0
+    vectorizer = TfidfVectorizer(stop_words="english", min_df=1, max_df=max_df)
     tfidf_matrix = vectorizer.fit_transform(doc_texts)
     feature_names = vectorizer.get_feature_names_out().tolist()
 
@@ -67,11 +68,13 @@ def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:
             all_doc_labels=doc_labels,
         )
 
+        info_density = _compute_info_density(doc)
+
         doc_metrics[doc_labels[i]] = DocMetrics(
             entropy=entropy,
             coherence=coherence,
             readability_grade=readability_grade,
-            info_density=[],
+            info_density=info_density,
             topic_boundaries=topic_boundaries,
             self_retrieval_score=self_retrieval,
         )
@@ -249,6 +252,59 @@ def _bm25_score(query: str, docs: list[str], k1: float = 1.5, b: float = 0.75) -
             score += idf * numerator / denominator
         scores.append(score)
     return scores
+
+
+def select_overlap_sentences(sentences: list[str], budget: int = 100) -> list[str]:
+    """Pick the most informative sentences for chunk overlap.
+    Scores sentences by TF-IDF vector L2 norm (information density).
+    Returns highest-scoring sentences within word budget, in original order.
+    """
+    if not sentences:
+        return []
+    vec = TfidfVectorizer(stop_words="english")
+    try:
+        matrix = vec.fit_transform(sentences)
+    except ValueError:
+        return sentences[:1]
+    scores = np.array(matrix.power(2).sum(axis=1)).flatten()
+    ranked = sorted(enumerate(scores), key=lambda x: -x[1])
+    selected_indices = []
+    words_used = 0
+    for idx, score in ranked:
+        wc = len(sentences[idx].split())
+        if words_used + wc > budget and selected_indices:
+            break
+        selected_indices.append(idx)
+        words_used += wc
+    return [sentences[i] for i in sorted(selected_indices)]
+
+
+def _compute_info_density(doc: ParsedDocument) -> list[float]:
+    """Compute information density (TF-IDF magnitude) per section."""
+    sections = []
+    current = []
+    for para in doc.paragraphs:
+        if para.is_heading and current:
+            sections.append(" ".join(current))
+            current = []
+        elif not para.is_heading:
+            current.append(para.text)
+    if current:
+        sections.append(" ".join(current))
+    if not sections:
+        return []
+    vec = TfidfVectorizer(stop_words="english")
+    try:
+        matrix = vec.fit_transform(sections)
+    except ValueError:
+        return [0.0] * len(sections)
+    densities = []
+    for i in range(matrix.shape[0]):
+        row = matrix[i].toarray().flatten()
+        nonzero = row[row > 0]
+        density = float(np.mean(nonzero)) if len(nonzero) > 0 else 0.0
+        densities.append(density)
+    return densities
 
 
 def _compute_self_retrieval_score(

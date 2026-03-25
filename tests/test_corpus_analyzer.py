@@ -233,3 +233,35 @@ def test_retrieval_aware_score_distinct_docs():
     for label in ca.doc_labels:
         score = ca.doc_metrics[label].self_retrieval_score
         assert score > 0.3, f"{label} self-retrieval too low: {score}"
+
+
+# ---------------------------------------------------------------------------
+# Task 12: Information-Dense Overlap + Info Density
+# ---------------------------------------------------------------------------
+
+
+def test_select_overlap_sentences_prefers_informative():
+    from corpus_analyzer import select_overlap_sentences
+
+    sentences = [
+        "SMART goals have five specific components for success.",
+        "Review answers.",
+        "The teacher should provide additional materials.",
+        "Compound interest calculations require understanding of exponential growth.",
+    ]
+    selected = select_overlap_sentences(sentences, budget=30)
+    selected_text = " ".join(selected)
+    assert "Review answers" not in selected_text or "SMART" in selected_text
+
+
+def test_info_density_computed():
+    from corpus_analyzer import build_corpus_analysis
+
+    doc = _make_doc(
+        "test.md",
+        "First section about fractions and denominators.\n\nSecond section about insurance and risk management.",
+    )
+    ca = build_corpus_analysis([doc])
+    metrics = ca.doc_metrics.get("test.md")
+    assert metrics is not None
+    assert isinstance(metrics.info_density, list)
