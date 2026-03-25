@@ -6,14 +6,15 @@ from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
-
 # ---------------------------------------------------------------------------
 # Document parsing models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Paragraph:
     """A single paragraph or heading extracted from a document."""
+
     text: str
     level: int  # 0 = normal paragraph, 1-6 = heading level
     style: str  # Original style name ('Normal', 'Heading 1', etc.)
@@ -31,6 +32,7 @@ class Paragraph:
 @dataclass
 class HeadingNode:
     """A node in the heading hierarchy tree."""
+
     text: str
     level: int
     position: int  # Paragraph index
@@ -40,6 +42,7 @@ class HeadingNode:
 @dataclass
 class DocumentMetadata:
     """Basic metadata extracted from the file itself."""
+
     file_path: str
     file_type: str  # 'docx', 'pdf', 'txt', or 'md'
     file_size_bytes: int = 0
@@ -59,6 +62,7 @@ class DocumentMetadata:
 @dataclass
 class ParsedDocument:
     """The result of parsing a DOCX or PDF file."""
+
     metadata: DocumentMetadata
     paragraphs: list[Paragraph] = field(default_factory=list)
     heading_tree: list[HeadingNode] = field(default_factory=list)
@@ -82,6 +86,7 @@ class ParsedDocument:
 # Scoring models
 # ---------------------------------------------------------------------------
 
+
 class Severity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
@@ -98,6 +103,7 @@ class Readiness(str, Enum):
 @dataclass
 class Issue:
     """A single quality issue found during scoring."""
+
     severity: Severity
     category: str
     message: str
@@ -109,6 +115,7 @@ class Issue:
 @dataclass
 class ScoringResult:
     """Score for one criterion category."""
+
     category: str
     label: str  # Human-readable name
     score: float  # 0-100
@@ -123,6 +130,7 @@ class ScoringResult:
 @dataclass
 class ScoreCard:
     """Complete scoring report for a single document."""
+
     file_path: str
     results: list[ScoringResult] = field(default_factory=list)
     overall_score: float = 0.0
@@ -165,9 +173,11 @@ class ScoreCard:
 # Content analysis models (LLM-powered)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ContentAnalysis:
     """LLM-extracted understanding of document content."""
+
     domain: str = ""  # e.g. "education", "legal", "technical"
     topics: list[str] = field(default_factory=list)
     audience: str = ""
@@ -184,9 +194,11 @@ class ContentAnalysis:
 # Knowledge graph models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Entity:
     """A named concept, topic, standard, or resource extracted from a document."""
+
     name: str
     entity_type: str  # "topic", "standard", "skill", "lesson", "assessment", "resource", "person", "concept"
     source_file: str = ""  # Which document this was extracted from
@@ -201,6 +213,7 @@ class Entity:
 @dataclass
 class Relationship:
     """A directed edge between two entities."""
+
     source: str  # Entity name
     target: str  # Entity name
     rel_type: str  # "prerequisite", "covers_standard", "assesses", "part_of", "references", "related_to"
@@ -211,6 +224,7 @@ class Relationship:
 @dataclass
 class GraphSummary:
     """Summary statistics for a knowledge graph."""
+
     total_entities: int = 0
     total_relationships: int = 0
     entity_types: dict[str, int] = field(default_factory=dict)  # type → count
@@ -224,9 +238,11 @@ class GraphSummary:
 # Folder recommendation models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FolderNode:
     """A node in the recommended folder hierarchy."""
+
     name: str
     description: str
     children: list["FolderNode"] = field(default_factory=list)
@@ -240,6 +256,7 @@ class FolderNode:
 @dataclass
 class FolderRecommendation:
     """Complete folder structure recommendation."""
+
     root: FolderNode
     file_assignments: dict[str, str] = field(default_factory=dict)  # file_path → folder_name
 
@@ -247,6 +264,7 @@ class FolderRecommendation:
 # ---------------------------------------------------------------------------
 # Upload models
 # ---------------------------------------------------------------------------
+
 
 class DocumentStatus(str, Enum):
     PROCESSING = "PROCESSING"
@@ -257,6 +275,7 @@ class DocumentStatus(str, Enum):
 @dataclass
 class UploadResult:
     """Result of uploading a single document."""
+
     file_path: str
     document_id: str
     folder_id: str
@@ -268,6 +287,7 @@ class UploadResult:
 @dataclass
 class UploadReport:
     """Summary of all uploads in a batch."""
+
     results: list[UploadResult] = field(default_factory=list)
     folders_created: list[str] = field(default_factory=list)
 
@@ -284,9 +304,11 @@ class UploadReport:
 # Fix models
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FixAction:
     """A single fix applied to a document."""
+
     category: str
     original_text: str
     fixed_text: str
@@ -297,8 +319,37 @@ class FixAction:
 @dataclass
 class FixReport:
     """Summary of all fixes applied to a document."""
+
     source_path: str
     output_path: str
     actions: list[FixAction] = field(default_factory=list)
     new_files: list[str] = field(default_factory=list)  # If file was split
     new_filename: Optional[str] = None  # If renamed
+
+
+# ---------------------------------------------------------------------------
+# Corpus analysis models
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class DocMetrics:
+    """Per-document metrics computed by the corpus analyzer."""
+
+    entropy: float  # Shannon entropy [0,1] normalized
+    coherence: float  # avg heading-content TF-IDF similarity [0,1]
+    readability_grade: float  # Flesch-Kincaid grade level
+    info_density: list[float] = field(default_factory=list)  # bits-per-word per section
+    topic_boundaries: list[int] = field(default_factory=list)  # TextTiling paragraph indices
+    self_retrieval_score: float = 0.0  # retrieval-aware score [0,1]
+
+
+@dataclass
+class CorpusAnalysis:
+    """Corpus-wide analysis results from TF-IDF computation."""
+
+    tfidf_matrix: object  # scipy.sparse.csr_matrix (n_docs, n_terms)
+    feature_names: list[str]  # term vocabulary
+    doc_labels: list[str]  # filenames in matrix order
+    similarity_matrix: object  # np.ndarray (n_docs, n_docs)
+    doc_metrics: dict[str, DocMetrics] = field(default_factory=dict)
