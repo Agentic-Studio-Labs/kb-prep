@@ -6,12 +6,18 @@ Most RAG failures aren't embedding problems or chunk size problems. They're **do
 
 **What it does:**
 
-- **Scores** documents across 10 criteria including a novel retrieval-aware metric that tests whether each document can actually be found via search
+- **Scores** documents across 10 criteria including a retrieval-aware metric that simulates search queries against your corpus to test whether each document can actually be found
 - **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
 - **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
 - **Organizes** documents into folders using spectral clustering and graph-based community detection
 
 Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.). Includes optional direct upload to [anam.ai](https://anam.ai).
+
+### Why retrieval-aware scoring?
+
+Most document prep tools check structural quality — paragraph length, heading hierarchy, readability. These are useful but they're proxies. A document can pass every structural check and still be invisible to search if its vocabulary is too generic or too similar to other documents in the corpus.
+
+The retrieval-aware scorer tests this directly: it generates synthetic queries from each document's most characteristic terms, runs them against the full corpus, and measures how often the document appears in the results. A document scoring 90% is easy to find. A document scoring 30% will frustrate your users — and you'll know before you upload it.
 
 ## Install
 
