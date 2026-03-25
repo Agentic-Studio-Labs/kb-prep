@@ -339,6 +339,30 @@ class KnowledgeGraph:
             cross_document_edges=cross_doc,
         )
 
+    def get_bipartite_doc_similarity(self) -> Optional[np.ndarray]:
+        """Project document-entity bipartite graph to document-document similarity."""
+        files = sorted(self._file_entities.keys())
+        if len(files) < 2:
+            return None
+        entity_keys = list(self._entities.keys())
+        if not entity_keys:
+            return None
+        n_files = len(files)
+        n_entities = len(entity_keys)
+        adj = np.zeros((n_files, n_entities))
+        for i, f in enumerate(files):
+            for j, ek in enumerate(entity_keys):
+                if ek in self._file_entities.get(f, set()):
+                    adj[i, j] = 1.0
+        doc_counts = adj.sum(axis=0)
+        idf = np.log((n_files + 1) / (doc_counts + 1))
+        weighted_adj = adj * idf
+        sim = weighted_adj @ weighted_adj.T
+        diag = np.sqrt(np.diag(sim))
+        diag[diag == 0] = 1.0
+        sim = sim / np.outer(diag, diag)
+        return sim
+
     @property
     def is_empty(self) -> bool:
         return self.graph.number_of_nodes() == 0
@@ -395,3 +419,8 @@ def spectral_cluster(similarity_matrix: np.ndarray, min_clusters: int = 2) -> li
     for idx, label in enumerate(labels):
         clusters[label].append(idx)
     return sorted(clusters.values(), key=len, reverse=True)
+
+
+def blend_similarity(tfidf_sim: np.ndarray, entity_sim: np.ndarray, alpha: float = 0.7) -> np.ndarray:
+    """Blend TF-IDF and entity-based similarity matrices."""
+    return alpha * tfidf_sim + (1 - alpha) * entity_sim

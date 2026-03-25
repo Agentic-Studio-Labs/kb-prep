@@ -272,6 +272,32 @@ class TestSpectralClustering:
 # ------------------------------------------------------------------
 
 
+def test_bipartite_similarity():
+    graph = KnowledgeGraph()
+    graph._add_entity(Entity(name="Budgeting", entity_type="concept", source_file="a.md"), "a.md")
+    graph._add_entity(Entity(name="Budgeting", entity_type="concept", source_file="b.md"), "b.md")
+    graph._add_entity(Entity(name="Insurance", entity_type="concept", source_file="c.md"), "c.md")
+    sim = graph.get_bipartite_doc_similarity()
+    assert sim is not None
+    files = sorted(graph._file_entities.keys())
+    a_idx = files.index("a.md")
+    b_idx = files.index("b.md")
+    c_idx = files.index("c.md")
+    assert sim[a_idx, b_idx] > sim[a_idx, c_idx]
+
+
+def test_blend_similarity_matrices():
+    import numpy as np
+
+    from graph_builder import blend_similarity
+
+    tfidf_sim = np.array([[1.0, 0.5], [0.5, 1.0]])
+    entity_sim = np.array([[1.0, 0.8], [0.8, 1.0]])
+    blended = blend_similarity(tfidf_sim, entity_sim, alpha=0.7)
+    expected_01 = 0.7 * 0.5 + 0.3 * 0.8  # 0.59
+    assert abs(blended[0, 1] - expected_01) < 0.01
+
+
 def test_pagerank_returns_rankings():
     graph = KnowledgeGraph()
     leaf_names = ["Budgeting", "Saving", "Credit", "Insurance", "Investing"]
