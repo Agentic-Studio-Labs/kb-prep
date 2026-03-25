@@ -240,3 +240,28 @@ class TestLouvainClustering:
         graph = self._build_two_cluster_graph()
         file_clusters = graph.get_file_clusters()
         assert len(file_clusters) >= 2, f"Expected ≥2 file clusters, got {len(file_clusters)}: {file_clusters}"
+
+
+# ------------------------------------------------------------------
+# 4. Spectral clustering
+# ------------------------------------------------------------------
+
+
+class TestSpectralClustering:
+    def test_deterministic_clustering(self):
+        import numpy as np
+
+        from graph_builder import spectral_cluster
+
+        sim = np.array(
+            [
+                [1.0, 0.8, 0.1, 0.1],
+                [0.8, 1.0, 0.1, 0.1],
+                [0.1, 0.1, 1.0, 0.9],
+                [0.1, 0.1, 0.9, 1.0],
+            ]
+        )
+        clusters_1 = spectral_cluster(sim)
+        clusters_2 = spectral_cluster(sim)
+        assert clusters_1 == clusters_2, "Should be deterministic"
+        assert len(clusters_1) == 2, f"Should find 2 clusters, got {len(clusters_1)}"

@@ -10,6 +10,8 @@ from collections import defaultdict
 from typing import Optional
 
 import networkx as nx
+import numpy as np
+from sklearn.cluster import SpectralClustering as SklearnSpectralClustering
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity as sklearn_cosine_similarity
 
@@ -239,7 +241,7 @@ class KnowledgeGraph:
                 self._cached_components = []
             else:
                 undirected = self.graph.to_undirected()
-                self._cached_components = list(nx.community.louvain_communities(undirected))
+                self._cached_components = list(nx.community.louvain_communities(undirected, seed=42))
         return self._cached_components
 
     def find_clusters(self) -> list[list[str]]:
@@ -340,3 +342,38 @@ class KnowledgeGraph:
     @property
     def is_empty(self) -> bool:
         return self.graph.number_of_nodes() == 0
+
+
+# ------------------------------------------------------------------
+# Module-level spectral clustering utility
+# ------------------------------------------------------------------
+
+
+def spectral_cluster(similarity_matrix: np.ndarray, min_clusters: int = 2) -> list[list[int]]:
+    """Cluster documents using spectral analysis of similarity matrix."""
+    n = similarity_matrix.shape[0]
+    if n < 2:
+        return [list(range(n))]
+    W = similarity_matrix.copy()
+    np.fill_diagonal(W, 0)
+    W[W < 0.05] = 0
+    D = np.diag(W.sum(axis=1))
+    L = D - W
+    eigenvalues = np.linalg.eigvalsh(L)
+    max_k = min(10, n // 2, n - 1)
+    if max_k < 2:
+        max_k = 2
+    gaps = np.diff(eigenvalues[1 : max_k + 1])
+    n_clusters = int(np.argmax(gaps) + 2) if len(gaps) > 0 else 2
+    n_clusters = max(min_clusters, min(n_clusters, n // 2))
+    sc = SklearnSpectralClustering(
+        n_clusters=n_clusters, affinity="precomputed", random_state=42, assign_labels="kmeans"
+    )
+    sim = similarity_matrix.copy()
+    np.fill_diagonal(sim, 1.0)
+    sim = np.clip(sim, 0, 1)
+    labels = sc.fit_predict(sim)
+    clusters: dict[int, list[int]] = defaultdict(list)
+    for idx, label in enumerate(labels):
+        clusters[label].append(idx)
+    return sorted(clusters.values(), key=len, reverse=True)
