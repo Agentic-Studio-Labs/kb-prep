@@ -5,7 +5,6 @@ Runs fast and free on any document.
 """
 
 import re
-from pathlib import Path
 
 from models import (
     Issue,
@@ -44,13 +43,37 @@ class QualityScorer:
     FOCUS_HIGH_DIVERSITY = 0.85  # Flag as sprawling
     FOCUS_MODERATE_DIVERSITY = 0.70  # Flag as broad
 
-    def __init__(self, graph=None):
-        """Initialize scorer with optional knowledge graph.
+    def __init__(self, graph=None, corpus_analysis=None, audience: str = ""):
+        """Initialize scorer with optional knowledge graph and corpus analysis.
 
         If a graph is provided, adds Knowledge Completeness scoring
         (orphan references, cross-document gaps).
+        If corpus_analysis is provided, enables entropy-based file focus,
+        readability, and retrieval-aware scoring.
         """
         self.graph = graph
+        self.corpus_analysis = corpus_analysis
+        self._audience_hint = audience
+
+    def _parse_audience_range(self) -> tuple[float, float]:
+        """Parse audience hint into a (min_grade, max_grade) reading level range."""
+        audience = getattr(self, "_audience_hint", None) or ""
+        audience = audience.lower()
+        m = re.search(r"grade[s]?\s*(\d+)\s*[-–]\s*(\d+)", audience)
+        if m:
+            return float(m.group(1)), float(m.group(2))
+        if re.search(r"k[-–]?5|kindergarten.{0,20}5th", audience):
+            return 3.0, 6.0
+        level_ranges = {
+            "elementary": (2.0, 6.0),
+            "middle school": (6.0, 8.0),
+            "high school": (9.0, 12.0),
+            "college": (12.0, 16.0),
+        }
+        for pattern, (lo, hi) in level_ranges.items():
+            if pattern in audience:
+                return lo, hi
+        return 5.0, 9.0
 
     def score(self, doc: ParsedDocument) -> ScoreCard:
         """Run all scoring criteria and return a complete ScoreCard."""
@@ -64,6 +87,8 @@ class QualityScorer:
         card.add_result(self._score_acronym_definitions(doc))
         card.add_result(self._score_structure_completeness(doc))
         card.add_result(self._score_file_size(doc))
+        card.add_result(self._score_readability(doc))
+        card.add_result(self._score_retrieval_aware(doc))
 
         # Graph-powered scoring (when available)
         # Reduce other weights proportionally so total stays at 1.0
@@ -103,7 +128,7 @@ class QualityScorer:
         for para in doc.body_paragraphs:
             for pattern, ref_type in patterns:
                 for match in re.finditer(pattern, para.text, re.IGNORECASE):
-                    snippet = para.text[max(0, match.start() - 30):match.end() + 30]
+                    snippet = para.text[max(0, match.start() - 30) : match.end() + 30]
                     issues.append(
                         Issue(
                             severity=Severity.WARNING,
@@ -120,7 +145,7 @@ class QualityScorer:
             category="self_containment",
             label="Self-Containment",
             score=score,
-            weight=0.25,
+            weight=0.20,
             issues=issues,
         )
 
@@ -147,7 +172,7 @@ class QualityScorer:
                 category="heading_quality",
                 label="Heading Quality",
                 score=30.0,
-                weight=0.20,
+                weight=0.15,
                 issues=issues,
             )
 
@@ -170,9 +195,21 @@ class QualityScorer:
 
         # Check for generic/vague headings
         generic_headings = {
-            "content", "details", "info", "information", "section",
-            "material", "data", "overview", "introduction", "conclusion",
-            "notes", "misc", "miscellaneous", "other", "general",
+            "content",
+            "details",
+            "info",
+            "information",
+            "section",
+            "material",
+            "data",
+            "overview",
+            "introduction",
+            "conclusion",
+            "notes",
+            "misc",
+            "miscellaneous",
+            "other",
+            "general",
         }
         for h in headings:
             words = set(h.text.lower().split())
@@ -205,7 +242,7 @@ class QualityScorer:
             category="heading_quality",
             label="Heading Quality",
             score=score,
-            weight=0.20,
+            weight=0.15,
             issues=issues,
         )
 
@@ -267,7 +304,7 @@ class QualityScorer:
             category="paragraph_length",
             label="Paragraph Length",
             score=score,
-            weight=0.15,
+            weight=0.10,
             issues=issues,
         )
 
@@ -280,30 +317,93 @@ class QualityScorer:
         issues: list[Issue] = []
         headings = doc.headings
 
+        # Use entropy from corpus analysis if available
+        if self.corpus_analysis:
+            metrics = self.corpus_analysis.doc_metrics.get(doc.metadata.filename)
+            if metrics:
+                entropy = metrics.entropy
+                if entropy > 0.7:
+                    issues.append(
+                        Issue(
+                            severity=Severity.WARNING,
+                            category="file_focus",
+                            message=f"High topic entropy ({entropy:.2f}) — document covers many disparate topics",
+                            fix="Split into focused single-topic documents for better RAG retrieval.",
+                        )
+                    )
+                    score = 40.0
+                elif entropy > 0.4:
+                    issues.append(
+                        Issue(
+                            severity=Severity.INFO,
+                            category="file_focus",
+                            message=f"Moderate topic entropy ({entropy:.2f})",
+                            fix="Consider splitting into 2-3 topic-focused documents.",
+                        )
+                    )
+                    score = 65.0
+                else:
+                    score = 90.0
+                return ScoringResult(category="file_focus", label="File Focus", score=score, weight=0.10, issues=issues)
+        # Fallback: original diversity ratio (when no corpus analysis)
+
         if len(headings) < 2:
             # Can't assess focus with 0-1 headings
             return ScoringResult(
                 category="file_focus",
                 label="File Focus",
                 score=75.0,
-                weight=0.15,
+                weight=0.10,
                 issues=[],
             )
 
         # Extract meaningful words from headings
         stop_words = {
-            "the", "a", "an", "and", "or", "but", "in", "on", "at", "to",
-            "for", "of", "with", "by", "from", "is", "are", "was", "were",
-            "be", "been", "being", "have", "has", "had", "do", "does", "did",
-            "will", "would", "could", "should", "may", "might", "shall",
-            "this", "that", "these", "those", "it", "its",
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "from",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "shall",
+            "this",
+            "that",
+            "these",
+            "those",
+            "it",
+            "its",
         }
         topic_words: list[str] = []
         for h in headings:
-            words = [
-                w.lower() for w in re.findall(r"\b\w+\b", h.text)
-                if len(w) > 3 and w.lower() not in stop_words
-            ]
+            words = [w.lower() for w in re.findall(r"\b\w+\b", h.text) if len(w) > 3 and w.lower() not in stop_words]
             topic_words.extend(words)
 
         if not topic_words:
@@ -311,7 +411,7 @@ class QualityScorer:
                 category="file_focus",
                 label="File Focus",
                 score=70.0,
-                weight=0.15,
+                weight=0.10,
                 issues=[],
             )
 
@@ -346,7 +446,7 @@ class QualityScorer:
             category="file_focus",
             label="File Focus",
             score=score,
-            weight=0.15,
+            weight=0.10,
             issues=issues,
         )
 
@@ -431,15 +531,81 @@ class QualityScorer:
         # Filter out common acronyms, abbreviations, and English words
         common = {
             # Common acronyms
-            "US", "UK", "EU", "AI", "ML", "IT", "HR", "CEO", "CTO", "CFO",
-            "API", "PDF", "URL", "HTML", "CSS", "SQL", "FAQ", "ID", "OK",
-            "AM", "PM", "BC", "AD", "TV", "PC", "OS", "IP", "USB", "RAM",
-            "PhD", "MBA", "GPA", "SAT", "ACT", "AP", "IB", "LLC", "INC",
+            "US",
+            "UK",
+            "EU",
+            "AI",
+            "ML",
+            "IT",
+            "HR",
+            "CEO",
+            "CTO",
+            "CFO",
+            "API",
+            "PDF",
+            "URL",
+            "HTML",
+            "CSS",
+            "SQL",
+            "FAQ",
+            "ID",
+            "OK",
+            "AM",
+            "PM",
+            "BC",
+            "AD",
+            "TV",
+            "PC",
+            "OS",
+            "IP",
+            "USB",
+            "RAM",
+            "PhD",
+            "MBA",
+            "GPA",
+            "SAT",
+            "ACT",
+            "AP",
+            "IB",
+            "LLC",
+            "INC",
             # English words that look like acronyms
-            "AND", "THE", "BUT", "FOR", "NOT", "YOU", "ALL", "CAN", "HER",
-            "WAS", "ONE", "OUR", "OUT", "ARE", "HAS", "HIS", "HOW", "ITS",
-            "MAY", "NEW", "NOW", "OLD", "SEE", "WAY", "WHO", "DID", "GET",
-            "LET", "SAY", "SHE", "TOO", "USE", "DAD", "MOM", "RUN", "SET",
+            "AND",
+            "THE",
+            "BUT",
+            "FOR",
+            "NOT",
+            "YOU",
+            "ALL",
+            "CAN",
+            "HER",
+            "WAS",
+            "ONE",
+            "OUR",
+            "OUT",
+            "ARE",
+            "HAS",
+            "HIS",
+            "HOW",
+            "ITS",
+            "MAY",
+            "NEW",
+            "NOW",
+            "OLD",
+            "SEE",
+            "WAY",
+            "WHO",
+            "DID",
+            "GET",
+            "LET",
+            "SAY",
+            "SHE",
+            "TOO",
+            "USE",
+            "DAD",
+            "MOM",
+            "RUN",
+            "SET",
         }
         acronyms_to_check = found_acronyms - common
 
@@ -587,7 +753,85 @@ class QualityScorer:
         )
 
     # ------------------------------------------------------------------
-    # 9. Knowledge Completeness (graph-powered, when available)
+    # 9. Readability (corpus-powered, when available)
+    # ------------------------------------------------------------------
+
+    def _score_readability(self, doc: ParsedDocument) -> ScoringResult:
+        """Score reading level against target audience range."""
+        issues: list[Issue] = []
+        if not self.corpus_analysis:
+            return ScoringResult(category="readability", label="Readability", score=75.0, weight=0.05, issues=[])
+        metrics = self.corpus_analysis.doc_metrics.get(doc.metadata.filename)
+        if not metrics:
+            return ScoringResult(category="readability", label="Readability", score=75.0, weight=0.05, issues=[])
+        grade = metrics.readability_grade
+        target_min, target_max = self._parse_audience_range()
+        if target_min <= grade <= target_max:
+            score = 100.0
+        elif abs(grade - target_min) <= 2 or abs(grade - target_max) <= 2:
+            score = 70.0
+            issues.append(
+                Issue(
+                    severity=Severity.INFO,
+                    category="readability",
+                    message=f"Reading level ({grade:.1f}) slightly outside target range ({target_min:.0f}-{target_max:.0f})",
+                    fix="Adjust vocabulary complexity to match target audience.",
+                )
+            )
+        else:
+            score = 40.0
+            issues.append(
+                Issue(
+                    severity=Severity.WARNING,
+                    category="readability",
+                    message=f"Reading level ({grade:.1f}) far outside target range ({target_min:.0f}-{target_max:.0f})",
+                    fix="Significantly simplify or complexify language for target audience.",
+                )
+            )
+        return ScoringResult(category="readability", label="Readability", score=score, weight=0.05, issues=issues)
+
+    # ------------------------------------------------------------------
+    # 10. Retrieval-Aware (corpus-powered, when available)
+    # ------------------------------------------------------------------
+
+    def _score_retrieval_aware(self, doc: ParsedDocument) -> ScoringResult:
+        """Score self-retrieval rate — how findable the document is via search."""
+        issues: list[Issue] = []
+        if not self.corpus_analysis:
+            return ScoringResult(
+                category="retrieval_aware", label="Retrieval-Aware", score=75.0, weight=0.15, issues=[]
+            )
+        metrics = self.corpus_analysis.doc_metrics.get(doc.metadata.filename)
+        if not metrics:
+            return ScoringResult(
+                category="retrieval_aware", label="Retrieval-Aware", score=75.0, weight=0.15, issues=[]
+            )
+        rate = metrics.self_retrieval_score
+        score = rate * 100
+        if rate < 0.4:
+            issues.append(
+                Issue(
+                    severity=Severity.WARNING,
+                    category="retrieval_aware",
+                    message=f"Low self-retrieval rate ({rate:.0%}) — document may be hard to find via search",
+                    fix="Ensure headings and key terms match likely search queries. Split overly broad documents.",
+                )
+            )
+        elif rate < 0.7:
+            issues.append(
+                Issue(
+                    severity=Severity.INFO,
+                    category="retrieval_aware",
+                    message=f"Moderate self-retrieval rate ({rate:.0%})",
+                    fix="Consider adding more specific terminology or splitting into focused sections.",
+                )
+            )
+        return ScoringResult(
+            category="retrieval_aware", label="Retrieval-Aware", score=score, weight=0.15, issues=issues
+        )
+
+    # ------------------------------------------------------------------
+    # 11. Knowledge Completeness (graph-powered, when available)
     # ------------------------------------------------------------------
 
     def _score_knowledge_completeness(self, doc: ParsedDocument) -> ScoringResult:

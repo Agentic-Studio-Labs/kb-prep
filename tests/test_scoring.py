@@ -14,11 +14,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from docx import Document
-from docx.shared import Pt
 
 from parser import DocumentParser
 from scorer import QualityScorer
-from models import Severity
 
 
 def _create_test_docx(path: str):
@@ -45,9 +43,7 @@ def _create_test_docx(path: str):
 
     # Issue: heading level jump (H2 → H4)
     doc.add_heading("Practice Problems", level=4)
-    doc.add_paragraph(
-        "Complete the following exercises to reinforce understanding of fraction addition."
-    )
+    doc.add_paragraph("Complete the following exercises to reinforce understanding of fraction addition.")
 
     # Issue: very long paragraph (>300 words)
     long_text = (
@@ -88,9 +84,7 @@ def _create_test_docx(path: str):
 
     # Another generic heading
     doc.add_heading("Notes", level=2)
-    doc.add_paragraph(
-        "Teachers should adapt the lesson based on student needs and available materials."
-    )
+    doc.add_paragraph("Teachers should adapt the lesson based on student needs and available materials.")
 
     doc.save(path)
 
@@ -120,10 +114,10 @@ def test_scoring_detects_expected_issues():
         categories_with_issues = {i.category for i in card.all_issues}
 
         expected = {
-            "self_containment",   # "as mentioned above", "previous section", "below"
-            "heading_quality",    # "Content", "Notes" generic; level jump
-            "paragraph_length",   # long paragraph + short paragraph
-            "filename_quality",   # "doc-v2"
+            "self_containment",  # "as mentioned above", "previous section", "below"
+            "heading_quality",  # "Content", "Notes" generic; level jump
+            "paragraph_length",  # long paragraph + short paragraph
+            "filename_quality",  # "doc-v2"
         }
 
         missing = expected - categories_with_issues
@@ -157,7 +151,42 @@ def test_score_breakdown():
         assert abs(total_weight - 1.0) < 0.01, f"Weights sum to {total_weight}, expected ~1.0"
 
 
+def test_new_scoring_criteria_present():
+    """New criteria (readability, retrieval_aware) appear in results."""
+    from corpus_analyzer import build_corpus_analysis
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_path = os.path.join(tmpdir, "doc-v2.docx")
+        _create_test_docx(test_path)
+        parser = DocumentParser()
+        doc = parser.parse(test_path)
+        ca = build_corpus_analysis([doc])
+        scorer = QualityScorer(corpus_analysis=ca)
+        card = scorer.score(doc)
+        categories = {r.category for r in card.results}
+        assert "readability" in categories
+        assert "retrieval_aware" in categories
+
+
+def test_new_weights_sum_to_one():
+    """Updated weights (without graph) should sum to ~1.0."""
+    from corpus_analyzer import build_corpus_analysis
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_path = os.path.join(tmpdir, "doc-v2.docx")
+        _create_test_docx(test_path)
+        parser = DocumentParser()
+        doc = parser.parse(test_path)
+        ca = build_corpus_analysis([doc])
+        scorer = QualityScorer(corpus_analysis=ca)
+        card = scorer.score(doc)
+        total_weight = sum(r.weight for r in card.results if r.weight > 0)
+        assert abs(total_weight - 1.0) < 0.02, f"Weights sum to {total_weight}"
+
+
 if __name__ == "__main__":
     test_scoring_detects_expected_issues()
     test_score_breakdown()
+    test_new_scoring_criteria_present()
+    test_new_weights_sum_to_one()
     print("\nAll tests passed!")
