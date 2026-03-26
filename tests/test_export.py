@@ -13,11 +13,13 @@ from src.models import (
     DocMetrics,
     DocumentMetadata,
     Entity,
+    Issue,
     Paragraph,
     ParsedDocument,
     Relationship,
     ScoreCard,
     ScoringResult,
+    Severity,
 )
 
 
@@ -88,6 +90,7 @@ def test_sidecar_schema_keys():
             "metrics",
             "entities",
             "relationships",
+            "retrieval_quality_gate",
         }
         assert required.issubset(data.keys()), f"Missing keys: {required - data.keys()}"
 
@@ -143,6 +146,34 @@ def test_manifest_corpus_stats():
         data = json.loads(Path(path).read_text())
         assert data["corpus"]["total_documents"] == 2
         assert data["corpus"]["avg_score"] == 70.0
+        assert "retrieval_mode_distribution" in data["corpus"]
+
+
+def test_sidecar_retrieval_quality_gate_for_template_note():
+    with tempfile.TemporaryDirectory() as td:
+        doc = _make_doc("goal-tracker.pdf")
+        doc.metadata.file_type = "pdf"
+        card = _make_card("goal-tracker.pdf")
+        card.results = [
+            ScoringResult(
+                category="structure",
+                label="Structure",
+                score=60.0,
+                weight=0.1,
+                issues=[
+                    Issue(
+                        severity=Severity.INFO,
+                        category="structure",
+                        message="Low parse fidelity (template-like document): only 25 words extracted from 53 KB file",
+                    )
+                ],
+            )
+        ]
+        path = write_sidecar(td, "tracker", doc, _make_analysis(), card, _make_metrics())
+        data = json.loads(Path(path).read_text())
+        rqg = data["retrieval_quality_gate"]
+        assert rqg["retrieval_mode_hint"]["recommended_mode"] == "hybrid_sparse_template"
+        assert rqg["modality_readiness"]["template_like_document"] is True
 
 
 def test_manifest_similarity_matrix_skipped_for_large_corpus():

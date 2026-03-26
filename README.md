@@ -10,7 +10,7 @@ RAG failures often start before embeddings - with the documents themselves: dang
 - **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
 - **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
 - **Chunks** documents into heading-aware, overlapping segments with quality metadata and optional retrieval benchmarks (Recall@5, MRR, nDCG@5)
-- **Exports** rich metadata for ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)
+- **Exports** rich metadata for ingestion (`.meta.json`, `.chunks.json`, `manifest.json`) including deterministic retrieval-mode and modality-readiness hints
 
 Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) and complements RAG frameworks (LlamaIndex, LangChain, etc.).
 
@@ -294,7 +294,7 @@ output/
 └── manifest.json                      ← corpus manifest
 ```
 
-Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, and relationships. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
+Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, relationships, and a `retrieval_quality_gate` block with deterministic retrieval-mode hints, modality readiness flags, and evidence. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
 
 Analysis sidecar example:
 
@@ -324,12 +324,24 @@ Analysis sidecar example:
   "relationships": [
     { "source": "Health Insurance", "target": "Premium", "type": "related_to" }
   ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "text_hybrid_default",
+      "confidence": "high",
+      "reasons": ["clean_text_for_standard_retrieval"]
+    },
+    "modality_readiness": {
+      "text_only_ready": true,
+      "layout_heavy_pdf": false,
+      "template_like_document": false
+    }
+  }
 }
 ```
 
 ### Corpus manifest
 
-A single `manifest.json` at the output root contains corpus-level stats, all document entries, knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
+A single `manifest.json` at the output root contains corpus-level stats (including `retrieval_mode_distribution`), all document entries (including per-document `retrieval_quality_gate`), knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
 
 ### Usage
 

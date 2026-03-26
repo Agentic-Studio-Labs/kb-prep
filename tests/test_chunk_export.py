@@ -59,6 +59,8 @@ def test_manifest_includes_chunk_summary():
 
     assert data["corpus"]["total_chunks"] == 1
     assert data["documents"][0]["chunk_count"] == 1
+    assert "retrieval_quality_gate" in data["documents"][0]
+    assert "retrieval_mode_distribution" in data["corpus"]
     assert data["schema_version"] == "2.0"
 
 

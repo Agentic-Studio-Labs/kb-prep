@@ -31,6 +31,7 @@ def write_sidecar(
     metrics: Optional[DocMetrics],
 ) -> str:
     """Write a .meta.json sidecar file alongside the fixed Markdown."""
+    retrieval_quality_gate = _build_retrieval_quality_gate(doc, card)
     data = {
         "ragprep_version": "0.1.0",
         "source_file": doc.metadata.filename,
@@ -62,6 +63,7 @@ def write_sidecar(
             {"source": r.source, "target": r.target, "type": r.rel_type, "context": r.context}
             for r in analysis.relationships
         ],
+        "retrieval_quality_gate": retrieval_quality_gate,
     }
 
     out_path = Path(output_dir) / f"{filename_stem}.meta.json"
@@ -133,9 +135,13 @@ def build_manifest_data(
     avg_score = sum(c.overall_score for c in cards) / len(cards) if cards else 0.0
 
     chunk_count_by_file = {cs.source_file: len(cs.chunks) for cs in chunk_sets}
+    retrieval_mode_distribution: dict[str, int] = {}
 
     doc_entries = []
     for doc, analysis, card in zip(docs, analyses, cards):
+        rqg = _build_retrieval_quality_gate(doc, card)
+        mode = rqg["retrieval_mode_hint"]["recommended_mode"]
+        retrieval_mode_distribution[mode] = retrieval_mode_distribution.get(mode, 0) + 1
         doc_entries.append(
             {
                 "source_file": doc.metadata.filename,
@@ -146,6 +152,7 @@ def build_manifest_data(
                 "entity_count": len(analysis.entities),
                 "relationship_count": len(analysis.relationships),
                 "chunk_count": chunk_count_by_file.get(doc.metadata.filename, 0),
+                "retrieval_quality_gate": rqg,
             }
         )
 
@@ -192,6 +199,7 @@ def build_manifest_data(
             "total_chunks": sum(len(cs.chunks) for cs in chunk_sets),
             "avg_score": round(avg_score, 1),
             "readiness_distribution": readiness_dist,
+            "retrieval_mode_distribution": retrieval_mode_distribution,
             "total_entities": total_entities,
             "total_relationships": total_relationships,
             "cross_document_edges": cross_doc_edges,
@@ -262,3 +270,98 @@ def _serialize_metrics(metrics: Optional[DocMetrics]) -> Optional[dict]:
         "info_density": metrics.info_density,
         "topic_boundaries": metrics.topic_boundaries,
     }
+
+
+def _build_retrieval_quality_gate(doc: ParsedDocument, card: ScoreCard) -> dict:
+    body_count = len(doc.body_paragraphs)
+    heading_count = len(doc.headings)
+    total_words = sum(p.word_count for p in doc.paragraphs)
+    short_label_count = sum(1 for p in doc.body_paragraphs if _looks_like_short_label(p.text))
+    short_label_ratio = (short_label_count / body_count) if body_count else 0.0
+    heading_density = (body_count / heading_count) if heading_count else None
+
+    parse_fidelity_warning = any(
+        "Low parse fidelity:" in issue.message and issue.severity.value in {"warning", "critical"}
+        for issue in card.all_issues
+    )
+    parse_fidelity_template_note = any(
+        "Low parse fidelity (template-like document)" in issue.message for issue in card.all_issues
+    )
+    heading_warning = any(
+        issue.category == "heading_quality" and "no headings" in issue.message.lower() for issue in card.all_issues
+    )
+
+    layout_heavy_pdf = doc.metadata.file_type == "pdf" and (
+        short_label_ratio >= 0.30 or (heading_count >= 10 and total_words < 500)
+    )
+    template_like = (
+        parse_fidelity_template_note
+        or _filename_has_template_marker(doc.metadata.filename)
+        or short_label_ratio >= 0.50
+    )
+
+    if parse_fidelity_warning or layout_heavy_pdf:
+        recommended_mode = "multimodal_or_ocr_review"
+        confidence = "high" if parse_fidelity_warning else "medium"
+    elif template_like:
+        recommended_mode = "hybrid_sparse_template"
+        confidence = "medium"
+    elif heading_warning and total_words > 400:
+        recommended_mode = "hybrid_with_structure_rewrite"
+        confidence = "medium"
+    else:
+        recommended_mode = "text_hybrid_default"
+        confidence = "high"
+
+    reasons: list[str] = []
+    if parse_fidelity_warning:
+        reasons.append("parse_fidelity_warning")
+    if parse_fidelity_template_note:
+        reasons.append("template_like_sparse_content")
+    if layout_heavy_pdf:
+        reasons.append("layout_heavy_pdf")
+    if heading_warning:
+        reasons.append("low_structural_headings")
+    if not reasons:
+        reasons.append("clean_text_for_standard_retrieval")
+
+    return {
+        "retrieval_mode_hint": {
+            "recommended_mode": recommended_mode,
+            "confidence": confidence,
+            "reasons": reasons,
+        },
+        "modality_readiness": {
+            "text_only_ready": recommended_mode == "text_hybrid_default",
+            "layout_heavy_pdf": layout_heavy_pdf,
+            "template_like_document": template_like,
+            "parse_fidelity_warning": parse_fidelity_warning,
+            "parse_fidelity_template_note": parse_fidelity_template_note,
+        },
+        "evidence": {
+            "file_type": doc.metadata.file_type,
+            "total_words": total_words,
+            "heading_count": heading_count,
+            "body_paragraph_count": body_count,
+            "short_label_ratio": round(short_label_ratio, 3),
+            "heading_density": round(heading_density, 2) if heading_density is not None else None,
+        },
+    }
+
+
+def _looks_like_short_label(text: str) -> bool:
+    normalized = " ".join(text.strip().split())
+    if not normalized:
+        return False
+    words = len(normalized.split())
+    if words > 4:
+        return False
+    if normalized.endswith(":"):
+        return True
+    return normalized.isupper() and words <= 4
+
+
+def _filename_has_template_marker(filename: str) -> bool:
+    lowered = filename.lower()
+    markers = ("tracker", "rubric", "template", "worksheet", "handout")
+    return any(marker in lowered for marker in markers)

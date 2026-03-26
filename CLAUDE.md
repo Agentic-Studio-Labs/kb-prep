@@ -2,7 +2,7 @@
 
 ## What This Project Does
 
-ragprep is a CLI tool that prepares documents for RAG. It parses DOCX/PDF/TXT/MD files, scores them for retrieval readiness, and optionally auto-fixes issues with an LLM. Works with any RAG pipeline.
+ragprep is a pre-ingestion retrieval quality gate for RAG. It parses DOCX/PDF/TXT/MD files, scores retrieval readiness, emits deterministic retrieval-mode/modality hints, and optionally auto-fixes issues with an LLM. Works with any RAG pipeline.
 
 ## Commands
 
@@ -42,6 +42,7 @@ Parse → Corpus Analyzer (TF-IDF) → Score → [Analyze (LLM)] → [Fix (LLM)]
 - `src/chunker.py` — structure-aware chunking (heading-preserving with overlap)
 - `src/benchmark.py` — chunk retrieval metrics (Recall@5, MRR, nDCG@5)
 - `src/cleaner.py` — deterministic cleanup before scoring/chunking
+- `src/export.py` — sidecar/manifest export including retrieval quality gate signals
 ## Key Files
 
 | File | Lines | What it does |
