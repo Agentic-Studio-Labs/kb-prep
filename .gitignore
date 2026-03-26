@@ -42,6 +42,8 @@ ragprep-*.md
 CLAUDE_CODE_PROMPT_*.md
 .worktrees/
 .superpowers/
+superpowers/
+docs/research/
 test-data/corpora/
 test-data/reports/
 lesson-data/
