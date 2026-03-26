@@ -37,6 +37,11 @@ flowchart TD
     Fix --> Output
     Chunk --> Output
 ```
+### Positioning
+
+- Platform services increasingly handle parsing/chunking/embedding.
+- ragprep focuses on what those platforms generally do not provide: pre-ingestion quality scoring, content-level fixes, retrieval benchmarking, and structured quality metadata.
+- For managed end-to-end offerings (for example Pinecone Assistant), ragprep still adds value as an upstream quality layer.
 
 ### Current and Upcoming Vendor Landscape
 
@@ -54,15 +59,6 @@ Parsing, chunking, embedding, and serving are increasingly bundled by vendors, b
 Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
 
 
-
-
-| Command   | What runs                                                                          |
-| --------- | ---------------------------------------------------------------------------------- |
-| `score`   | Parse → Corpus Analyzer → Score                                                    |
-| `analyze` | + LLM analysis, knowledge graph, chunking, metadata export |
-| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
-
-
 ### Recommended Workflow
 
 Use this sequence for predictable quality-gate behavior:
@@ -75,8 +71,13 @@ Use this sequence for predictable quality-gate behavior:
 Example:
 
 ```bash
+# 0) Environment setup (first run)
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
 # 1) Baseline (no LLM)
-python -m src.cli score ./my-docs/
+python -m src.cli score ./my-docs/ --detail
 
 # 2) Retrieval evaluation
 python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
@@ -87,12 +88,6 @@ python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 # 4) Re-measure after fixes
 python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
 ```
-
-### Positioning
-
-- Platform services increasingly handle parsing/chunking/embedding.
-- ragprep focuses on what those platforms generally do not provide: pre-ingestion quality scoring, content-level fixes, retrieval benchmarking, and structured quality metadata.
-- For managed end-to-end offerings (for example Pinecone Assistant), ragprep still adds value as an upstream quality layer.
 
 ### Why retrieval-aware scoring?
 
@@ -115,6 +110,12 @@ echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env
 ```
 
 ## Quick Start
+
+| Command   | What runs                                                                          |
+| --------- | ---------------------------------------------------------------------------------- |
+| `score`   | Parse → Corpus Analyzer → Score                                                    |
+| `analyze` | + LLM analysis, knowledge graph, chunking, metadata export |
+| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
 
 ```bash
 # Score documents (no LLM, no API keys)
@@ -364,7 +365,7 @@ Analysis sidecar example:
 
 A single `manifest.json` at the output root contains corpus-level stats (including `retrieval_mode_distribution`), all document entries (including per-document `retrieval_quality_gate`), knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
 
-Need deeper interpretation guidance? See [`docs/manifest-deep-dive.md`](docs/manifest-deep-dive.md) for field-by-field walkthrough, action mapping, and `jq` triage snippets.
+Need deeper interpretation guidance? See [`docs/manifest-deep-dive.md`](docs/manifest-deep-dive.md) for field-by-field walkthrough, action mapping, and `jq` triage snippets. For a complete ingestion example, see [`docs/guides/weaviate-ingestion.md`](docs/guides/weaviate-ingestion.md).
 
 ### Usage
 
