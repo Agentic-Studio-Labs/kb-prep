@@ -13,9 +13,7 @@ LLM commands support --concurrency N (default: 5) for parallel API calls.
 import asyncio
 import os
 import re
-import shutil
 from pathlib import Path
-from typing import Optional
 
 import click
 from rich.console import Console
@@ -25,7 +23,7 @@ from rich.table import Table
 
 from .config import Config
 from .corpus_analyzer import build_corpus_analysis
-from .models import ChunkSet, FolderRecommendation, ScoreCard, Severity
+from .models import ChunkSet, ScoreCard, Severity
 from .parser import DocumentParser, discover_files
 from .scorer import QualityScorer, generate_split_recommendations
 
@@ -207,16 +205,12 @@ def score(path: str, detail: bool, json_out: bool, exclude: tuple, no_report: bo
 @click.option("--exclude", multiple=True, help="Exclude files containing this substring (repeatable)")
 @click.option("--no-report", is_flag=True, help="Suppress markdown report generation")
 @click.option("--concurrency", default=5, type=int, help="Max parallel LLM calls (default: 5)")
-@click.option(
-    "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
-)
 @click.option("--no-export-meta", is_flag=True, help="Skip writing metadata export files")
 @click.option("--json-output", "json_out", is_flag=True, help="Output manifest JSON to stdout")
 @click.option("--export-chunks/--no-export-chunks", default=True, help="Write per-document .chunks.json files")
 @click.option("--chunk-size", default=220, type=int, help="Target words per chunk")
 @click.option("--chunk-overlap", default=40, type=int, help="Overlapping words between chunks")
 @click.option("--run-benchmark", is_flag=True, help="Run chunk-level retrieval benchmark")
-@click.option("--skip-enrichment", is_flag=True, help="Skip folder recommendation and graph-heavy output")
 def analyze(
     path: str,
     llm_key: str,
@@ -225,35 +219,29 @@ def analyze(
     exclude: tuple,
     no_report: bool,
     concurrency: int,
-    folder_hints: str,
     no_export_meta: bool,
     json_out: bool,
     export_chunks: bool,
     chunk_size: int,
     chunk_overlap: int,
     run_benchmark: bool,
-    skip_enrichment: bool,
 ):
-    """Score documents + LLM content analysis and folder recommendation."""
+    """Score documents + LLM content analysis."""
     from .analyzer import ContentAnalyzer
     from .benchmark import benchmark_chunk_retrieval
     from .chunker import DocumentChunker
     from .cleaner import DocumentCleaner
     from .export import build_manifest_data, write_chunk_sidecar, write_manifest, write_sidecar
-    from .models import FolderNode, FolderRecommendation
-    from .recommender import FolderRecommender, format_folder_tree
 
     files = discover_files(path, exclude_patterns=list(exclude) if exclude else None)
     if not files:
         console.print("[red]No supported files found.[/red]")
         raise SystemExit(1)
 
-    hints_text = Path(folder_hints).read_text().strip() if folder_hints else ""
     config = Config.from_env().with_overrides(
         anthropic_api_key=llm_key,
         llm_model=model,
         concurrency=concurrency,
-        folder_hints=hints_text or None,
     )
 
     parser = DocumentParser()
@@ -335,44 +323,7 @@ def analyze(
     for doc, analysis in zip(docs, analyses):
         _print_analysis(doc.metadata.filename, analysis)
 
-    sil_score = 0.0
-    misplaced: list[tuple[str, float]] = []
-    if not skip_enrichment:
-        _print_graph_summary(graph)
-
-        # Show folder recommendation (graph-aware)
-        console.print("\n")
-        recommender = FolderRecommender(config, graph=graph)
-        recommendation = asyncio.run(recommender.recommend(docs, analyses))
-        tree_str = format_folder_tree(recommendation.root)
-        console.print(Panel(tree_str, title="Recommended Folder Structure", border_style="green"))
-
-        if recommendation.file_assignments:
-            assign_table = Table(title="File → Folder Assignments")
-            assign_table.add_column("File", style="cyan")
-            assign_table.add_column("Folder", style="green")
-            for filename, folder in recommendation.file_assignments.items():
-                assign_table.add_row(filename, folder)
-            console.print(assign_table)
-
-        # Validate folder assignments
-        if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
-            sil_score, misplaced = recommender.validate_assignments(
-                recommendation.file_assignments,
-                corpus_analysis.similarity_matrix,
-                corpus_analysis.doc_labels,
-            )
-            if sil_score != 0:
-                console.print(f"\n[dim]Folder coherence (silhouette): {sil_score:.2f}[/dim]")
-            if misplaced:
-                console.print(f"[yellow]Warning: {len(misplaced)} document(s) may be misplaced:[/yellow]")
-                for filename, score in misplaced:
-                    console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
-    else:
-        recommendation = FolderRecommendation(
-            root=FolderNode(name="Knowledge Base", description="Root knowledge base container"),
-            file_assignments={},
-        )
+    _print_graph_summary(graph)
 
     # Auto-generate report
     if not no_report:
@@ -380,11 +331,22 @@ def analyze(
         _write_report_file(
             report_path,
             [
-                _report_header("analyze", len(docs)),
+                _report_header(
+                    "analyze",
+                    len(docs),
+                    settings={
+                        "model": config.llm_model,
+                        "concurrency": concurrency,
+                        "chunk-size": chunk_size,
+                        "chunk-overlap": chunk_overlap,
+                        "run-benchmark": run_benchmark,
+                        "export-meta": not no_export_meta,
+                        "export-chunks": export_chunks,
+                    },
+                ),
                 _report_scores(cards, detail),
                 _report_analyses(docs, analyses),
                 _report_graph(graph),
-                _report_recommendations(recommendation, sil_score if sil_score != 0 else None, misplaced or None),
             ],
         )
         console.print(f"\n[green]Report:[/green] {report_path}")
@@ -398,7 +360,6 @@ def analyze(
             analyses,
             cards,
             corpus_analysis,
-            recommendation,
             graph,
             chunk_sets=chunk_sets,
             benchmarks=benchmarks,
@@ -413,15 +374,13 @@ def analyze(
         for doc, analysis, card in zip(docs, analyses, cards):
             filename = doc.metadata.filename
             doc_metrics = corpus_analysis.doc_metrics.get(filename)
-            folder = recommendation.file_assignments.get(filename, "")
-            write_sidecar(meta_dir, doc.metadata.stem, doc, analysis, card, doc_metrics, folder)
+            write_sidecar(meta_dir, doc.metadata.stem, doc, analysis, card, doc_metrics)
         manifest_path = write_manifest(
             meta_dir,
             docs,
             analyses,
             cards,
             corpus_analysis,
-            recommendation,
             graph,
             chunk_sets=chunk_sets,
             benchmarks=benchmarks,
@@ -444,9 +403,6 @@ def analyze(
 @click.option("--exclude", multiple=True, help="Exclude files containing this substring (repeatable)")
 @click.option("--no-report", is_flag=True, help="Suppress markdown report generation")
 @click.option("--concurrency", default=5, type=int, help="Max parallel LLM calls (default: 5)")
-@click.option(
-    "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
-)
 @click.option("--no-export-meta", is_flag=True, help="Skip writing .meta.json sidecar files and manifest.json")
 @click.option("--chunk-size", default=220, type=int, help="Target words per chunk")
 @click.option("--chunk-overlap", default=40, type=int, help="Overlapping words between chunks")
@@ -459,7 +415,6 @@ def fix(
     exclude: tuple,
     no_report: bool,
     concurrency: int,
-    folder_hints: str,
     no_export_meta: bool,
     chunk_size: int,
     chunk_overlap: int,
@@ -473,7 +428,6 @@ def fix(
     from .export import write_chunk_sidecar, write_manifest, write_sidecar
     from .fixer import DocumentFixer
     from .parser import to_markdown
-    from .recommender import FolderRecommender, format_folder_tree
 
     files = discover_files(path, exclude_patterns=list(exclude) if exclude else None)
     if not files:
@@ -485,14 +439,11 @@ def fix(
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         output = f"rag-files-{ts}"
 
-    hints_text = Path(folder_hints).read_text().strip() if folder_hints else ""
-
     config = Config.from_env().with_overrides(
         anthropic_api_key=llm_key,
         llm_model=model,
         output_dir=output,
         concurrency=concurrency,
-        folder_hints=hints_text or None,
     )
 
     parser = DocumentParser()
@@ -579,64 +530,32 @@ def fix(
 
     _print_graph_summary(graph)
 
-    # --- Recommender step: get folder assignments ---
-    console.print("[dim]Recommending folder structure...[/dim]")
-    recommender = FolderRecommender(config, graph=graph)
-    recommendation = asyncio.run(recommender.recommend(docs, analyses))
-
-    # Build map of original filename → fixed filename (stem only, no .md)
+    # --- Write fixed files flat to output directory ---
     fixed_name_map: dict[str, str] = {}
     for report in fix_reports:
         orig_name = Path(report.source_path).name
         fixed_stem = Path(report.output_path).stem
         fixed_name_map[orig_name] = fixed_stem
 
-    # --- Organize files into subfolders ---
-    # LLMs sometimes normalize smart quotes (U+2018/2019) to ASCII (U+0027)
-    # in JSON keys, causing lookup mismatches against disk filenames.
-    # Build a normalized lookup to handle this.
-    _norm_assignments = _normalize_quote_keys(recommendation.file_assignments)
-
-    # Build per-filename lookup maps for analysis/card/metrics
+    os.makedirs(output, exist_ok=True)
     _analysis_map = {doc.metadata.filename: analysis for doc, analysis in zip(docs, analyses)}
     _card_map = {doc.metadata.filename: card for doc, card in zip(docs, cards)}
 
     for doc in docs:
         filename = doc.metadata.filename
-        # Determine the .md name for this file in the output
         fixed_stem = fixed_name_map.get(filename, doc.metadata.stem)
         md_name = f"{fixed_stem}.md"
-
-        # Determine target subfolder from recommender
-        folder = _norm_assignments.get(_normalize_quotes(filename), "General")
-        target_dir = os.path.join(output, folder)
-        os.makedirs(target_dir, exist_ok=True)
+        target_path = os.path.join(output, md_name)
 
         flat_path = os.path.join(output, md_name)
-        target_path = os.path.join(target_dir, md_name)
-
-        try:
-            # Fixed file exists — move it into subfolder
-            shutil.move(flat_path, target_path)
-        except FileNotFoundError:
-            # Not fixed — convert original to markdown and write
+        if not os.path.exists(flat_path):
             md_content = to_markdown(doc)
             with open(target_path, "w", encoding="utf-8") as f:
                 f.write(md_content)
 
-        # Write sidecar metadata alongside the Markdown file
         if not no_export_meta:
             doc_metrics = corpus_analysis.doc_metrics.get(filename)
-            write_sidecar(
-                target_dir,
-                fixed_stem,
-                doc,
-                _analysis_map[filename],
-                _card_map[filename],
-                doc_metrics,
-                folder,
-            )
-            # Keep chunk sidecar basename aligned with final markdown stem.
+            write_sidecar(output, fixed_stem, doc, _analysis_map[filename], _card_map[filename], doc_metrics)
             original_cs = chunk_sets_by_file.get(filename)
             if original_cs:
                 sidecar_cs = ChunkSet(
@@ -644,9 +563,8 @@ def fix(
                     source_file=original_cs.source_file,
                     chunks=original_cs.chunks,
                 )
-                write_chunk_sidecar(target_dir, sidecar_cs)
+                write_chunk_sidecar(output, sidecar_cs)
 
-    # Write corpus manifest to the output root
     if not no_export_meta:
         manifest_path = write_manifest(
             output,
@@ -654,43 +572,14 @@ def fix(
             analyses,
             cards,
             corpus_analysis,
-            recommendation,
             graph,
             chunk_sets=chunk_sets,
             benchmarks=[],
             split_recommendations=split_recommendations,
         )
-        console.print(f"[green]Metadata:[/green] {manifest_path} + per-doc .meta.json sidecars")
+        console.print(f"[green]Metadata:[/green] {manifest_path} + per-doc sidecars")
 
-    # --- Console output: folder tree + assignments ---
-    tree_str = format_folder_tree(recommendation.root)
-    console.print(Panel(tree_str, title="Folder Structure", border_style="green"))
-
-    if recommendation.file_assignments:
-        assign_table = Table(title="File → Folder Assignments")
-        assign_table.add_column("File", style="cyan")
-        assign_table.add_column("Folder", style="green")
-        for fname, folder in recommendation.file_assignments.items():
-            assign_table.add_row(fname, folder)
-        console.print(assign_table)
-
-    # Validate folder assignments
-    fix_sil_score = 0.0
-    fix_misplaced: list[tuple[str, float]] = []
-    if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
-        fix_sil_score, fix_misplaced = recommender.validate_assignments(
-            recommendation.file_assignments,
-            corpus_analysis.similarity_matrix,
-            corpus_analysis.doc_labels,
-        )
-        if fix_sil_score != 0:
-            console.print(f"\n[dim]Folder coherence (silhouette): {fix_sil_score:.2f}[/dim]")
-        if fix_misplaced:
-            console.print(f"[yellow]Warning: {len(fix_misplaced)} document(s) may be misplaced:[/yellow]")
-            for filename, score in fix_misplaced:
-                console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
-
-    console.print(f"\nOrganized files written to [cyan]{output}/[/cyan]")
+    console.print(f"\nFixed files written to [cyan]{output}/[/cyan]")
 
     # --- Report inside output folder ---
     if not no_report:
@@ -699,71 +588,23 @@ def fix(
         _write_report_file(
             report_path,
             [
-                _report_header("fix", len(docs)),
+                _report_header(
+                    "fix",
+                    len(docs),
+                    settings={
+                        "model": config.llm_model,
+                        "concurrency": concurrency,
+                        "chunk-size": chunk_size,
+                        "chunk-overlap": chunk_overlap,
+                        "fix-below": fix_below if fix_below > 0 else None,
+                        "export-meta": not no_export_meta,
+                    },
+                ),
                 _report_scores(cards, detail=False),
                 _report_fixes(fix_reports),
-                _report_recommendations(
-                    recommendation, fix_sil_score if fix_sil_score != 0 else None, fix_misplaced or None
-                ),
             ],
         )
         console.print(f"[green]Report:[/green] {report_path}")
-
-
-# ---------------------------------------------------------------------------
-# Folder helpers
-# ---------------------------------------------------------------------------
-
-# Smart/curly quotes that LLMs commonly normalize to ASCII equivalents.
-_QUOTE_TABLE = str.maketrans(
-    {
-        "\u2018": "'",  # LEFT SINGLE QUOTATION MARK → apostrophe
-        "\u2019": "'",  # RIGHT SINGLE QUOTATION MARK → apostrophe
-        "\u201c": '"',  # LEFT DOUBLE QUOTATION MARK → double quote
-        "\u201d": '"',  # RIGHT DOUBLE QUOTATION MARK → double quote
-    }
-)
-
-
-def _normalize_quotes(s: str) -> str:
-    """Replace typographic/smart quotes with ASCII equivalents."""
-    return s.translate(_QUOTE_TABLE)
-
-
-def _normalize_quote_keys(d: dict[str, str]) -> dict[str, str]:
-    """Return a copy of dict with keys normalized to ASCII quotes."""
-    return {_normalize_quotes(k): v for k, v in d.items()}
-
-
-def _recommendation_from_disk(base_path: str, files: list[str]) -> "FolderRecommendation":
-    """Build a FolderRecommendation from existing subfolder layout on disk."""
-    from .models import FolderNode, FolderRecommendation
-
-    base = Path(base_path).resolve()
-    root = FolderNode(name="Knowledge Base", description="Root knowledge base container")
-    assignments: dict[str, str] = {}
-    folder_nodes: dict[str, FolderNode] = {}
-
-    for file_path in files:
-        fp = Path(file_path).resolve()
-        rel_parent = fp.parent.relative_to(base)
-        filename = fp.name
-
-        if str(rel_parent) == ".":
-            folder_name = "General"
-        else:
-            folder_name = str(rel_parent)
-
-        assignments[filename] = folder_name
-
-        if folder_name not in folder_nodes:
-            node = FolderNode(name=folder_name, description=f"Files from {folder_name}/")
-            folder_nodes[folder_name] = node
-            root.children.append(node)
-
-        folder_nodes[folder_name].document_files.append(filename)
-
-    return FolderRecommendation(root=root, file_assignments=assignments)
 
 
 # ---------------------------------------------------------------------------
@@ -940,8 +781,8 @@ def _generate_report_path(command: str) -> str:
     return f"ragprep-{command}-{ts}.md"
 
 
-def _report_header(command: str, file_count: int) -> list[str]:
-    """Markdown header with command name, timestamp, and file count."""
+def _report_header(command: str, file_count: int, settings: dict | None = None) -> list[str]:
+    """Markdown header with command name, timestamp, file count, and run settings."""
     from datetime import datetime
 
     lines: list[str] = []
@@ -949,6 +790,10 @@ def _report_header(command: str, file_count: int) -> list[str]:
     lines.append("")
     lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Files:** {file_count}")
+    if settings:
+        parts = [f"{k}={v}" for k, v in settings.items() if v is not None]
+        if parts:
+            lines.append(f"**Settings:** {', '.join(parts)}")
     lines.append("")
     return lines
 
@@ -1039,44 +884,6 @@ def _report_graph(graph) -> list[str]:
         lines.append("")
     if summary.orphan_references:
         lines.append(f"**Orphan references:** {', '.join(summary.orphan_references)}")
-        lines.append("")
-    return lines
-
-
-def _report_recommendations(
-    recommendation,
-    silhouette_score: Optional[float] = None,
-    misplaced: Optional[list[tuple[str, float]]] = None,
-) -> list[str]:
-    """Folder structure + file assignments section."""
-    from .recommender import format_folder_tree
-
-    lines: list[str] = []
-    if not recommendation:
-        return lines
-
-    lines.append("## Recommended Folder Structure")
-    lines.append("")
-    lines.append("```")
-    lines.append(format_folder_tree(recommendation.root))
-    lines.append("```")
-    lines.append("")
-    if recommendation.file_assignments:
-        lines.append("### File Assignments")
-        lines.append("")
-        lines.append("| File | Folder |")
-        lines.append("|------|--------|")
-        for filename, folder in recommendation.file_assignments.items():
-            lines.append(f"| {filename} | {folder} |")
-        lines.append("")
-    if silhouette_score is not None:
-        lines.append(f"**Folder coherence (silhouette):** {silhouette_score:.2f}")
-        lines.append("")
-    if misplaced:
-        lines.append("**Potentially misplaced documents:**")
-        lines.append("")
-        for filename, score in misplaced:
-            lines.append(f"- {filename} (silhouette: {score:.2f})")
         lines.append("")
     return lines
 

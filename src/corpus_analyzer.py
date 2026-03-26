@@ -4,8 +4,8 @@ Computes a shared TF-IDF matrix from parsed documents and derives
 per-document metrics (entropy, coherence, readability, topic boundaries,
 retrieval-aware score) and a corpus-wide similarity matrix.
 
-All downstream consumers (scorer, graph_builder, recommender, eval)
-import from this module rather than computing their own text features.
+All downstream consumers (scorer, graph_builder, eval) import from
+this module rather than computing their own text features.
 """
 
 import itertools

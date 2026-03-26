@@ -2,8 +2,7 @@
 
 Builds an in-memory networkx graph from entity/relationship data
 extracted during LLM analysis. Used by the fixer (cross-document
-reference resolution), recommender (community detection for folder
-clustering), and scorer (orphan/completeness detection).
+reference resolution) and scorer (orphan/completeness detection).
 """
 
 from collections import defaultdict
@@ -247,7 +246,6 @@ class KnowledgeGraph:
     def find_clusters(self) -> list[list[str]]:
         """Detect topic communities using connected components on undirected projection.
 
-        Used by the recommender for folder structure.
         Returns groups of entity names that form natural clusters.
         """
         components = self._get_components()
@@ -264,60 +262,6 @@ class KnowledgeGraph:
         # Sort by size (largest first)
         clusters.sort(key=len, reverse=True)
         return clusters
-
-    def get_file_clusters(self) -> dict[str, list[str]]:
-        """Group files by which cluster their entities belong to.
-
-        Returns cluster_label → [filenames]. Used by the recommender
-        to assign documents to folders based on graph structure.
-        """
-        components = self._get_components()
-        if not components:
-            return {}
-
-        file_to_clusters: dict[str, list[int]] = defaultdict(list)
-        cluster_labels: dict[int, str] = {}
-
-        # Compute PageRank once for the full graph
-        import networkx as nx
-
-        pr = nx.pagerank(self.graph, alpha=0.85) if self.graph.number_of_nodes() > 0 else {}
-
-        for idx, component in enumerate(components):
-            type_counts: dict[str, int] = defaultdict(int)
-            # Find highest-PageRank entity in this component
-            best_name = ""
-            best_pr = -1.0
-            for key in component:
-                node = self.graph.nodes[key]
-                etype = node.get("entity_type", "unknown")
-                if etype != "unresolved":
-                    type_counts[etype] += 1
-                    name = node.get("name", "")
-                    if pr.get(key, 0) > best_pr:
-                        best_pr = pr.get(key, 0)
-                        best_name = name
-
-            top_type = max(type_counts, key=type_counts.get) if type_counts else "general"
-            top_name = best_name or f"cluster-{idx}"
-            cluster_labels[idx] = f"{top_type}: {top_name}"
-
-            # Map files to this cluster
-            for key in component:
-                source_file = self.graph.nodes[key].get("source_file", "")
-                if source_file:
-                    file_to_clusters[source_file].append(idx)
-
-        # Invert: cluster → files
-        cluster_files: dict[str, list[str]] = defaultdict(list)
-        for filename, cluster_ids in file_to_clusters.items():
-            # Assign file to its primary (most frequent) cluster
-            primary = max(set(cluster_ids), key=cluster_ids.count)
-            label = cluster_labels.get(primary, f"cluster-{primary}")
-            if filename not in cluster_files[label]:
-                cluster_files[label].append(filename)
-
-        return dict(cluster_files)
 
     # ------------------------------------------------------------------
     # Summary / reporting

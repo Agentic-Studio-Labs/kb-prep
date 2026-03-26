@@ -1,4 +1,4 @@
-"""LLM prompt templates for document analysis, fixing, and folder recommendation."""
+"""LLM prompt templates for document analysis and fixing."""
 
 # ---------------------------------------------------------------------------
 # Content Analysis Prompt
@@ -49,59 +49,6 @@ Guidelines for entity and relationship extraction:
 - For legal: extract parties, clauses, obligations, definitions
 - Be thorough — the graph powers cross-document understanding
 """
-
-# ---------------------------------------------------------------------------
-# Folder Recommendation Prompt
-# ---------------------------------------------------------------------------
-
-RECOMMEND_FOLDERS = """\
-You are organizing documents into a knowledge base folder structure for a RAG system.
-
-Here are the documents and their analyzed metadata:
-
-<documents>
-{documents_json}
-</documents>
-
-Design a folder hierarchy that:
-1. Groups related documents by domain, then by topic/subtopic
-2. Uses 2-3 levels max (too deep = hard to navigate, too flat = no organization)
-3. Each folder should contain 2-10 documents (split further if more)
-4. Folder names should be clear, short, and descriptive
-5. Each folder needs a description explaining what content it holds (this helps the LLM decide when to search it)
-6. Folder names must be SHORT TOPIC LABELS (2-4 words like "Insurance Basics", "Goal Setting"), NEVER document titles or filenames
-7. If a graph_cluster label is provided, use it as a grouping hint but generate your own descriptive folder name
-8. Documents that are clearly the same content in different formats (e.g., same title as .pdf and .docx) must go in the same folder
-9. NEVER use a document's filename or title as a folder name
-
-Return ONLY valid JSON:
-{{
-  "folders": [
-    {{
-      "name": "<folder name>",
-      "description": "<what this folder contains — written for an LLM to understand when to search here>",
-      "children": [
-        {{
-          "name": "<subfolder name>",
-          "description": "<description>",
-          "children": []
-        }}
-      ]
-    }}
-  ],
-  "assignments": {{
-    "<filename>": "<full/folder/path>"
-  }}
-}}
-
-The assignments map each filename to its recommended folder path (e.g. "Mathematics/Fractions").
-
-Important guidelines:
-- Distribute files EVENLY across folders. No single folder should contain more than ~30% of all files.
-- If a folder would have too many files, split it into meaningful subfolders.
-- Group by FUNCTION/PURPOSE first, then by topic within those groups.
-- Folder descriptions are critical — they tell the RAG system's LLM when to search each folder. Be specific about what questions each folder can answer.
-{domain_hints}"""
 
 # ---------------------------------------------------------------------------
 # Auto-Fix Prompts

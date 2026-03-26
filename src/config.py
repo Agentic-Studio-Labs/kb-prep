@@ -32,7 +32,6 @@ class Config:
     output_dir: str = "./fixed"
     convert_to_markdown: bool = True  # Convert DOCX/PDF → MD
     concurrency: int = 5  # Max parallel LLM calls
-    folder_hints: str = ""  # Domain-specific guidance for folder organization
 
     @classmethod
     def from_env(cls) -> "Config":

@@ -76,21 +76,50 @@ class DocumentParser:
     def _parse_docx(self, file_path: str) -> ParsedDocument:
         doc = DocxDocument(file_path)
         paragraphs: list[Paragraph] = []
+        idx = 0
 
-        for idx, para in enumerate(doc.paragraphs):
-            text = para.text.strip()
-            if not text:
-                continue
+        # Walk body elements in document order (paragraphs + tables)
+        from docx.oxml.ns import qn
 
-            level = self._docx_heading_level(para.style.name)
-            paragraphs.append(
-                Paragraph(
-                    text=text,
-                    level=level,
-                    style=para.style.name,
-                    index=idx,
-                )
-            )
+        for element in doc.element.body:
+            tag = element.tag.split("}")[-1] if "}" in element.tag else element.tag
+
+            if tag == "p":
+                # Normal paragraph — use style-based heading detection
+                para_obj = None
+                for p in doc.paragraphs:
+                    if p._element is element:
+                        para_obj = p
+                        break
+                if para_obj is None:
+                    continue
+                text = para_obj.text.strip()
+                if not text:
+                    continue
+                level = self._docx_heading_level(para_obj.style.name)
+                paragraphs.append(Paragraph(text=text, level=level, style=para_obj.style.name, index=idx))
+                idx += 1
+
+            elif tag == "tbl":
+                # Table — extract cell text in row order with merged-cell dedup
+                for tr in element.findall(qn("w:tr")):
+                    seen_in_row: set[str] = set()
+                    for tc in tr.findall(qn("w:tc")):
+                        for p in tc.findall(qn("w:p")):
+                            runs = p.findall(qn("w:r"))
+                            text = "".join(
+                                r.text for r in (run.find(qn("w:t")) for run in runs) if r is not None and r.text
+                            )
+                            text = text.strip()
+                            if not text:
+                                continue
+                            # Deduplicate merged cells (same text in same row)
+                            norm = " ".join(text.lower().split())
+                            if norm in seen_in_row:
+                                continue
+                            seen_in_row.add(norm)
+                            paragraphs.append(Paragraph(text=text, level=0, style="Table Cell", index=idx))
+                            idx += 1
 
         # Extract metadata
         core = doc.core_properties

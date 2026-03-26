@@ -11,8 +11,6 @@ from src.models import (
     ContentAnalysis,
     CorpusAnalysis,
     DocumentMetadata,
-    FolderNode,
-    FolderRecommendation,
     Paragraph,
     ParsedDocument,
     ScoreCard,
@@ -32,7 +30,6 @@ def test_manifest_includes_chunk_summary():
         doc_labels=["test.md"],
         similarity_matrix=np.eye(1),
     )
-    rec = FolderRecommendation(root=FolderNode(name="Root", description=""), file_assignments={"test.md": "Budget"})
     chunk_set = ChunkSet(
         document_id="test",
         source_file="test.md",
@@ -55,7 +52,6 @@ def test_manifest_includes_chunk_summary():
         analyses=[analysis],
         cards=[card],
         corpus_analysis=ca,
-        recommendation=rec,
         graph=None,
         chunk_sets=[chunk_set],
         benchmarks=[],

@@ -3,8 +3,8 @@
 Uses Claude to understand document content, extract topics, domains,
 audience, and other metadata — plus entities and relationships that
 form a cross-document knowledge graph. The graph is used downstream
-by the fixer (cross-doc reference resolution), recommender (graph-based
-folder clustering), and scorer (knowledge completeness).
+by the fixer (cross-doc reference resolution) and scorer (knowledge
+completeness).
 """
 
 import asyncio

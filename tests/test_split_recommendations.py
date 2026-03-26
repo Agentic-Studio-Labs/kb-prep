@@ -5,8 +5,6 @@ from src.models import (
     ContentAnalysis,
     CorpusAnalysis,
     DocumentMetadata,
-    FolderNode,
-    FolderRecommendation,
     Paragraph,
     ParsedDocument,
     ScoreCard,
@@ -51,9 +49,6 @@ def test_manifest_exports_split_recommendations():
         doc_labels=["test.md"],
         similarity_matrix=np.eye(1),
     )
-    recommendation = FolderRecommendation(
-        root=FolderNode(name="Root", description=""), file_assignments={"test.md": "Budget"}
-    )
     split_recommendations = [
         SplitRecommendation(
             source_file="test.md",
@@ -68,7 +63,6 @@ def test_manifest_exports_split_recommendations():
         analyses=[analysis],
         cards=[card],
         corpus_analysis=ca,
-        recommendation=recommendation,
         split_recommendations=split_recommendations,
     )
 

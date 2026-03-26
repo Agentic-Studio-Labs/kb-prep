@@ -2,7 +2,7 @@
 
 Produces two formats:
 - Sidecar files: one .meta.json per document, co-located with the fixed Markdown
-- Corpus manifest: a single manifest.json with all documents, scores, graph, and folder structure
+- Corpus manifest: a single manifest.json with all documents, scores, and graph
 """
 
 import json
@@ -16,8 +16,6 @@ from .models import (
     ContentAnalysis,
     CorpusAnalysis,
     DocMetrics,
-    FolderNode,
-    FolderRecommendation,
     ParsedDocument,
     ScoreCard,
     SplitRecommendation,
@@ -31,7 +29,6 @@ def write_sidecar(
     analysis: ContentAnalysis,
     card: ScoreCard,
     metrics: Optional[DocMetrics],
-    folder: str,
 ) -> str:
     """Write a .meta.json sidecar file alongside the fixed Markdown."""
     data = {
@@ -65,7 +62,6 @@ def write_sidecar(
             {"source": r.source, "target": r.target, "type": r.rel_type, "context": r.context}
             for r in analysis.relationships
         ],
-        "folder": folder,
     }
 
     out_path = Path(output_dir) / f"{filename_stem}.meta.json"
@@ -106,7 +102,6 @@ def build_manifest_data(
     analyses: list[ContentAnalysis],
     cards: list[ScoreCard],
     corpus_analysis: CorpusAnalysis,
-    recommendation: FolderRecommendation,
     graph=None,
     chunk_sets: Optional[list[ChunkSet]] = None,
     benchmarks: Optional[list[ChunkBenchmark]] = None,
@@ -141,11 +136,9 @@ def build_manifest_data(
 
     doc_entries = []
     for doc, analysis, card in zip(docs, analyses, cards):
-        folder = recommendation.file_assignments.get(doc.metadata.filename, "")
         doc_entries.append(
             {
                 "source_file": doc.metadata.filename,
-                "folder": folder,
                 "overall_score": round(card.overall_score, 1),
                 "readiness": card.readiness.value,
                 "domain": analysis.domain,
@@ -155,8 +148,6 @@ def build_manifest_data(
                 "chunk_count": chunk_count_by_file.get(doc.metadata.filename, 0),
             }
         )
-
-    folders_list = _serialize_folder_tree(recommendation.root) if recommendation.root else []
 
     kg_data = None
     if graph and not graph.is_empty:
@@ -206,7 +197,6 @@ def build_manifest_data(
             "cross_document_edges": cross_doc_edges,
         },
         "documents": doc_entries,
-        "folders": folders_list,
         "knowledge_graph": kg_data,
         "similarity_matrix": sim_data,
         "benchmarks": [
@@ -238,7 +228,6 @@ def write_manifest(
     analyses: list[ContentAnalysis],
     cards: list[ScoreCard],
     corpus_analysis: CorpusAnalysis,
-    recommendation: FolderRecommendation,
     graph=None,
     chunk_sets: Optional[list[ChunkSet]] = None,
     benchmarks: Optional[list[ChunkBenchmark]] = None,
@@ -250,7 +239,6 @@ def write_manifest(
         analyses,
         cards,
         corpus_analysis,
-        recommendation,
         graph,
         chunk_sets=chunk_sets,
         benchmarks=benchmarks,
@@ -274,17 +262,3 @@ def _serialize_metrics(metrics: Optional[DocMetrics]) -> Optional[dict]:
         "info_density": metrics.info_density,
         "topic_boundaries": metrics.topic_boundaries,
     }
-
-
-def _serialize_folder_tree(node: FolderNode) -> list[dict]:
-    """Recursively serialize FolderNode children to JSON-safe dicts."""
-    result = []
-    for child in node.children:
-        entry = {
-            "name": child.name,
-            "description": child.description,
-            "document_count": len(child.document_files),
-            "children": _serialize_folder_tree(child) if child.children else [],
-        }
-        result.append(entry)
-    return result

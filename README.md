@@ -10,8 +10,7 @@ RAG failures often start before embeddings - with the documents themselves: dang
 - **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
 - **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
 - **Chunks** documents into heading-aware, overlapping segments with quality metadata and optional retrieval benchmarks (Recall@5, MRR, nDCG@5)
-- **Recommends** topic-focused document groupings (powered by [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) + [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf))
-- **Exports** machine-readable metadata — `.meta.json`, `.chunks.json` sidecars and a corpus-level `manifest.json` for downstream pipeline integration
+- **Exports** rich metadata for ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)
 
 Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) and complements RAG frameworks (LlamaIndex, LangChain, etc.).
 
@@ -29,13 +28,11 @@ flowchart TD
     Analyze[LLM Analyze — entities · relationships · knowledge graph]
     Chunk[Chunk — heading-aware splits · overlap · quality flags]
     Fix[Auto-Fix — rewrite refs · split paragraphs · headings]
-    Recommend[Recommend Groupings — Louvain clusters · PageRank]
     Output[Fixed Markdown + .meta.json + .chunks.json + manifest.json]
 
     Input --> Parse --> Clean --> CA --> Score
     Score -->|+ analyze| Analyze
     Analyze --> Chunk
-    Analyze --> Recommend
     Analyze -->|+ fix| Fix
     Fix --> Output
     Chunk --> Output
@@ -47,7 +44,7 @@ flowchart TD
 | Command   | What runs                                                                          |
 | --------- | ---------------------------------------------------------------------------------- |
 | `score`   | Parse → Corpus Analyzer → Score                                                    |
-| `analyze` | + LLM analysis, knowledge graph, chunking, folder recommendations, metadata export |
+| `analyze` | + LLM analysis, knowledge graph, chunking, metadata export |
 | `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
 
 
@@ -102,7 +99,7 @@ python -m src.cli score ./my-docs/
 python -m src.cli score ./my-docs/ --detail        # show every issue
 python -m src.cli score ./my-docs/ --json-output   # machine-readable
 
-# Analyze with LLM (topics, knowledge graph, folder recommendations)
+# Analyze with LLM (topics, knowledge graph, chunking)
 python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 
 # Auto-fix issues and output improved Markdown
@@ -138,14 +135,12 @@ python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--llm-key TEXT`      | Anthropic API key (required)                                |
 | `--model TEXT`        | LLM model override (default: claude-sonnet-4-20250514)      |
 | `--concurrency N`     | Max parallel LLM calls (default: 5)                         |
-| `--folder-hints PATH` | File with domain-specific folder guidance                   |
 | `--json-output`       | Output manifest JSON to stdout (pipeable with `jq`)         |
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
 | `--export-chunks`     | Write per-document `.chunks.json` sidecars (default: on)    |
 | `--chunk-size N`      | Target words per chunk (default: 220)                       |
 | `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
 | `--run-benchmark`     | Run chunk-level retrieval benchmarks and export metrics     |
-| `--skip-enrichment`   | Skip folder recommendation and graph-heavy output           |
 | `--detail`            | Show per-issue breakdown                                    |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
@@ -165,7 +160,6 @@ python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--fix-below N`       | Only fix documents scoring below this threshold             |
 | `--model TEXT`        | LLM model override                                          |
 | `--concurrency N`     | Max parallel LLM calls (default: 5)                         |
-| `--folder-hints PATH` | File with domain-specific folder guidance                   |
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
 | `--chunk-size N`      | Target words per chunk (default: 220)                       |
 | `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
@@ -300,7 +294,7 @@ output/
 └── manifest.json                      ← corpus manifest
 ```
 
-Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, relationships, and folder assignment. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
+Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, and relationships. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
 
 Analysis sidecar example:
 
@@ -330,13 +324,12 @@ Analysis sidecar example:
   "relationships": [
     { "source": "Health Insurance", "target": "Premium", "type": "related_to" }
   ],
-  "folder": "Insurance Concepts"
 }
 ```
 
 ### Corpus manifest
 
-A single `manifest.json` at the output root contains corpus-level stats, all document entries, folder structure, knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
+A single `manifest.json` at the output root contains corpus-level stats, all document entries, knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
 
 ### Usage
 
@@ -358,7 +351,7 @@ python -m src.cli fix ./my-docs/ --llm-key $KEY --no-export-meta
 
 When LLM analysis runs (`analyze` or `fix` with `--llm-key`), an in-memory knowledge graph is built across all documents automatically.
 
-The LLM extracts **entities** and **relationships** from each document. Before merging into the graph, a confidence check filters out low-quality analyses — if the LLM returned too few entities for the document's size, no relationships, or only a single entity type (suggesting it defaulted), the analysis is kept for its metadata but its entities are excluded from the graph. This prevents bad LLM output from poisoning clustering and folder recommendations.
+The LLM extracts **entities** and **relationships** from each document. Before merging into the graph, a confidence check filters out low-quality analyses — if the LLM returned too few entities for the document's size, no relationships, or only a single entity type (suggesting it defaulted), the analysis is kept for its metadata but its entities are excluded from the graph. This prevents bad LLM output from poisoning the graph and downstream scoring.
 
 Entities that pass the confidence check are merged into a shared [networkx](https://networkx.org/) directed graph using TF-IDF cosine similarity on character n-grams (threshold 0.4) — this handles morphological variation ("Budget" matches "Budgeting"), word reordering, and typos. The low threshold trades precision for recall; in large corpora with many short entity names, some spurious merges are possible.
 
@@ -370,31 +363,16 @@ Entities that pass the confidence check are merged into a shared [networkx](http
 
 ### Graph analysis
 
-- **Louvain community detection** — clusters entities in the knowledge graph for folder recommendations (seeded for determinism)
-- **Spectral clustering** — deterministic document grouping using the eigengap heuristic on the TF-IDF similarity matrix (available as an alternative to Louvain)
-- **PageRank** — ranks entities by structural importance for folder naming
+- **Louvain community detection** — clusters entities in the knowledge graph (seeded for determinism)
+- **Spectral clustering** — deterministic document clustering using the eigengap heuristic on the TF-IDF similarity matrix
+- **PageRank** — ranks entities by structural importance
 - **Betweenness centrality** — identifies bridge entities connecting topic clusters
 - **Bipartite projection** — document-document similarity via shared entities (blended with TF-IDF similarity)
-- **Folder coherence validation** — silhouette analysis scores whether folder assignments actually group similar documents
 
 ### Downstream consumers
 
 - **Scorer** — orphan references and cross-document connectivity (Knowledge Completeness criterion)
 - **Fixer** — cross-document context for resolving dangling references ("see Unit 2" gets actual Unit 2 content)
-- **Recommender** — graph clusters + PageRank for folder naming, silhouette validation for assignment quality
-
-## Document Grouping
-
-The tool recommends how to group documents using a 4-tier priority: graph clusters + LLM naming (best), LLM-only, graph-only, or heuristic fallback. These groupings appear in the metadata export and the analysis report:
-
-```
-Engineering - API Design
-Engineering - Architecture
-Product - Requirements
-Product - User Research
-Onboarding
-```
-
 ## Testing
 
 Two test suites: **unit tests** (fast, no downloads) and an **eval suite** (validates against published benchmarks and real documents).
@@ -403,7 +381,7 @@ Two test suites: **unit tests** (fast, no downloads) and an **eval suite** (vali
 
 ```bash
 source .venv/bin/activate
-python3 -m pytest tests/ -v          # 97 tests, ~3 seconds
+python3 -m pytest tests/ -v          # 91 tests, ~3 seconds
 ```
 
 Tests the scoring pipeline, graph builder, corpus analyzer, chunker, benchmark metrics, cleaner, parser, and CLI report generation using synthetic documents and mocked LLM calls. No API keys or downloads needed.
@@ -455,7 +433,7 @@ No API keys needed. All datasets are freely available.
 | Layer 1 — Scoring    | Entropy distinguishes formulaic vs diverse text; coherence detects mismatched headings (Wilcoxon p<0.01); retrieval-aware scores are non-degenerate                   | SQuAD, CUAD, BEIR/SciFact, 20 Newsgroups                                                 | Contracts entropy < newsgroups entropy |
 | Layer 2 — Graph      | Entity resolution F1 against published ER benchmarks; spectral clustering NMI/ARI on labeled categories; PageRank correlates with in-degree                           | Leipzig ER, FB15k-237, 20 Newsgroups                                                     | DBLP-ACM F1 >= 0.80                    |
 | Layer 3 — Chunking   | TextTiling Pk on annotated segmentation corpus; info-dense overlap selects higher TF-IDF sentences                                                                    | Choi segmentation                                                                        | Pk <= 0.44                             |
-| Layer 4 — Retrieval  | BM25+ relevance ordering; Rocchio expansion adds domain terms; silhouette validates clustering quality                                                                | SQuAD, 20 Newsgroups                                                                     | True labels > random labels            |
+| Layer 4 — Retrieval  | BM25+ relevance ordering; Rocchio expansion adds domain terms                                                                                                          | SQuAD, 20 Newsgroups                                                                     | True labels > random labels            |
 | Layer 5 — End-to-end | Full round-trip: write .docx/.md files → parse → score → chunk → BM25 retrieve → measure hit rate. Also: parse real PDFs and compare against ground truth annotations | SQuAD (synthetic files), SCORE-Bench (real PDFs), Kleister NDA (real PDFs), OmniDocBench | Parse fidelity F1 >= 0.60              |
 | Cross-layer          | Edge cases (empty/unicode/stopwords), TF-IDF consistency across layers, performance benchmarks (<30s for 20K docs)                                                    | Synthetic, 20 Newsgroups                                                                 | No crashes, no NaN                     |
 
@@ -502,7 +480,6 @@ ragprep/
 │   ├── analyzer.py              # LLM content analysis (topics, entities, relationships)
 │   ├── graph_builder.py         # Knowledge graph (networkx) + spectral clustering + PageRank
 │   ├── fixer.py                 # LLM auto-fix engine (graph-aware)
-│   ├── recommender.py           # Document grouping + silhouette validation
 │   ├── chunker.py               # Structure-aware chunking (heading-preserving with overlap)
 │   ├── benchmark.py             # Chunk retrieval metrics (Recall@5, MRR, nDCG@5)
 │   ├── cleaner.py               # Deterministic cleanup (header/footer dedup, page markers)
@@ -510,7 +487,7 @@ ragprep/
 │   ├── prompts.py               # LLM prompt templates
 │   ├── config.py                # Settings and API key management
 │   └── models.py                # All dataclasses
-├── tests/                       # Unit tests (97 tests, no downloads)
+├── tests/                       # Unit tests (91 tests, no downloads)
 │   ├── test_corpus_analyzer.py
 │   ├── test_scoring.py
 │   ├── test_graph.py
@@ -520,7 +497,6 @@ ragprep/
 │   ├── test_config.py
 │   ├── test_report.py
 │   ├── test_export.py           # Metadata export tests
-│   ├── test_recommender.py      # Document grouping tests
 │   ├── test_chunker.py          # Heading-aware chunking tests
 │   ├── test_benchmark.py        # Retrieval metric tests
 │   ├── test_cleaner.py          # Cleanup rule tests

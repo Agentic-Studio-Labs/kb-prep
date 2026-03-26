@@ -288,33 +288,6 @@ class GraphSummary:
 
 
 # ---------------------------------------------------------------------------
-# Folder recommendation models
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class FolderNode:
-    """A node in the recommended folder hierarchy."""
-
-    name: str
-    description: str
-    children: list["FolderNode"] = field(default_factory=list)
-    document_files: list[str] = field(default_factory=list)  # Files assigned here
-
-    def add_child(self, child: "FolderNode") -> "FolderNode":
-        self.children.append(child)
-        return child
-
-
-@dataclass
-class FolderRecommendation:
-    """Complete folder structure recommendation."""
-
-    root: FolderNode
-    file_assignments: dict[str, str] = field(default_factory=dict)  # file_path → folder_name
-
-
-# ---------------------------------------------------------------------------
 # Fix models
 # ---------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ ragprep is a CLI tool that prepares documents for RAG. It parses DOCX/PDF/TXT/MD
 
 ```bash
 python -m src.cli score <path>                          # Heuristic + corpus scoring (no LLM)
-python -m src.cli analyze <path> --llm-key KEY          # + LLM analysis + graph/folder enrichment
+python -m src.cli analyze <path> --llm-key KEY          # + LLM analysis + knowledge graph + chunking
 python -m src.cli analyze <path> --llm-key KEY --chunk-size 220 --chunk-overlap 40 --run-benchmark
 python -m src.cli fix <path> --llm-key KEY              # + auto-fix, output Markdown + sidecars
 ```
@@ -17,7 +17,7 @@ python -m src.cli fix <path> --llm-key KEY              # + auto-fix, output Mar
 
 ```bash
 source .venv/bin/activate    # venv required
-python3 -m pytest tests/ -v  # 95 tests
+python3 -m pytest tests/ -v  # 91 tests
 python3 -m pytest test-data/layer5_rag_quality/ -v
 ruff check .                 # lint
 ```
@@ -39,7 +39,6 @@ Parse → Corpus Analyzer (TF-IDF) → Score → [Analyze (LLM)] → [Fix (LLM)]
 - `src/analyzer.py` — LLM content analysis, entity/relationship extraction
 - `src/graph_builder.py` — networkx DiGraph, entity resolution (char n-gram TF-IDF cosine), spectral clustering, PageRank
 - `src/fixer.py` — LLM-powered fixes (dangling refs, headings, paragraphs, acronyms, filenames)
-- `src/recommender.py` — folder structure (graph + LLM → heuristic fallback), silhouette validation
 - `src/chunker.py` — structure-aware chunking (heading-preserving with overlap)
 - `src/benchmark.py` — chunk retrieval metrics (Recall@5, MRR, nDCG@5)
 - `src/cleaner.py` — deterministic cleanup before scoring/chunking

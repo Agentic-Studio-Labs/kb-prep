@@ -235,12 +235,6 @@ class TestLouvainClustering:
         clusters = graph.find_clusters()
         assert len(clusters) >= 2, f"Expected ≥2 clusters from two distinct communities, got {len(clusters)}"
 
-    def test_file_clusters_separates_files(self):
-        """Files from different communities should be in different clusters."""
-        graph = self._build_two_cluster_graph()
-        file_clusters = graph.get_file_clusters()
-        assert len(file_clusters) >= 2, f"Expected ≥2 file clusters, got {len(file_clusters)}: {file_clusters}"
-
 
 # ------------------------------------------------------------------
 # 4. Spectral clustering
@@ -316,20 +310,3 @@ def test_pagerank_returns_rankings():
     top_entity_name = graph._entities[top_entity].name if top_entity in graph._entities else top_entity
     leaf_keys = {e.key for e in graph._entities.values() if e.name in leaf_names}
     assert top_entity in leaf_keys, f"Top PageRank entity should be a leaf concept, got {top_entity_name!r}"
-
-
-def test_file_clusters_use_pagerank_labels():
-    """Cluster labels should use the highest-PageRank entity, not the first."""
-    graph = KnowledgeGraph()
-    # Create a cluster where "Insurance" has highest PageRank (most inbound links)
-    for name in ["Risk Assessment", "Coverage Types", "Premium Calculation"]:
-        graph._add_entity(Entity(name=name, entity_type="concept", source_file="a.md"), "a.md")
-    graph._add_entity(Entity(name="Insurance", entity_type="concept", source_file="a.md"), "a.md")
-    # All point to Insurance (giving it highest PageRank)
-    for name in ["Risk Assessment", "Coverage Types", "Premium Calculation"]:
-        graph._add_relationship(Relationship(source=name, target="Insurance", rel_type="part_of", source_file="a.md"))
-
-    clusters = graph.get_file_clusters()
-    # The label should contain "Insurance" (highest PR), not "Coverage Types" or "Premium Calculation"
-    labels = list(clusters.keys())
-    assert any("Insurance" in label for label in labels), f"Expected 'Insurance' in labels, got {labels}"

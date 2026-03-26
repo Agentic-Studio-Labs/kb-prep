@@ -13,8 +13,6 @@ from src.models import (
     DocMetrics,
     DocumentMetadata,
     Entity,
-    FolderNode,
-    FolderRecommendation,
     Paragraph,
     ParsedDocument,
     Relationship,
@@ -71,7 +69,7 @@ def _make_metrics():
 
 def test_write_sidecar_creates_file():
     with tempfile.TemporaryDirectory() as td:
-        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics(), "Math")
+        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics())
         assert Path(path).exists()
         data = json.loads(Path(path).read_text())
         assert data["ragprep_version"] == "0.1.0"
@@ -79,7 +77,7 @@ def test_write_sidecar_creates_file():
 
 def test_sidecar_schema_keys():
     with tempfile.TemporaryDirectory() as td:
-        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics(), "Math")
+        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics())
         data = json.loads(Path(path).read_text())
         required = {
             "ragprep_version",
@@ -90,14 +88,13 @@ def test_sidecar_schema_keys():
             "metrics",
             "entities",
             "relationships",
-            "folder",
         }
         assert required.issubset(data.keys()), f"Missing keys: {required - data.keys()}"
 
 
 def test_sidecar_handles_missing_metrics():
     with tempfile.TemporaryDirectory() as td:
-        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), None, "Math")
+        path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), None)
         data = json.loads(Path(path).read_text())
         assert data["metrics"] is None
 
@@ -106,7 +103,7 @@ def test_sidecar_unicode_preserved():
     with tempfile.TemporaryDirectory() as td:
         analysis = _make_analysis()
         analysis.topics = ["matemáticas", "frações"]
-        path = write_sidecar(td, "test-doc", _make_doc(), analysis, _make_card(), None, "Math")
+        path = write_sidecar(td, "test-doc", _make_doc(), analysis, _make_card(), None)
         content = Path(path).read_text(encoding="utf-8")
         assert "matemáticas" in content
         assert "frações" in content
@@ -123,17 +120,7 @@ def test_write_manifest_creates_file():
             similarity_matrix=np.eye(1),
             doc_metrics={"test.docx": _make_metrics()},
         )
-        rec = FolderRecommendation(
-            root=FolderNode(
-                name="Root",
-                description="",
-                children=[
-                    FolderNode(name="Math", description="Math docs", document_files=["test.docx"]),
-                ],
-            ),
-            file_assignments={"test.docx": "Math"},
-        )
-        path = write_manifest(td, [_make_doc()], [_make_analysis()], [_make_card()], ca, rec, None)
+        path = write_manifest(td, [_make_doc()], [_make_analysis()], [_make_card()], ca, None)
         assert Path(path).exists()
         data = json.loads(Path(path).read_text())
         assert data["corpus"]["total_documents"] == 1
@@ -152,11 +139,7 @@ def test_manifest_corpus_stats():
             doc_labels=["a.docx", "b.docx"],
             similarity_matrix=np.eye(2),
         )
-        rec = FolderRecommendation(
-            root=FolderNode(name="Root", description=""),
-            file_assignments={"a.docx": "A", "b.docx": "B"},
-        )
-        path = write_manifest(td, docs, analyses, cards, ca, rec, None)
+        path = write_manifest(td, docs, analyses, cards, ca, None)
         data = json.loads(Path(path).read_text())
         assert data["corpus"]["total_documents"] == 2
         assert data["corpus"]["avg_score"] == 70.0
@@ -176,8 +159,7 @@ def test_manifest_similarity_matrix_skipped_for_large_corpus():
             doc_labels=[f"doc{i}.md" for i in range(n)],
             similarity_matrix=np.eye(n),
         )
-        rec = FolderRecommendation(root=FolderNode(name="Root", description=""), file_assignments={})
-        path = write_manifest(td, docs, analyses, cards, ca, rec, None)
+        path = write_manifest(td, docs, analyses, cards, ca, None)
         data = json.loads(Path(path).read_text())
         assert data["similarity_matrix"] is None
 
@@ -201,8 +183,7 @@ def test_manifest_knowledge_graph_section():
             doc_labels=["a.md"],
             similarity_matrix=np.eye(1),
         )
-        rec = FolderRecommendation(root=FolderNode(name="Root", description=""), file_assignments={})
-        path = write_manifest(td, [_make_doc("a.md")], [_make_analysis()], [_make_card("a.md")], ca, rec, graph)
+        path = write_manifest(td, [_make_doc("a.md")], [_make_analysis()], [_make_card("a.md")], ca, graph)
         data = json.loads(Path(path).read_text())
         assert data["knowledge_graph"] is not None
         assert len(data["knowledge_graph"]["entities"]) == 2

@@ -625,6 +625,19 @@ class QualityScorer:
         checks_passed = 0
         total_checks = 4
 
+        # Parse fidelity guardrail: flag suspiciously sparse extractions
+        total_words = sum(p.word_count for p in doc.paragraphs)
+        file_kb = doc.metadata.file_size_bytes / 1024
+        if total_words < 120 and len(doc.body_paragraphs) < 5 and file_kb > 20:
+            issues.append(
+                Issue(
+                    severity=Severity.WARNING,
+                    category="structure",
+                    message=f"Low parse fidelity: only {total_words} words extracted from {file_kb:.0f} KB file",
+                    fix="Document may contain tables, text boxes, or embedded content that was not fully extracted.",
+                )
+            )
+
         # Has any headings?
         if doc.headings:
             checks_passed += 1
