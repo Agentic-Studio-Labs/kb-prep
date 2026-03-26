@@ -38,6 +38,21 @@ flowchart TD
     Chunk --> Output
 ```
 
+### Current and Upcoming Vendor Landscape
+
+*Landscape snapshot as of 2026-03. This section should be revisited as platform capabilities evolve.*
+
+Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
+
+| Area                     | Vendor trend (current + upcoming)                                                                                                                              | ragprep role                                                                                      |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Parsing and chunking     | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata        |
+| Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly                                          | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals)               |
+| Metadata enrichment      | Platforms can store/filter metadata, and some add post-ingestion enrichment agents                                                                             | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)        |
+| Quality assurance        | No major vendor provides robust pre-ingestion quality scoring + content repair workflow                                                                        | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
+
+Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
+
 
 
 
@@ -78,23 +93,6 @@ python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmar
 - Platform services increasingly handle parsing/chunking/embedding.
 - ragprep focuses on what those platforms generally do not provide: pre-ingestion quality scoring, content-level fixes, retrieval benchmarking, and structured quality metadata.
 - For managed end-to-end offerings (for example Pinecone Assistant), ragprep still adds value as an upstream quality layer.
-
-### Current and Upcoming Vendor Landscape
-
-*Landscape snapshot as of 2026-03. This section should be revisited as platform capabilities evolve.*
-
-Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
-
-
-| Area                     | Vendor trend (current + upcoming)                                                                                                                              | ragprep role                                                                                      |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Parsing and chunking     | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata        |
-| Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly                                          | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals)               |
-| Metadata enrichment      | Platforms can store/filter metadata, and some add post-ingestion enrichment agents                                                                             | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)        |
-| Quality assurance        | No major vendor provides robust pre-ingestion quality scoring + content repair workflow                                                                        | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
-
-
-Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
 
 ### Why retrieval-aware scoring?
 
