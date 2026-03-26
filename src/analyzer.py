@@ -79,6 +79,45 @@ def extract_json(text: str) -> Optional[dict]:
     return None
 
 
+def _analysis_is_low_confidence(doc: ParsedDocument, analysis: ContentAnalysis) -> bool:
+    """Check whether an LLM analysis is too sparse to trust for graph building.
+
+    Returns True if the analysis should be excluded from the knowledge graph.
+    The analysis object is still kept — topics, summary, and other metadata
+    may be useful even when entity extraction failed or was too sparse.
+
+    Heuristics:
+    - Failed analyses (error in summary) are always low confidence
+    - Documents with 200+ words should yield at least 2 entities
+    - Entities with zero relationships suggest the LLM didn't find structure
+    - All entities having the same type suggests defaulting behavior
+    """
+    # Failed analysis
+    if analysis.summary.startswith("Analysis failed"):
+        return True
+
+    # No entities at all
+    if not analysis.entities:
+        return True
+
+    # Document is substantial but LLM found almost nothing
+    word_count = len(doc.full_text.split())
+    if word_count >= 200 and len(analysis.entities) < 2:
+        return True
+
+    # Entities exist but no relationships — isolated noise
+    if len(analysis.entities) >= 3 and not analysis.relationships:
+        return True
+
+    # Every entity has the same type — likely defaulting
+    if len(analysis.entities) >= 3:
+        types = {e.entity_type for e in analysis.entities}
+        if len(types) == 1:
+            return True
+
+    return False
+
+
 class ContentAnalyzer:
     """Analyze document content using an LLM and build a knowledge graph."""
 
@@ -156,12 +195,19 @@ class ContentAnalyzer:
 
         This is the primary entry point for the pipeline. Returns both
         the per-document analyses and a merged knowledge graph.
+
+        A lightweight confidence check filters out low-quality analyses
+        before merging into the graph. If the LLM returned suspiciously
+        few entities for a document's size, the analysis is still kept
+        (topics, summary, etc. may be useful) but its entities and
+        relationships are not added to the graph.
         """
         tasks = [self.analyze(doc) for doc in docs]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         graph = KnowledgeGraph()
         analyses = []
+        skipped = 0
         for doc, result in zip(docs, results):
             if isinstance(result, Exception):
                 analysis = ContentAnalysis(summary=f"Analysis failed: {str(result)}")
@@ -169,8 +215,17 @@ class ContentAnalyzer:
                 analysis = result
             analyses.append(analysis)
 
-            # Merge into shared graph
+            # Confidence gate: skip graph merge for low-quality analyses
+            if _analysis_is_low_confidence(doc, analysis):
+                skipped += 1
+                continue
+
             graph.add_analysis(doc, analysis)
+
+        if skipped > 0:
+            import logging
+
+            logging.getLogger(__name__).info(f"Skipped {skipped}/{len(docs)} low-confidence analyses from graph merge")
 
         return analyses, graph
 
