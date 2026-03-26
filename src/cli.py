@@ -250,7 +250,7 @@ def analyze(
 @click.option("--llm-key", envvar="ANTHROPIC_API_KEY", required=True, help="Anthropic API key")
 @click.option("--model", default=None, help="LLM model override")
 @click.option("--output", "-o", default=None, help="Output directory (default: rag-files-{timestamp}/)")
-@click.option("--min-score", default=0.0, help="Skip files scoring at or above this value (only fix low-scoring files)")
+@click.option("--fix-below", default=0.0, help="Only fix documents scoring below this threshold (e.g. --fix-below 70)")
 @click.option("--exclude", multiple=True, help="Exclude files containing this substring (repeatable)")
 @click.option("--no-report", is_flag=True, help="Suppress markdown report generation")
 @click.option("--concurrency", default=5, type=int, help="Max parallel LLM calls (default: 5)")
@@ -262,7 +262,7 @@ def fix(
     llm_key: str,
     model: str,
     output: str,
-    min_score: float,
+    fix_below: float,
     exclude: tuple,
     no_report: bool,
     concurrency: int,
@@ -332,7 +332,7 @@ def fix(
     # Gather docs that need fixing
     docs_to_fix = []
     for doc, card in zip(docs, cards):
-        if min_score > 0 and card.overall_score >= min_score:
+        if fix_below > 0 and card.overall_score >= fix_below:
             console.print(f"[dim]Skipping {doc.metadata.filename} (score: {card.overall_score:.0f})[/dim]")
             continue
         if not card.all_issues:
