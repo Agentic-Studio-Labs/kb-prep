@@ -57,12 +57,12 @@ def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:
         entropy = _compute_entropy(doc_vec)
 
         pairs = _extract_heading_content_pairs(doc)
-        coherence = _compute_coherence(pairs)
+        coherence = _compute_coherence(pairs, vectorizer)
 
         readability_grade = _compute_readability(doc_texts[i])
 
         para_texts = [p.text for p in doc.paragraphs if p.text.strip()]
-        topic_boundaries = _compute_topic_boundaries(para_texts)
+        topic_boundaries = _compute_topic_boundaries(para_texts, vectorizer=vectorizer)
 
         self_retrieval = _compute_self_retrieval_score(
             doc_idx=i,
@@ -73,7 +73,7 @@ def build_corpus_analysis(docs: list[ParsedDocument]) -> CorpusAnalysis:
             all_doc_labels=doc_labels,
         )
 
-        info_density = _compute_info_density(doc)
+        info_density = _compute_info_density(doc, vectorizer)
 
         doc_metrics[doc_labels[i]] = DocMetrics(
             entropy=entropy,
@@ -143,8 +143,16 @@ def _compute_readability(text: str) -> float:
 # ---------------------------------------------------------------------------
 
 
-def _compute_coherence(heading_content_pairs: list[tuple[str, str]]) -> float:
-    """Average cosine similarity between heading text and content below it."""
+def _compute_coherence(
+    heading_content_pairs: list[tuple[str, str]],
+    vectorizer: TfidfVectorizer | None = None,
+) -> float:
+    """Average cosine similarity between heading text and content below it.
+
+    Uses the corpus-level vectorizer (if provided) so that IDF weights are
+    consistent with all other metrics. Falls back to a local vectorizer
+    when called standalone.
+    """
     if not heading_content_pairs:
         return 0.0
     pairs_with_content = [(h, c) for h, c in heading_content_pairs if h.strip() and c.strip()]
@@ -153,11 +161,19 @@ def _compute_coherence(heading_content_pairs: list[tuple[str, str]]) -> float:
     all_texts = []
     for h, c in pairs_with_content:
         all_texts.extend([h, c])
-    vec = TfidfVectorizer(stop_words="english", sublinear_tf=True)
-    try:
-        matrix = vec.fit_transform(all_texts)
-    except ValueError:
-        return 0.0
+
+    if vectorizer is not None:
+        try:
+            matrix = vectorizer.transform(all_texts)
+        except Exception:
+            return 0.0
+    else:
+        vec = TfidfVectorizer(stop_words="english", sublinear_tf=True)
+        try:
+            matrix = vec.fit_transform(all_texts)
+        except ValueError:
+            return 0.0
+
     similarities = []
     for i in range(0, len(all_texts), 2):
         sim = cosine_similarity(matrix[i], matrix[i + 1])[0][0]
@@ -187,8 +203,17 @@ def _extract_heading_content_pairs(doc: ParsedDocument) -> list[tuple[str, str]]
 # ---------------------------------------------------------------------------
 
 
-def _compute_topic_boundaries(paragraphs: list[str], block_size: int = 3) -> list[int]:
-    """Find topic boundaries using TextTiling (Hearst 1997, adapted)."""
+def _compute_topic_boundaries(
+    paragraphs: list[str],
+    block_size: int = 3,
+    vectorizer: TfidfVectorizer | None = None,
+) -> list[int]:
+    """Find topic boundaries using TextTiling (Hearst 1997, adapted).
+
+    Uses the corpus-level vectorizer (if provided) so that IDF weights
+    reflect corpus-wide term importance. Falls back to a local vectorizer
+    when called standalone.
+    """
     if len(paragraphs) < 3:
         return []
     blocks = []
@@ -197,11 +222,18 @@ def _compute_topic_boundaries(paragraphs: list[str], block_size: int = 3) -> lis
         blocks.append(block_text)
     if len(blocks) < 2:
         return []
-    vec = TfidfVectorizer(stop_words="english")
-    try:
-        block_matrix = vec.fit_transform(blocks)
-    except ValueError:
-        return []
+
+    if vectorizer is not None:
+        try:
+            block_matrix = vectorizer.transform(blocks)
+        except Exception:
+            return []
+    else:
+        vec = TfidfVectorizer(stop_words="english")
+        try:
+            block_matrix = vec.fit_transform(blocks)
+        except ValueError:
+            return []
     similarities = []
     for i in range(len(blocks) - 1):
         sim = cosine_similarity(block_matrix[i], block_matrix[i + 1])[0][0]
@@ -267,8 +299,19 @@ def rocchio_expand_query(
     return query + " " + " ".join(expansion_terms)
 
 
-def _bm25_score(query: str, docs: list[str], k1: float = 1.5, b: float = 0.75) -> list[float]:
-    """Compute BM25 scores for a query against all docs."""
+def _bm25_score(
+    query: str,
+    docs: list[str],
+    k1: float = 1.5,
+    b: float = 0.75,
+    delta: float = 1.0,
+) -> list[float]:
+    """Compute BM25+ scores for a query against all docs.
+
+    BM25+ (Lv & Zhai, 2011) adds a lower-bound delta to the term frequency
+    component, ensuring long documents aren't unfairly penalized. With
+    delta=0 this reduces to standard BM25.
+    """
     query_terms = re.findall(r"\w+", query.lower())
     doc_tokens = [re.findall(r"\w+", d.lower()) for d in docs]
     avg_dl = sum(len(d) for d in doc_tokens) / len(doc_tokens) if doc_tokens else 1
@@ -290,7 +333,7 @@ def _bm25_score(query: str, docs: list[str], k1: float = 1.5, b: float = 0.75) -
             idf = math.log((n_docs - term_df + 0.5) / (term_df + 0.5) + 1)
             numerator = tf * (k1 + 1)
             denominator = tf + k1 * (1 - b + b * dl / avg_dl)
-            score += idf * numerator / denominator
+            score += idf * (numerator / denominator + delta)
         scores.append(score)
     return scores
 
@@ -320,8 +363,16 @@ def select_overlap_sentences(sentences: list[str], budget: int = 100) -> list[st
     return [sentences[i] for i in sorted(selected_indices)]
 
 
-def _compute_info_density(doc: ParsedDocument) -> list[float]:
-    """Compute information density (TF-IDF magnitude) per section."""
+def _compute_info_density(
+    doc: ParsedDocument,
+    vectorizer: TfidfVectorizer | None = None,
+) -> list[float]:
+    """Compute information density (TF-IDF magnitude) per section.
+
+    Uses the corpus-level vectorizer (if provided) so that density
+    reflects corpus-wide term importance. Falls back to a local
+    vectorizer when called standalone.
+    """
     sections = []
     current = []
     for para in doc.paragraphs:
@@ -334,11 +385,18 @@ def _compute_info_density(doc: ParsedDocument) -> list[float]:
         sections.append(" ".join(current))
     if not sections:
         return []
-    vec = TfidfVectorizer(stop_words="english")
-    try:
-        matrix = vec.fit_transform(sections)
-    except ValueError:
-        return [0.0] * len(sections)
+
+    if vectorizer is not None:
+        try:
+            matrix = vectorizer.transform(sections)
+        except Exception:
+            return [0.0] * len(sections)
+    else:
+        vec = TfidfVectorizer(stop_words="english")
+        try:
+            matrix = vec.fit_transform(sections)
+        except ValueError:
+            return [0.0] * len(sections)
     densities = []
     for i in range(matrix.shape[0]):
         row = matrix[i].toarray().flatten()

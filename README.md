@@ -75,7 +75,7 @@ The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix acro
 | Criterion              | Weight | What It Checks |
 | ---------------------- | ------ | -------------- |
 | Self-Containment       | 20%    | Dangling references ("as mentioned above", "see section X") that break paragraph independence |
-| Retrieval-Aware        | 20%    | Can the document be found by search queries about its own content? Generates synthetic queries from top TF-IDF terms and measures self-retrieval rate |
+| Retrieval-Aware        | 20%    | Can the document be found by BM25+ queries about its own content? Generates synthetic queries from top TF-IDF terms and measures self-retrieval rate |
 | Heading Quality        | 15%    | Hierarchy gaps, generic headings ("Content", "Notes"), heading density |
 | Paragraph Length       | 10%    | Too short (<15 words) or too long (>300 words) |
 | File Focus             | 10%    | Vocabulary entropy over TF-IDF term weights — flags documents with unusually diverse or uniform vocabulary |
