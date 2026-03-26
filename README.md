@@ -1,6 +1,6 @@
 # kb-prep
 
-Document preparation pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database — so retrieval actually works.
+Document preparation pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database.
 
 Most RAG failures aren't embedding problems or chunk size problems. They're **document problems**: dangling references that make paragraphs meaningless in isolation, buried content that no query can find, headings that don't match the vocabulary users search with. kb-prep catches these issues before upload, not after your users complain.
 
@@ -9,7 +9,8 @@ Most RAG failures aren't embedding problems or chunk size problems. They're **do
 - **Scores** documents across 10 criteria including a retrieval-aware metric that simulates search queries against your corpus to test whether each document can actually be found
 - **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
 - **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
-- **Organizes** documents into folders using graph-based community detection (Louvain) and TF-IDF similarity
+- **Organizes** documents into folders using [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) and [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) similarity
+- **Exports** machine-readable metadata — per-document `.meta.json` sidecars and a corpus-level `manifest.json` for downstream pipeline integration
 
 Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.). Includes optional direct upload to [anam.ai](https://anam.ai).
 
