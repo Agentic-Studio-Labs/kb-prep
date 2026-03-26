@@ -75,6 +75,21 @@ Use this sequence for predictable quality-gate behavior:
 3. Review `.ingestgate/manifest.json` for health, findability, and handling-decision signals.
 4. Run `fix` only when results are below your bar, then re-run `analyze --run-benchmark` to confirm improvement.
 
+### Operating profile (default)
+
+Use **balanced** as the default operating profile:
+
+- `--pass-threshold 85`
+- `--pass-with-notes-threshold 70`
+- `--remediation-threshold 50`
+
+For most teams, this keeps gate decisions actionable without creating unnecessary review load.
+
+Other profiles:
+
+- **strict**: `90 / 75 / 60` (more docs move from `PASS` to `PASS_WITH_NOTES`)
+- **lenient**: `80 / 65 / 45` (fewer docs are flagged for follow-up)
+
 Example:
 
 ```bash
@@ -84,16 +99,20 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # 1) Baseline (no LLM)
-ingestgate score ./my-docs/ --detail
+ingestgate score ./my-docs/ --detail \
+  --pass-threshold 85 --pass-with-notes-threshold 70 --remediation-threshold 50
 
 # 2) Retrieval evaluation
-ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark \
+  --pass-threshold 85 --pass-with-notes-threshold 70 --remediation-threshold 50
 
 # 3) Remediate if needed
-ingestgate fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY
+ingestgate fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY \
+  --pass-threshold 85 --pass-with-notes-threshold 70 --remediation-threshold 50
 
 # 4) Re-measure after fixes
-ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark \
+  --pass-threshold 85 --pass-with-notes-threshold 70 --remediation-threshold 50
 ```
 
 ### Why retrieval-aware scoring?

@@ -13,6 +13,18 @@ ingestgate analyze <path> --llm-key KEY --chunk-size 220 --chunk-overlap 40 --ru
 ingestgate fix <path> --llm-key KEY              # + auto-fix, output Markdown + sidecars
 ```
 
+## Default Gate Profile
+
+Use balanced thresholds unless explicitly overridden:
+
+- `--pass-threshold 85`
+- `--pass-with-notes-threshold 70`
+- `--remediation-threshold 50`
+
+Profile reference:
+- strict: `90 / 75 / 60`
+- lenient: `80 / 65 / 45`
+
 ## Running Tests
 
 ```bash
