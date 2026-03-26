@@ -44,11 +44,12 @@ flowchart TD
 
 
 
-| Command   | What runs                                                                |
-| --------- | ------------------------------------------------------------------------ |
-| `score`   | Parse → Corpus Analyzer → Score                                          |
+| Command   | What runs                                                                          |
+| --------- | ---------------------------------------------------------------------------------- |
+| `score`   | Parse → Corpus Analyzer → Score                                                    |
 | `analyze` | + LLM analysis, knowledge graph, chunking, folder recommendations, metadata export |
-| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory  |
+| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
+
 
 ### Positioning
 
@@ -58,19 +59,20 @@ flowchart TD
 
 ### Current and Upcoming Vendor Landscape
 
-_Landscape snapshot as of 2026-03. This section should be revisited as platform capabilities evolve._
+*Landscape snapshot as of 2026-03. This section should be revisited as platform capabilities evolve.*
 
 Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
 
-| Area | Vendor trend (current + upcoming) | ragprep role |
-| ---- | ---- | ---- |
-| Parsing and chunking | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata |
-| Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals) |
-| Metadata enrichment | Platforms can store/filter metadata, and some add post-ingestion enrichment agents | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`) |
-| Quality assurance | No major vendor provides robust pre-ingestion quality scoring + content repair workflow | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
+
+| Area                     | Vendor trend (current + upcoming)                                                                                                                              | ragprep role                                                                                      |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Parsing and chunking     | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata        |
+| Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly                                          | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals)               |
+| Metadata enrichment      | Platforms can store/filter metadata, and some add post-ingestion enrichment agents                                                                             | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)        |
+| Quality assurance        | No major vendor provides robust pre-ingestion quality scoring + content repair workflow                                                                        | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
+
 
 Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
-
 
 ### Why retrieval-aware scoring?
 
@@ -140,10 +142,10 @@ python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--json-output`       | Output manifest JSON to stdout (pipeable with `jq`)         |
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
 | `--export-chunks`     | Write per-document `.chunks.json` sidecars (default: on)    |
-| `--chunk-size N`      | Target words per chunk (default: 220)                        |
-| `--chunk-overlap N`   | Overlap words between chunks (default: 40)                   |
-| `--run-benchmark`     | Run chunk-level retrieval benchmarks and export metrics       |
-| `--skip-enrichment`   | Skip folder recommendation and graph-heavy output             |
+| `--chunk-size N`      | Target words per chunk (default: 220)                       |
+| `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
+| `--run-benchmark`     | Run chunk-level retrieval benchmarks and export metrics     |
+| `--skip-enrichment`   | Skip folder recommendation and graph-heavy output           |
 | `--detail`            | Show per-issue breakdown                                    |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
@@ -250,7 +252,7 @@ Originals are never modified. Fixed files are written as clean Markdown to the o
 
 ## Chunking
 
-The `analyze` and `fix` commands produce heading-aware chunks for every document. The chunker splits text at heading boundaries first, then applies word-level windowing within each section.
+The `analyze` command produces heading-aware chunks for every document; `fix` also chunks when metadata export is enabled. The chunker splits text at heading boundaries first, then applies word-level windowing within each section.
 
 - **Heading-preserving** — chunks never cross heading boundaries. Each chunk carries its full heading path (e.g. `["Unit 3", "Budgeting", "Income Sources"]`).
 - **Configurable size** — `--chunk-size 220` (target words per chunk) and `--chunk-overlap 40` (words shared between adjacent chunks). Defaults produce chunks of roughly 200-250 words.
@@ -401,7 +403,7 @@ Two test suites: **unit tests** (fast, no downloads) and an **eval suite** (vali
 
 ```bash
 source .venv/bin/activate
-python3 -m pytest tests/ -v          # 95 tests, ~3 seconds
+python3 -m pytest tests/ -v          # 97 tests, ~3 seconds
 ```
 
 Tests the scoring pipeline, graph builder, corpus analyzer, chunker, benchmark metrics, cleaner, parser, and CLI report generation using synthetic documents and mocked LLM calls. No API keys or downloads needed.
@@ -508,7 +510,7 @@ ragprep/
 │   ├── prompts.py               # LLM prompt templates
 │   ├── config.py                # Settings and API key management
 │   └── models.py                # All dataclasses
-├── tests/                       # Unit tests (95 tests, no downloads)
+├── tests/                       # Unit tests (97 tests, no downloads)
 │   ├── test_corpus_analyzer.py
 │   ├── test_scoring.py
 │   ├── test_graph.py
