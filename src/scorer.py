@@ -12,8 +12,9 @@ from .models import (
     ScoreCard,
     ScoringResult,
     Severity,
+    SplitRecommendation,
 )
-from .parser import ANAM_MAX_FILE_SIZE, ANAM_WARN_FILE_SIZE
+from .parser import MAX_FILE_SIZE, WARN_FILE_SIZE
 
 
 class QualityScorer:
@@ -114,7 +115,7 @@ class QualityScorer:
                             message=f'Dangling {ref_type}: "{match.group()}"',
                             location=para.index,
                             context=f"...{snippet}...",
-                            fix="Rewrite to include the referenced context inline so the paragraph stands alone.",
+                            fix="Rewrite so the chunk stands alone without requiring earlier or later context.",
                         )
                     )
 
@@ -691,22 +692,22 @@ class QualityScorer:
     # ------------------------------------------------------------------
 
     def _score_file_size(self, doc: ParsedDocument) -> ScoringResult:
-        """Check file size against anam.ai limits."""
+        """Check file size against RAG upload limits."""
         issues: list[Issue] = []
         size = doc.metadata.file_size_bytes
         mb = size / (1024 * 1024)
 
-        if size > ANAM_MAX_FILE_SIZE:
+        if size > MAX_FILE_SIZE:
             issues.append(
                 Issue(
                     severity=Severity.CRITICAL,
                     category="file_size",
-                    message=f"File is {mb:.1f} MB — exceeds anam.ai 50 MB limit",
+                    message=f"File is {mb:.1f} MB — exceeds 50 MB limit",
                     fix="Convert to Markdown (strips formatting/images) or split into smaller files.",
                 )
             )
             score = 0.0
-        elif size > ANAM_WARN_FILE_SIZE:
+        elif size > WARN_FILE_SIZE:
             issues.append(
                 Issue(
                     severity=Severity.WARNING,
@@ -850,3 +851,38 @@ class QualityScorer:
             weight=0.05,  # Supplementary — only when graph is available
             issues=issues,
         )
+
+
+def generate_split_recommendations(
+    docs: list[ParsedDocument], cards: list[ScoreCard], corpus_analysis=None
+) -> list[SplitRecommendation]:
+    """Build structured split recommendations from file-focus signals."""
+    recommendations: list[SplitRecommendation] = []
+
+    for doc, card in zip(docs, cards):
+        focus_result = next((r for r in card.results if r.category == "file_focus"), None)
+        if not focus_result:
+            continue
+        if focus_result.score > 65 and not any("split" in issue.fix.lower() for issue in focus_result.issues):
+            continue
+
+        metrics = corpus_analysis.doc_metrics.get(doc.metadata.filename) if corpus_analysis else None
+        boundaries = list(metrics.topic_boundaries) if metrics and metrics.topic_boundaries else []
+        if not boundaries:
+            boundaries = [h.index for h in doc.headings[1:]]
+
+        suggested_titles = [h.text.strip() for h in doc.headings[:6] if h.text.strip()]
+        reason = (
+            focus_result.issues[0].message if focus_result.issues else "Document appears broad across multiple topics."
+        )
+
+        recommendations.append(
+            SplitRecommendation(
+                source_file=doc.metadata.filename,
+                reason=reason,
+                proposed_boundaries=boundaries,
+                suggested_titles=suggested_titles,
+            )
+        )
+
+    return recommendations

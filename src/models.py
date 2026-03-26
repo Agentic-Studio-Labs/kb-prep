@@ -1,4 +1,4 @@
-"""Data models for kb-prep document analysis and upload pipeline."""
+"""Data models for ragprep document analysis pipeline."""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -80,6 +80,59 @@ class ParsedDocument:
     @cached_property
     def full_text(self) -> str:
         return "\n\n".join(p.text for p in self.paragraphs if p.text.strip())
+
+
+# ---------------------------------------------------------------------------
+# Chunking and retrieval benchmark models
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Chunk:
+    """A retrievable unit derived from a parsed document."""
+
+    chunk_id: str
+    document_id: str
+    source_file: str
+    text: str
+    heading_path: list[str] = field(default_factory=list)
+    start_paragraph_index: int = 0
+    end_paragraph_index: int = 0
+    token_estimate: int = 0
+    chunk_type: str = "section"
+    quality_flags: list[str] = field(default_factory=list)
+    metadata: dict[str, object] = field(default_factory=dict)
+
+
+@dataclass
+class ChunkSet:
+    """All chunks produced from one source document."""
+
+    document_id: str
+    source_file: str
+    chunks: list[Chunk] = field(default_factory=list)
+
+
+@dataclass
+class ChunkBenchmark:
+    """Retrieval metrics for one chunk retrieval mode."""
+
+    retrieval_mode: str  # lexical, embedding, hybrid
+    recall_at_5: float
+    mrr: float
+    ndcg_at_5: float
+    query_count: int
+    notes: list[str] = field(default_factory=list)
+
+
+@dataclass
+class SplitRecommendation:
+    """Suggested split points for broad multi-topic documents."""
+
+    source_file: str
+    reason: str
+    proposed_boundaries: list[int] = field(default_factory=list)
+    suggested_titles: list[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -259,45 +312,6 @@ class FolderRecommendation:
 
     root: FolderNode
     file_assignments: dict[str, str] = field(default_factory=dict)  # file_path → folder_name
-
-
-# ---------------------------------------------------------------------------
-# Upload models
-# ---------------------------------------------------------------------------
-
-
-class DocumentStatus(str, Enum):
-    PROCESSING = "PROCESSING"
-    READY = "READY"
-    FAILED = "FAILED"
-
-
-@dataclass
-class UploadResult:
-    """Result of uploading a single document."""
-
-    file_path: str
-    document_id: str
-    folder_id: str
-    folder_name: str
-    status: DocumentStatus
-    error: Optional[str] = None
-
-
-@dataclass
-class UploadReport:
-    """Summary of all uploads in a batch."""
-
-    results: list[UploadResult] = field(default_factory=list)
-    folders_created: list[str] = field(default_factory=list)
-
-    @property
-    def successful(self) -> list[UploadResult]:
-        return [r for r in self.results if r.status != DocumentStatus.FAILED]
-
-    @property
-    def failed(self) -> list[UploadResult]:
-        return [r for r in self.results if r.status == DocumentStatus.FAILED]
 
 
 # ---------------------------------------------------------------------------

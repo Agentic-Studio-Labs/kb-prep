@@ -314,7 +314,7 @@ def rocchio_expand_query(
     return query + " " + " ".join(expansion_terms)
 
 
-def _bm25_score(
+def bm25_score(
     query: str,
     docs: list[str],
     k1: float = 1.5,
@@ -351,6 +351,10 @@ def _bm25_score(
             score += idf * (numerator / denominator + delta)
         scores.append(score)
     return scores
+
+
+# Backward-compatible alias for internal/tests still importing the old name.
+_bm25_score = bm25_score
 
 
 def select_overlap_sentences(
@@ -463,7 +467,7 @@ def _compute_self_retrieval_score(
         return 0.0
     hits = 0
     for query in queries:
-        scores = _bm25_score(query, all_doc_texts)
+        scores = bm25_score(query, all_doc_texts)
         ranked = sorted(range(len(scores)), key=lambda i: -scores[i])[:top_k]
         if doc_idx in ranked:
             hits += 1

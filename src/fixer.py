@@ -173,7 +173,7 @@ class DocumentFixer:
                 original_text=original,
                 fixed_text=fixed_text,
                 paragraph_index=para_idx,
-                description="Rewrote paragraph to be self-contained",
+                description="Rewrote paragraph to be chunk-safe and self-contained",
             )
         return None
 
@@ -422,3 +422,14 @@ class DocumentFixer:
             f.write(content)
 
         return output_path
+
+
+def _has_positional_reference(text: str) -> bool:
+    """Detect reference phrases that rely on surrounding context."""
+    patterns = [
+        r"\b(?:as\s+)?mentioned\s+(?:above|below|earlier|previously|before)\b",
+        r"\bthe\s+(?:above|below|following|previous|preceding)\s+\w+",
+        r"\b(?:refer|referring)\s+to\s+(?:the\s+)?(?:above|below|previous)",
+        r"\bas\s+(?:noted|described|shown|outlined|discussed)\s+(?:above|below|earlier)",
+    ]
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)

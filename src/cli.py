@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""kb-prep — Document preparation and upload CLI for anam.ai RAG.
+"""ragprep — Document preparation pipeline for RAG systems.
 
 Usage:
-    kb-prep score   <path>                          Score documents for RAG readiness
-    kb-prep analyze <path> --llm-key KEY            Score + LLM content analysis
-    kb-prep fix     <path> --llm-key KEY            Score + analyze + auto-fix issues
-    kb-prep upload  <path> --api-key KEY            Full pipeline: fix → recommend → upload
+    ragprep score   <path>                          Score documents for RAG readiness
+    ragprep analyze <path> --llm-key KEY            Score + LLM content analysis
+    ragprep fix     <path> --llm-key KEY            Score + analyze + auto-fix issues
 
 All commands auto-generate a timestamped Markdown report (suppress with --no-report).
 LLM commands support --concurrency N (default: 5) for parallel API calls.
@@ -25,9 +24,9 @@ from rich.table import Table
 
 from .config import Config
 from .corpus_analyzer import build_corpus_analysis
-from .models import ScoreCard, Severity
+from .models import ChunkSet, FolderRecommendation, ScoreCard, Severity
 from .parser import DocumentParser, discover_files
-from .scorer import QualityScorer
+from .scorer import QualityScorer, generate_split_recommendations
 
 console = Console()
 
@@ -38,9 +37,9 @@ console = Console()
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="kb-prep")
+@click.version_option(version="0.1.0", prog_name="ragprep")
 def cli():
-    """Prepare and upload documents to anam.ai knowledge base."""
+    """Prepare documents for RAG knowledge bases."""
     pass
 
 
@@ -144,6 +143,11 @@ def score(path: str, detail: bool, json_out: bool, exclude: tuple, no_report: bo
 )
 @click.option("--no-export-meta", is_flag=True, help="Skip writing metadata export files")
 @click.option("--json-output", "json_out", is_flag=True, help="Output manifest JSON to stdout")
+@click.option("--export-chunks/--no-export-chunks", default=True, help="Write per-document .chunks.json files")
+@click.option("--chunk-size", default=220, type=int, help="Target words per chunk")
+@click.option("--chunk-overlap", default=40, type=int, help="Overlapping words between chunks")
+@click.option("--run-benchmark", is_flag=True, help="Run chunk-level retrieval benchmark")
+@click.option("--skip-enrichment", is_flag=True, help="Skip folder recommendation and graph-heavy output")
 def analyze(
     path: str,
     llm_key: str,
@@ -155,10 +159,19 @@ def analyze(
     folder_hints: str,
     no_export_meta: bool,
     json_out: bool,
+    export_chunks: bool,
+    chunk_size: int,
+    chunk_overlap: int,
+    run_benchmark: bool,
+    skip_enrichment: bool,
 ):
     """Score documents + LLM content analysis and folder recommendation."""
     from .analyzer import ContentAnalyzer
-    from .export import build_manifest_data, write_manifest, write_sidecar
+    from .benchmark import benchmark_chunk_retrieval
+    from .chunker import DocumentChunker
+    from .cleaner import DocumentCleaner
+    from .export import build_manifest_data, write_chunk_sidecar, write_manifest, write_sidecar
+    from .models import FolderNode, FolderRecommendation
     from .recommender import FolderRecommender, format_folder_tree
 
     files = discover_files(path, exclude_patterns=list(exclude) if exclude else None)
@@ -176,6 +189,7 @@ def analyze(
 
     parser = DocumentParser()
     analyzer_inst = ContentAnalyzer(config)
+    cleaner = DocumentCleaner()
 
     docs = []
 
@@ -193,6 +207,17 @@ def analyze(
                 console.print(f"[red]Error: {file_path}: {e}[/red]")
             progress.advance(parse_task)
 
+        cleaned_docs = []
+        for doc in docs:
+            cleaned_docs.append(
+                doc.__class__(
+                    metadata=doc.metadata,
+                    paragraphs=cleaner.clean_document(doc.paragraphs),
+                    heading_tree=doc.heading_tree,
+                )
+            )
+        docs = cleaned_docs
+
         progress.add_task("Analyzing content & building knowledge graph...", total=None)
         analyses, graph = asyncio.run(analyzer_inst.analyze_and_build_graph(docs))
 
@@ -203,6 +228,32 @@ def analyze(
         corpus_analysis=corpus_analysis,
     )
     cards = [scorer.score(doc) for doc in docs]
+    chunker = DocumentChunker(target_words=chunk_size, overlap_words=chunk_overlap)
+    chunk_sets = [chunker.chunk_document(doc) for doc in docs]
+    split_recommendations = generate_split_recommendations(docs, cards, corpus_analysis=corpus_analysis)
+    benchmarks = []
+
+    if run_benchmark:
+        all_chunks: list[str] = []
+        chunk_source_files: list[str] = []
+        for chunk_set in chunk_sets:
+            for chunk in chunk_set.chunks:
+                all_chunks.append(chunk.text)
+                chunk_source_files.append(chunk.source_file)
+
+        if all_chunks:
+            queries = []
+            gold_sets = []
+            for doc in docs:
+                query = " ".join(doc.metadata.stem.replace("_", " ").replace("-", " ").split())
+                if not query:
+                    continue
+                gold = {i for i, source in enumerate(chunk_source_files) if source == doc.metadata.filename}
+                if not gold:
+                    continue
+                queries.append(query)
+                gold_sets.append(gold)
+            benchmarks = benchmark_chunk_retrieval(queries, gold_sets, all_chunks, top_k=5)
 
     # Show scores
     _print_score_table(cards, detail)
@@ -212,39 +263,44 @@ def analyze(
     for doc, analysis in zip(docs, analyses):
         _print_analysis(doc.metadata.filename, analysis)
 
-    # Show knowledge graph summary
-    _print_graph_summary(graph)
-
-    # Show folder recommendation (graph-aware)
-    console.print("\n")
-    recommender = FolderRecommender(config, graph=graph)
-    recommendation = asyncio.run(recommender.recommend(docs, analyses))
-    tree_str = format_folder_tree(recommendation.root)
-    console.print(Panel(tree_str, title="Recommended Folder Structure", border_style="green"))
-
-    if recommendation.file_assignments:
-        assign_table = Table(title="File → Folder Assignments")
-        assign_table.add_column("File", style="cyan")
-        assign_table.add_column("Folder", style="green")
-        for filename, folder in recommendation.file_assignments.items():
-            assign_table.add_row(filename, folder)
-        console.print(assign_table)
-
-    # Validate folder assignments
     sil_score = 0.0
     misplaced: list[tuple[str, float]] = []
-    if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
-        sil_score, misplaced = recommender.validate_assignments(
-            recommendation.file_assignments,
-            corpus_analysis.similarity_matrix,
-            corpus_analysis.doc_labels,
+    if not skip_enrichment:
+        _print_graph_summary(graph)
+
+        # Show folder recommendation (graph-aware)
+        console.print("\n")
+        recommender = FolderRecommender(config, graph=graph)
+        recommendation = asyncio.run(recommender.recommend(docs, analyses))
+        tree_str = format_folder_tree(recommendation.root)
+        console.print(Panel(tree_str, title="Recommended Folder Structure", border_style="green"))
+
+        if recommendation.file_assignments:
+            assign_table = Table(title="File → Folder Assignments")
+            assign_table.add_column("File", style="cyan")
+            assign_table.add_column("Folder", style="green")
+            for filename, folder in recommendation.file_assignments.items():
+                assign_table.add_row(filename, folder)
+            console.print(assign_table)
+
+        # Validate folder assignments
+        if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
+            sil_score, misplaced = recommender.validate_assignments(
+                recommendation.file_assignments,
+                corpus_analysis.similarity_matrix,
+                corpus_analysis.doc_labels,
+            )
+            if sil_score != 0:
+                console.print(f"\n[dim]Folder coherence (silhouette): {sil_score:.2f}[/dim]")
+            if misplaced:
+                console.print(f"[yellow]Warning: {len(misplaced)} document(s) may be misplaced:[/yellow]")
+                for filename, score in misplaced:
+                    console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
+    else:
+        recommendation = FolderRecommendation(
+            root=FolderNode(name="Knowledge Base", description="Root knowledge base container"),
+            file_assignments={},
         )
-        if sil_score != 0:
-            console.print(f"\n[dim]Folder coherence (silhouette): {sil_score:.2f}[/dim]")
-        if misplaced:
-            console.print(f"[yellow]Warning: {len(misplaced)} document(s) may be misplaced:[/yellow]")
-            for filename, score in misplaced:
-                console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
 
     # Auto-generate report
     if not no_report:
@@ -265,16 +321,40 @@ def analyze(
     if json_out:
         import json as _json
 
-        data = build_manifest_data(docs, analyses, cards, corpus_analysis, recommendation, graph)
+        data = build_manifest_data(
+            docs,
+            analyses,
+            cards,
+            corpus_analysis,
+            recommendation,
+            graph,
+            chunk_sets=chunk_sets,
+            benchmarks=benchmarks,
+            split_recommendations=split_recommendations,
+        )
         print(_json.dumps(data))
     elif not no_export_meta:
-        meta_dir = os.path.join(path, ".kb-prep")
+        meta_dir = os.path.join(path, ".ragprep")
+        if export_chunks:
+            for chunk_set in chunk_sets:
+                write_chunk_sidecar(meta_dir, chunk_set)
         for doc, analysis, card in zip(docs, analyses, cards):
             filename = doc.metadata.filename
             doc_metrics = corpus_analysis.doc_metrics.get(filename)
             folder = recommendation.file_assignments.get(filename, "")
             write_sidecar(meta_dir, doc.metadata.stem, doc, analysis, card, doc_metrics, folder)
-        manifest_path = write_manifest(meta_dir, docs, analyses, cards, corpus_analysis, recommendation, graph)
+        manifest_path = write_manifest(
+            meta_dir,
+            docs,
+            analyses,
+            cards,
+            corpus_analysis,
+            recommendation,
+            graph,
+            chunk_sets=chunk_sets,
+            benchmarks=benchmarks,
+            split_recommendations=split_recommendations,
+        )
         console.print(f"[green]Metadata:[/green] {manifest_path}")
 
 
@@ -296,6 +376,8 @@ def analyze(
     "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
 )
 @click.option("--no-export-meta", is_flag=True, help="Skip writing .meta.json sidecar files and manifest.json")
+@click.option("--chunk-size", default=220, type=int, help="Target words per chunk")
+@click.option("--chunk-overlap", default=40, type=int, help="Overlapping words between chunks")
 def fix(
     path: str,
     llm_key: str,
@@ -307,12 +389,16 @@ def fix(
     concurrency: int,
     folder_hints: str,
     no_export_meta: bool,
+    chunk_size: int,
+    chunk_overlap: int,
 ):
     """Score + auto-fix issues, output improved Markdown files."""
     from datetime import datetime
 
     from .analyzer import ContentAnalyzer
-    from .export import write_manifest, write_sidecar
+    from .chunker import DocumentChunker
+    from .cleaner import DocumentCleaner
+    from .export import write_chunk_sidecar, write_manifest, write_sidecar
     from .fixer import DocumentFixer
     from .parser import to_markdown
     from .recommender import FolderRecommender, format_folder_tree
@@ -339,6 +425,7 @@ def fix(
 
     parser = DocumentParser()
     analyzer_inst = ContentAnalyzer(config)
+    cleaner = DocumentCleaner()
 
     # Parse all documents first
     docs = []
@@ -356,6 +443,17 @@ def fix(
                 console.print(f"[red]Error parsing {file_path}: {e}[/red]")
             progress.advance(task)
 
+    cleaned_docs = []
+    for doc in docs:
+        cleaned_docs.append(
+            doc.__class__(
+                metadata=doc.metadata,
+                paragraphs=cleaner.clean_document(doc.paragraphs),
+                heading_tree=doc.heading_tree,
+            )
+        )
+    docs = cleaned_docs
+
     # Analyze and build knowledge graph
     console.print("[dim]Building knowledge graph...[/dim]")
     analyses, graph = asyncio.run(analyzer_inst.analyze_and_build_graph(docs))
@@ -367,6 +465,10 @@ def fix(
         corpus_analysis=corpus_analysis,
     )
     cards = [scorer.score(doc) for doc in docs]
+    chunker = DocumentChunker(target_words=chunk_size, overlap_words=chunk_overlap)
+    chunk_sets = [chunker.chunk_document(doc) for doc in docs]
+    split_recommendations = generate_split_recommendations(docs, cards, corpus_analysis=corpus_analysis)
+    chunk_sets_by_file = {cs.source_file: cs for cs in chunk_sets}
     fixer_inst = DocumentFixer(config, graph=graph)
     fix_reports = []
 
@@ -462,10 +564,30 @@ def fix(
                 doc_metrics,
                 folder,
             )
+            # Keep chunk sidecar basename aligned with final markdown stem.
+            original_cs = chunk_sets_by_file.get(filename)
+            if original_cs:
+                sidecar_cs = ChunkSet(
+                    document_id=fixed_stem,
+                    source_file=original_cs.source_file,
+                    chunks=original_cs.chunks,
+                )
+                write_chunk_sidecar(target_dir, sidecar_cs)
 
     # Write corpus manifest to the output root
     if not no_export_meta:
-        manifest_path = write_manifest(output, docs, analyses, cards, corpus_analysis, recommendation, graph)
+        manifest_path = write_manifest(
+            output,
+            docs,
+            analyses,
+            cards,
+            corpus_analysis,
+            recommendation,
+            graph,
+            chunk_sets=chunk_sets,
+            benchmarks=[],
+            split_recommendations=split_recommendations,
+        )
         console.print(f"[green]Metadata:[/green] {manifest_path} + per-doc .meta.json sidecars")
 
     # --- Console output: folder tree + assignments ---
@@ -500,7 +622,7 @@ def fix(
 
     # --- Report inside output folder ---
     if not no_report:
-        report_name = f"kb-prep-fix-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+        report_name = f"ragprep-fix-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
         report_path = os.path.join(output, report_name)
         _write_report_file(
             report_path,
@@ -514,239 +636,6 @@ def fix(
             ],
         )
         console.print(f"[green]Report:[/green] {report_path}")
-
-
-# ---------------------------------------------------------------------------
-# upload command
-# ---------------------------------------------------------------------------
-
-
-@cli.command()
-@click.argument("path", type=click.Path(exists=True))
-@click.option("--api-key", envvar="ANAM_API_KEY", required=True, help="anam.ai API key")
-@click.option("--llm-key", envvar="ANTHROPIC_API_KEY", default=None, help="Anthropic API key (for analysis/fix)")
-@click.option("--model", default=None, help="LLM model override")
-@click.option("--no-fix", is_flag=True, help="Skip auto-fix, upload originals")
-@click.option("--use-existing-folders", is_flag=True, help="Use subfolder layout on disk instead of recommender")
-@click.option("--dry-run", is_flag=True, help="Show plan without uploading")
-@click.option("--persona-id", default=None, help="Attach knowledge tool to this persona")
-@click.option("--tool-name", default=None, help="Name for the knowledge tool")
-@click.option("--tool-description", default=None, help="Description for when the LLM should search")
-@click.option("--exclude", multiple=True, help="Exclude files containing this substring (repeatable)")
-@click.option("--no-report", is_flag=True, help="Suppress markdown report generation")
-@click.option("--concurrency", default=5, type=int, help="Max parallel LLM calls (default: 5)")
-@click.option(
-    "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
-)
-def upload(
-    path: str,
-    api_key: str,
-    llm_key: str,
-    model: str,
-    no_fix: bool,
-    use_existing_folders: bool,
-    dry_run: bool,
-    persona_id: str,
-    tool_name: str,
-    tool_description: str,
-    exclude: tuple,
-    no_report: bool,
-    concurrency: int,
-    folder_hints: str,
-):
-    """Full pipeline: score → analyze → fix → recommend folders → upload."""
-    from .analyzer import ContentAnalyzer
-    from .anam_client import AnamClient
-    from .fixer import DocumentFixer
-    from .recommender import FolderRecommender, format_folder_tree
-
-    hints_text = Path(folder_hints).read_text().strip() if folder_hints else ""
-    files = discover_files(path, exclude_patterns=list(exclude) if exclude else None)
-    if not files:
-        console.print("[red]No supported files found.[/red]")
-        raise SystemExit(1)
-
-    config = Config.from_env().with_overrides(
-        anam_api_key=api_key,
-        anthropic_api_key=llm_key,
-        llm_model=model,
-        concurrency=concurrency,
-        folder_hints=hints_text or None,
-    )
-
-    parser = DocumentParser()
-    docs = []
-
-    # Step 1: Parse
-    console.print("\n[bold]Step 1: Parse[/bold]")
-    with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as progress:
-        task = progress.add_task("Parsing...", total=len(files))
-        for file_path in files:
-            try:
-                doc = parser.parse(file_path)
-                docs.append(doc)
-            except Exception as e:
-                console.print(f"[red]Error: {file_path}: {e}[/red]")
-            progress.advance(task)
-
-    # Step 2: Analyze + build knowledge graph (if LLM key available)
-    graph = None
-    analyses = []
-    if llm_key:
-        console.print("\n[bold]Step 2: LLM Analysis & Knowledge Graph[/bold]")
-        analyzer_inst = ContentAnalyzer(config)
-        with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as progress:
-            progress.add_task("Analyzing and building graph...", total=None)
-            analyses, graph = asyncio.run(analyzer_inst.analyze_and_build_graph(docs))
-        _print_graph_summary(graph)
-    else:
-        console.print("\n[dim]Step 2: Skipped (no --llm-key provided)[/dim]")
-        from .models import ContentAnalysis
-
-        analyses = [ContentAnalysis() for _ in docs]
-
-    # Score with graph and corpus context
-    corpus_analysis = build_corpus_analysis(docs)
-    scorer = QualityScorer(
-        graph=graph,
-        corpus_analysis=corpus_analysis,
-    )
-    cards = [scorer.score(doc) for doc in docs]
-    _print_score_table(cards, detail=False)
-
-    # Step 3: Auto-fix (if LLM key available and not --no-fix)
-    upload_files = files  # Default: upload originals
-    fixed_name_map: dict[str, str] = {}  # original_filename → fixed_filename
-    fix_reports = []
-    if llm_key and not no_fix:
-        console.print("\n[bold]Step 3: Auto-Fix[/bold]")
-        fixer_inst = DocumentFixer(config, graph=graph)
-        fixed_files = []
-
-        # Separate docs with issues from those without
-        docs_to_fix = []
-        no_fix_indices = []
-        for i, (doc, card) in enumerate(zip(docs, cards)):
-            if card.all_issues:
-                docs_to_fix.append((i, doc, card))
-            else:
-                no_fix_indices.append(i)
-                fixed_files.append((i, doc.metadata.file_path))
-
-        if docs_to_fix:
-
-            async def _fix_all():
-                tasks = [fixer_inst.fix(doc, card) for _, doc, card in docs_to_fix]
-                return await asyncio.gather(*tasks, return_exceptions=True)
-
-            console.print(f"  [dim]Fixing {len(docs_to_fix)} document(s) concurrently...[/dim]")
-            results = asyncio.run(_fix_all())
-
-            for (idx, doc, card), result in zip(docs_to_fix, results):
-                if isinstance(result, Exception):
-                    console.print(f"  [red]✗[/red] {doc.metadata.filename}: {result}")
-                    fixed_files.append((idx, doc.metadata.file_path))
-                else:
-                    fix_reports.append(result)
-                    fixed_files.append((idx, result.output_path))
-                    fixed_name_map[doc.metadata.filename] = Path(result.output_path).name
-                    console.print(
-                        f"  [green]✓[/green] {doc.metadata.filename} → "
-                        f"{result.output_path} ({len(result.actions)} fixes)"
-                    )
-
-        # Sort by original index to preserve order
-        fixed_files.sort(key=lambda x: x[0])
-        upload_files = [f for _, f in fixed_files]
-    else:
-        console.print("\n[dim]Step 3: Skipped (--no-fix or no --llm-key)[/dim]")
-
-    # Step 4: Folder structure
-    console.print("\n[bold]Step 4: Folder Structure[/bold]")
-    if use_existing_folders:
-        recommendation = _recommendation_from_disk(path, upload_files)
-        console.print("  [dim]Using existing subfolder layout from disk[/dim]")
-    else:
-        recommender = FolderRecommender(config if llm_key else None, graph=graph)
-        recommendation = asyncio.run(recommender.recommend(docs, analyses))
-
-    tree_str = format_folder_tree(recommendation.root)
-    console.print(Panel(tree_str, title="Folder Structure", border_style="green"))
-
-    # Remap file_assignments to use fixed filenames when files were renamed.
-    # Normalize quote characters (LLMs convert smart quotes to ASCII).
-    upload_assignments = _normalize_quote_keys(recommendation.file_assignments)
-    if not use_existing_folders and fixed_name_map:
-        for orig_name, fixed_name in fixed_name_map.items():
-            norm_orig = _normalize_quotes(orig_name)
-            if norm_orig in upload_assignments and fixed_name != orig_name:
-                upload_assignments[_normalize_quotes(fixed_name)] = upload_assignments.pop(norm_orig)
-
-    if upload_assignments:
-        assign_table = Table(title="File → Folder Assignments")
-        assign_table.add_column("File", style="cyan")
-        assign_table.add_column("Folder", style="green")
-        for filename, folder in upload_assignments.items():
-            assign_table.add_row(filename, folder)
-        console.print(assign_table)
-
-    if dry_run:
-        console.print("\n[yellow]Dry run complete. No files were uploaded.[/yellow]")
-        return
-
-    # Step 5: Upload
-    console.print("\n[bold]Step 5: Upload to anam.ai[/bold]")
-    anam = AnamClient(config)
-
-    # Create folders
-    console.print("  Creating folders...")
-    folder_map = anam.create_folder_tree(recommendation)
-    for path_name, folder_id in folder_map.items():
-        console.print(f"  [green]✓[/green] {path_name} → {folder_id}")
-
-    # Upload files
-    upload_report = anam.upload_batch(
-        files=upload_files,
-        folder_map=folder_map,
-        file_assignments=upload_assignments,
-        progress_callback=lambda msg: console.print(f"  [dim]{msg}[/dim]"),
-    )
-
-    # Summary
-    console.print("\n[bold]Upload Complete[/bold]")
-    console.print(f"  Folders created: {len(upload_report.folders_created)}")
-    console.print(f"  Files uploaded:  {len(upload_report.successful)}")
-    console.print(f"  Failed:          {len(upload_report.failed)}")
-
-    for r in upload_report.failed:
-        console.print(f"  [red]✗ {r.file_path}: {r.error}[/red]")
-
-    # Step 6: Create knowledge tool (optional)
-    if persona_id and folder_map:
-        all_folder_ids = list(folder_map.values())
-        tool_id = anam.create_knowledge_tool(
-            name=tool_name or "Document Search",
-            description=tool_description or "Search uploaded documents to answer questions accurately.",
-            folder_ids=all_folder_ids,
-        )
-        console.print(f"\n  [green]Knowledge tool created:[/green] {tool_id}")
-        console.print(f"  Linked to {len(all_folder_ids)} folder(s)")
-        console.print(f"  [dim]Attach to persona {persona_id} in anam.ai settings[/dim]")
-
-    # Auto-generate report
-    if not no_report:
-        report_path = _generate_report_path("upload")
-        _write_report_file(
-            report_path,
-            [
-                _report_header("upload", len(docs)),
-                _report_scores(cards, detail=False),
-                _report_fixes(fix_reports),
-                _report_recommendations(recommendation),
-                _report_uploads(upload_report),
-            ],
-        )
-        console.print(f"\n[green]Report:[/green] {report_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -870,10 +759,9 @@ def _print_score_table(cards: list[ScoreCard], detail: bool):
                     result = next((r for r in card.results if r.category == cat), None)
                     label = result.label if result else cat
                     cat_score = result.score if result else 0
+                    severity_color = _severity_color(issues[0].severity)
 
-                    console.print(
-                        f"\n  [{_severity_color(issues[0].severity)}]{label}[/{_severity_color(issues[0].severity)}] (score: {cat_score:.0f})"
-                    )
+                    console.print(f"\n  [{severity_color}]{label}[/{severity_color}] (score: {cat_score:.0f})")
                     for issue in issues[:5]:  # Limit display
                         console.print(f"    • {issue.message}")
                         if issue.fix:
@@ -973,11 +861,11 @@ def _severity_color(severity: Severity) -> str:
 
 
 def _generate_report_path(command: str) -> str:
-    """Return a timestamped report filename: kb-prep-{command}-{YYYYMMDD-HHMMSS}.md"""
+    """Return a timestamped report filename: ragprep-{command}-{YYYYMMDD-HHMMSS}.md"""
     from datetime import datetime
 
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return f"kb-prep-{command}-{ts}.md"
+    return f"ragprep-{command}-{ts}.md"
 
 
 def _report_header(command: str, file_count: int) -> list[str]:
@@ -985,7 +873,7 @@ def _report_header(command: str, file_count: int) -> list[str]:
     from datetime import datetime
 
     lines: list[str] = []
-    lines.append(f"# kb-prep {command} Report")
+    lines.append(f"# ragprep {command} Report")
     lines.append("")
     lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Files:** {file_count}")
@@ -1143,32 +1031,6 @@ def _report_fixes(fix_reports: list) -> list[str]:
         for action in report.actions:
             lines.append(f"- `{action.category}`: {action.description}")
         lines.append("")
-    return lines
-
-
-def _report_uploads(upload_report) -> list[str]:
-    """Upload results table section."""
-    lines: list[str] = []
-    if not upload_report:
-        return lines
-
-    lines.append("## Upload Results")
-    lines.append("")
-    lines.append(f"- **Folders created:** {len(upload_report.folders_created)}")
-    lines.append(f"- **Files uploaded:** {len(upload_report.successful)}")
-    lines.append(f"- **Failed:** {len(upload_report.failed)}")
-    lines.append("")
-
-    if upload_report.results:
-        lines.append("| File | Folder | Status |")
-        lines.append("|------|--------|--------|")
-        for r in upload_report.results:
-            filename = Path(r.file_path).name
-            status = r.status.value
-            error_note = f" ({r.error})" if r.error else ""
-            lines.append(f"| {filename} | {r.folder_name} | {status}{error_note} |")
-        lines.append("")
-
     return lines
 
 

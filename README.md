@@ -1,8 +1,8 @@
-# kb-prep
+# ragprep
 
 Document preparation pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database.
 
-Most RAG failures aren't embedding problems or chunk size problems. They're **document problems**: dangling references that make paragraphs meaningless in isolation, buried content that no query can find, headings that don't match the vocabulary users search with. kb-prep catches these issues before upload, not after your users complain.
+Most RAG failures aren't embedding problems or chunk size problems. They're **document problems**: dangling references that make paragraphs meaningless in isolation, buried content that no query can find, headings that don't match the vocabulary users search with. ragprep catches these issues before upload, not after your users complain.
 
 **What it does:**
 
@@ -12,7 +12,7 @@ Most RAG failures aren't embedding problems or chunk size problems. They're **do
 - **Recommends** document groupings using [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) and [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) similarity
 - **Exports** machine-readable metadata — per-document `.meta.json` sidecars and a corpus-level `manifest.json` for downstream pipeline integration
 
-Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.). Includes optional direct upload to [anam.ai](https://anam.ai).
+Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.).
 
 ### Pipeline
 
@@ -26,15 +26,12 @@ flowchart TD
     Fix[Auto-Fix — rewrite refs · split paragraphs · headings]
     Recommend[Recommend Groupings — Louvain clusters · PageRank]
     Output[Fixed Markdown + .meta.json sidecars + manifest.json]
-    Upload[Upload — anam.ai or any vector DB]
 
     Input --> Parse --> CA --> Score
     Score -->|+ analyze| Analyze
     Analyze --> Recommend
     Analyze -->|+ fix| Fix
     Fix --> Output
-    Recommend --> Upload
-    Output --> Upload
 ```
 
 
@@ -45,7 +42,6 @@ flowchart TD
 | `score`   | Parse → Corpus Analyzer → Score                                          |
 | `analyze` | + LLM analysis, knowledge graph, folder recommendations, metadata export |
 | `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory  |
-| `upload`  | + anam.ai folder creation and file upload                                |
 
 
 ### Why retrieval-aware scoring?
@@ -115,6 +111,11 @@ python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--folder-hints PATH` | File with domain-specific folder guidance                   |
 | `--json-output`       | Output manifest JSON to stdout (pipeable with `jq`)         |
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
+| `--export-chunks`     | Write per-document `.chunks.json` sidecars (default: on)    |
+| `--chunk-size N`      | Target words per chunk (default: 220)                        |
+| `--chunk-overlap N`   | Overlap words between chunks (default: 40)                   |
+| `--run-benchmark`     | Run chunk-level retrieval benchmarks and export metrics       |
+| `--skip-enrichment`   | Skip folder recommendation and graph-heavy output             |
 | `--detail`            | Show per-issue breakdown                                    |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
@@ -136,37 +137,15 @@ python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--concurrency N`     | Max parallel LLM calls (default: 5)                         |
 | `--folder-hints PATH` | File with domain-specific folder guidance                   |
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
+| `--chunk-size N`      | Target words per chunk (default: 220)                       |
+| `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
 
 
-### `upload` — full pipeline + upload to anam.ai
-
-```bash
-python -m src.cli upload <path> --api-key $ANAM_API_KEY [options]
-```
-
-
-| Option                    | Description                                         |
-| ------------------------- | --------------------------------------------------- |
-| `--api-key TEXT`          | anam.ai API key (required)                          |
-| `--llm-key TEXT`          | Anthropic API key (enables analysis + auto-fix)     |
-| `--no-fix`                | Skip auto-fix, upload original files                |
-| `--use-existing-folders`  | Use subfolder layout on disk instead of recommender |
-| `--dry-run`               | Show plan without uploading                         |
-| `--persona-id TEXT`       | Attach knowledge tool to this persona               |
-| `--tool-name TEXT`        | Name for the knowledge tool                         |
-| `--tool-description TEXT` | When the LLM should search this knowledge base      |
-| `--model TEXT`            | LLM model override                                  |
-| `--concurrency N`         | Max parallel LLM calls (default: 5)                 |
-| `--folder-hints PATH`     | File with domain-specific folder guidance           |
-| `--exclude TEXT`          | Skip files matching this substring (repeatable)     |
-| `--no-report`             | Don't generate the Markdown report file             |
-
-
 ### Common options
 
-All commands auto-generate a timestamped Markdown report (e.g. `kb-prep-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
+All commands auto-generate a timestamped Markdown report (e.g. `ragprep-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
 
 ## How Scoring Works
 
@@ -262,7 +241,7 @@ Each sidecar contains the document's analysis, scores, metrics, entities, relati
 
 ```json
 {
-  "kb_prep_version": "0.1.0",
+  "ragprep_version": "0.1.0",
   "source_file": "4-5.FL.10 Handout B. Types of Insurance.docx",
   "output_file": "insurance-types.md",
   "analysis": {
@@ -292,7 +271,7 @@ Each sidecar contains the document's analysis, scores, metrics, entities, relati
 
 ### Corpus manifest
 
-A single `manifest.json` at the output root contains corpus-level stats, all document entries, the folder structure, knowledge graph (entities, relationships, clusters), and document similarity matrix (for corpora under 100 documents).
+A single `manifest.json` at the output root contains corpus-level stats, all document entries, folder structure, knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
 
 ### Usage
 
@@ -300,7 +279,7 @@ A single `manifest.json` at the output root contains corpus-level stats, all doc
 # fix writes sidecars + manifest by default
 python -m src.cli fix ./my-docs/ --llm-key $KEY
 
-# analyze writes to .kb-prep/ subdirectory
+# analyze writes to .ragprep/ subdirectory
 python -m src.cli analyze ./my-docs/ --llm-key $KEY
 
 # pipe manifest to jq
@@ -341,7 +320,7 @@ Entities that pass the confidence check are merged into a shared [networkx](http
 
 ## Document Grouping
 
-The tool recommends how to group documents using a 4-tier priority: graph clusters + LLM naming (best), LLM-only, graph-only, or heuristic fallback. These groupings appear in the metadata export, the analysis report, and (when using the upload command) as folder names:
+The tool recommends how to group documents using a 4-tier priority: graph clusters + LLM naming (best), LLM-only, graph-only, or heuristic fallback. These groupings appear in the metadata export and the analysis report:
 
 ```
 Engineering - API Design
@@ -366,7 +345,7 @@ Tests the scoring pipeline, graph builder, corpus analyzer, parser, and CLI repo
 
 ### Eval suite
 
-The eval suite validates every algorithm in the analysis engine against real-world datasets. It tests the *components* (entropy, coherence, entity resolution, clustering, chunking, retrieval) against published benchmarks — not the LLM-dependent features (analyze, fix, upload).
+The eval suite validates every algorithm in the analysis engine against real-world datasets. It tests the *components* (entropy, coherence, entity resolution, clustering, chunking, retrieval) against published benchmarks — not the LLM-dependent features (analyze, fix).
 
 ```bash
 # Install eval dependencies (one-time)
@@ -433,7 +412,6 @@ python3 -m pytest test-data/ -m cross_layer -v
 ### What the eval suite does NOT test
 
 - **LLM features** (analyze, fix) — these call the Claude API, which costs money and is non-deterministic. The unit tests mock these calls.
-- **Upload to anam.ai** — requires an API key and live service.
 - **Knowledge graph quality** — the graph is built from LLM-extracted entities. The eval tests validate the graph *algorithms* (entity resolution, clustering, PageRank) but not the quality of the LLM extraction.
 
 ## Supported File Types
@@ -450,9 +428,9 @@ python3 -m pytest test-data/ -m cross_layer -v
 ## Project Structure
 
 ```
-kb-prep/
+ragprep/
 ├── src/                         # Source package
-│   ├── cli.py                   # CLI entry point (Click) — score, analyze, fix, upload
+│   ├── cli.py                   # CLI entry point (Click) — score, analyze, fix
 │   ├── corpus_analyzer.py       # TF-IDF matrix, entropy, coherence, retrieval-aware scoring
 │   ├── scorer.py                # Heuristic + corpus-powered scoring criteria
 │   ├── parser.py                # DOCX/PDF/TXT/MD parsing + Markdown conversion
@@ -461,7 +439,6 @@ kb-prep/
 │   ├── fixer.py                 # LLM auto-fix engine (graph-aware)
 │   ├── recommender.py           # Document grouping + silhouette validation
 │   ├── export.py                # JSON metadata export (sidecars + manifest)
-│   ├── anam_client.py           # Upload client (see anam.ai section below)
 │   ├── prompts.py               # LLM prompt templates
 │   ├── config.py                # Settings and API key management
 │   └── models.py                # All dataclasses
@@ -499,7 +476,6 @@ kb-prep/
 - `PyMuPDF` — PDF parsing
 - `click` — CLI framework
 - `rich` — terminal formatting
-- `requests` — HTTP client
 - `anthropic` — Claude API (only needed for analyze/fix/LLM features)
 - `networkx` — knowledge graph
 - `numpy` — numerical computation
@@ -515,45 +491,3 @@ kb-prep/
 - **Configurable thresholds** — entropy thresholds are now in corpus_analyzer; still need to expose scoring weights and cluster resolution as CLI flags or config
 - **Export graph** — the knowledge graph is included in `manifest.json`; add standalone export as GraphML or DOT for visualization tools
 
----
-
-## anam.ai Integration
-
-kb-prep includes built-in upload support for [anam.ai](https://anam.ai) knowledge bases. This is optional — all other features work without it.
-
-### Setup
-
-```bash
-export ANAM_API_KEY=your-anam-key
-```
-
-### Upload
-
-```bash
-# Full pipeline: fix + recommend folders + upload
-python -m src.cli upload ./my-docs/ \
-  --api-key $ANAM_API_KEY \
-  --llm-key $ANTHROPIC_API_KEY
-
-# Dry run (preview without uploading)
-python -m src.cli upload ./my-docs/ --api-key $ANAM_API_KEY --llm-key $ANTHROPIC_API_KEY --dry-run
-
-# Upload and attach to a persona
-python -m src.cli upload ./my-docs/ \
-  --api-key $ANAM_API_KEY \
-  --llm-key $ANTHROPIC_API_KEY \
-  --persona-id your-persona-id \
-  --tool-name "Doc Search" \
-  --tool-description "Search documents to answer questions"
-```
-
-### How it works
-
-anam.ai uses direct multipart upload with flat folders (hierarchy encoded in names):
-
-1. **Create folder** — POST to `/v1/knowledge/groups`
-2. **Upload file** — multipart POST to `/v1/knowledge/groups/{id}/documents`
-
-Documents transition from `PROCESSING` → `READY` (~30 seconds). When `--persona-id` is provided, a knowledge tool (type `SERVER_RAG`) is created linking all folders to the persona.
-
-**File size limits:** Warns at 25MB, blocks at 50MB.

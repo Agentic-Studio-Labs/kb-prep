@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Optional
 
 from .models import (
+    ChunkBenchmark,
+    ChunkSet,
     ContentAnalysis,
     CorpusAnalysis,
     DocMetrics,
@@ -18,6 +20,7 @@ from .models import (
     FolderRecommendation,
     ParsedDocument,
     ScoreCard,
+    SplitRecommendation,
 )
 
 
@@ -32,7 +35,7 @@ def write_sidecar(
 ) -> str:
     """Write a .meta.json sidecar file alongside the fixed Markdown."""
     data = {
-        "kb_prep_version": "0.1.0",
+        "ragprep_version": "0.1.0",
         "source_file": doc.metadata.filename,
         "output_file": f"{filename_stem}.md",
         "analysis": {
@@ -66,6 +69,34 @@ def write_sidecar(
     }
 
     out_path = Path(output_dir) / f"{filename_stem}.meta.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return str(out_path)
+
+
+def write_chunk_sidecar(output_dir: str, chunk_set: ChunkSet) -> str:
+    """Write a per-document .chunks.json sidecar."""
+    data = {
+        "schema_version": "2.0",
+        "document_id": chunk_set.document_id,
+        "source_file": chunk_set.source_file,
+        "chunks": [
+            {
+                "chunk_id": c.chunk_id,
+                "text": c.text,
+                "heading_path": c.heading_path,
+                "start_paragraph_index": c.start_paragraph_index,
+                "end_paragraph_index": c.end_paragraph_index,
+                "token_estimate": c.token_estimate,
+                "chunk_type": c.chunk_type,
+                "quality_flags": c.quality_flags,
+                "metadata": c.metadata,
+            }
+            for c in chunk_set.chunks
+        ],
+    }
+    out_path = Path(output_dir) / f"{chunk_set.document_id}.chunks.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return str(out_path)
 
@@ -77,12 +108,19 @@ def build_manifest_data(
     corpus_analysis: CorpusAnalysis,
     recommendation: FolderRecommendation,
     graph=None,
+    chunk_sets: Optional[list[ChunkSet]] = None,
+    benchmarks: Optional[list[ChunkBenchmark]] = None,
+    split_recommendations: Optional[list[SplitRecommendation]] = None,
 ) -> dict:
     """Build the corpus manifest as a JSON-serializable dict.
 
     Use this directly for --json-output (no file I/O needed).
     Use write_manifest() to also write it to disk.
     """
+    chunk_sets = chunk_sets or []
+    benchmarks = benchmarks or []
+    split_recommendations = split_recommendations or []
+
     readiness_dist: dict[str, int] = {}
     for card in cards:
         r = card.readiness.value
@@ -99,6 +137,8 @@ def build_manifest_data(
 
     avg_score = sum(c.overall_score for c in cards) / len(cards) if cards else 0.0
 
+    chunk_count_by_file = {cs.source_file: len(cs.chunks) for cs in chunk_sets}
+
     doc_entries = []
     for doc, analysis, card in zip(docs, analyses, cards):
         folder = recommendation.file_assignments.get(doc.metadata.filename, "")
@@ -112,6 +152,7 @@ def build_manifest_data(
                 "topics": analysis.topics,
                 "entity_count": len(analysis.entities),
                 "relationship_count": len(analysis.relationships),
+                "chunk_count": chunk_count_by_file.get(doc.metadata.filename, 0),
             }
         )
 
@@ -152,10 +193,12 @@ def build_manifest_data(
             }
 
     return {
-        "kb_prep_version": "0.1.0",
+        "schema_version": "2.0",
+        "ragprep_version": "0.1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "corpus": {
             "total_documents": len(docs),
+            "total_chunks": sum(len(cs.chunks) for cs in chunk_sets),
             "avg_score": round(avg_score, 1),
             "readiness_distribution": readiness_dist,
             "total_entities": total_entities,
@@ -166,6 +209,26 @@ def build_manifest_data(
         "folders": folders_list,
         "knowledge_graph": kg_data,
         "similarity_matrix": sim_data,
+        "benchmarks": [
+            {
+                "retrieval_mode": b.retrieval_mode,
+                "recall_at_5": b.recall_at_5,
+                "mrr": b.mrr,
+                "ndcg_at_5": b.ndcg_at_5,
+                "query_count": b.query_count,
+                "notes": b.notes,
+            }
+            for b in benchmarks
+        ],
+        "split_recommendations": [
+            {
+                "source_file": rec.source_file,
+                "reason": rec.reason,
+                "proposed_boundaries": rec.proposed_boundaries,
+                "suggested_titles": rec.suggested_titles,
+            }
+            for rec in split_recommendations
+        ],
     }
 
 
@@ -177,9 +240,22 @@ def write_manifest(
     corpus_analysis: CorpusAnalysis,
     recommendation: FolderRecommendation,
     graph=None,
+    chunk_sets: Optional[list[ChunkSet]] = None,
+    benchmarks: Optional[list[ChunkBenchmark]] = None,
+    split_recommendations: Optional[list[SplitRecommendation]] = None,
 ) -> str:
     """Write a corpus-level manifest.json to the output directory root."""
-    data = build_manifest_data(docs, analyses, cards, corpus_analysis, recommendation, graph)
+    data = build_manifest_data(
+        docs,
+        analyses,
+        cards,
+        corpus_analysis,
+        recommendation,
+        graph,
+        chunk_sets=chunk_sets,
+        benchmarks=benchmarks,
+        split_recommendations=split_recommendations,
+    )
     out_path = Path(output_dir) / "manifest.json"
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
