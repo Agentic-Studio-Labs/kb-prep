@@ -75,10 +75,10 @@ The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix acro
 | Criterion              | Weight | What It Checks |
 | ---------------------- | ------ | -------------- |
 | Self-Containment       | 20%    | Dangling references ("as mentioned above", "see section X") that break paragraph independence |
-| Retrieval-Aware        | 20%    | Can the document be found by BM25 queries about its own content? Generates synthetic queries from top TF-IDF terms and measures self-retrieval rate |
+| Retrieval-Aware        | 20%    | Can the document be found by search queries about its own content? Generates synthetic queries from top TF-IDF terms and measures self-retrieval rate |
 | Heading Quality        | 15%    | Hierarchy gaps, generic headings ("Content", "Notes"), heading density |
-| Paragraph Length       | 15%    | Too short (<15 words) or too long (>300 words) |
-| File Focus             | 10%    | Shannon entropy over TF-IDF topic distribution — flags sprawling multi-topic documents |
+| Paragraph Length       | 10%    | Too short (<15 words) or too long (>300 words) |
+| File Focus             | 10%    | Vocabulary entropy over TF-IDF term weights — flags documents with unusually diverse or uniform vocabulary |
 | Filename Quality       | 10%    | Generic names ("doc-v2.docx"), too short, no word separators |
 | Structure Completeness | 10%    | Presence of headings, substantive body text, multiple sections |
 | Acronym Definitions    | 5%     | Uppercase acronyms used repeatedly without "(definition)" nearby |
@@ -100,12 +100,12 @@ A document that scores 80-100% is well-structured for retrieval. A document scor
 
 ### Corpus Analysis Metrics
 
-The corpus analyzer also computes these metrics (available in the analysis output, not used as scoring criteria):
+The corpus analyzer also computes these metrics (informational only — available in the analysis output but not used for scoring):
 
-- **Readability grade** — Flesch-Kincaid grade level
 - **Information density** — TF-IDF magnitude per section
 - **Topic boundaries** — TextTiling-detected topic shifts within documents
 - **Document similarity matrix** — cosine similarity between all document pairs
+- **Readability grade** — Flesch-Kincaid grade level (computed but not scored — reading level appropriateness depends on your audience)
 
 ## Auto-Fix (LLM-Powered)
 
@@ -125,7 +125,7 @@ Originals are never modified. Fixed files are written as clean Markdown to the o
 
 When LLM analysis runs (`analyze` or `fix` with `--llm-key`), an in-memory knowledge graph is built across all documents automatically.
 
-The LLM extracts **entities** and **relationships** from each document. Entities are merged into a shared [networkx](https://networkx.org/) directed graph using TF-IDF cosine similarity on character n-grams — this handles morphological variation ("Budget" matches "Budgeting"), word reordering, and typos.
+The LLM extracts **entities** and **relationships** from each document. Entities are merged into a shared [networkx](https://networkx.org/) directed graph using TF-IDF cosine similarity on character n-grams (threshold 0.4) — this handles morphological variation ("Budget" matches "Budgeting"), word reordering, and typos. The low threshold trades precision for recall; in large corpora with many short entity names, some spurious merges are possible.
 
 | Entity types                                          | Relationship types                                      |
 | ----------------------------------------------------- | ------------------------------------------------------- |
@@ -133,7 +133,8 @@ The LLM extracts **entities** and **relationships** from each document. Entities
 
 ### Graph analysis
 
-- **Spectral clustering** — deterministic document grouping using the eigengap heuristic on the TF-IDF similarity matrix
+- **Louvain community detection** — clusters entities in the knowledge graph for folder recommendations (seeded for determinism)
+- **Spectral clustering** — deterministic document grouping using the eigengap heuristic on the TF-IDF similarity matrix (available as an alternative to Louvain)
 - **PageRank** — ranks entities by structural importance for folder naming
 - **Betweenness centrality** — identifies bridge entities connecting topic clusters
 - **Bipartite projection** — document-document similarity via shared entities (blended with TF-IDF similarity)

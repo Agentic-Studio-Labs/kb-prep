@@ -58,10 +58,10 @@ Parse → Corpus Analyzer (TF-IDF) → Score → [Analyze (LLM)] → [Fix (LLM)]
 | Criterion | Weight | Method |
 |-----------|--------|--------|
 | Self-Containment | 20% | Regex pattern matching for dangling references |
-| Retrieval-Aware | 20% | BM25 self-retrieval rate from synthetic queries |
+| Retrieval-Aware | 20% | Self-retrieval rate from synthetic queries (standard BM25) |
 | Heading Quality | 15% | Hierarchy checks + generic heading detection |
-| Paragraph Length | 15% | Word count thresholds (15-300 words) |
-| File Focus | 10% | Shannon entropy over TF-IDF distribution |
+| Paragraph Length | 10% | Word count thresholds (15-300 words) |
+| File Focus | 10% | Vocabulary entropy over TF-IDF term weights |
 | Filename Quality | 10% | Regex patterns for generic names |
 | Structure | 10% | 4-point checklist (headings, body, sections, paragraphs) |
 | Acronym Definitions | 5% | Uppercase pattern detection + definition search |
