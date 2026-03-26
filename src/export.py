@@ -1,0 +1,204 @@
+"""Export analysis results as machine-readable JSON.
+
+Produces two formats:
+- Sidecar files: one .meta.json per document, co-located with the fixed Markdown
+- Corpus manifest: a single manifest.json with all documents, scores, graph, and folder structure
+"""
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+
+from .models import (
+    ContentAnalysis,
+    CorpusAnalysis,
+    DocMetrics,
+    FolderNode,
+    FolderRecommendation,
+    ParsedDocument,
+    ScoreCard,
+)
+
+
+def write_sidecar(
+    output_dir: str,
+    filename_stem: str,
+    doc: ParsedDocument,
+    analysis: ContentAnalysis,
+    card: ScoreCard,
+    metrics: Optional[DocMetrics],
+    folder: str,
+) -> str:
+    """Write a .meta.json sidecar file alongside the fixed Markdown."""
+    data = {
+        "kb_prep_version": "0.1.0",
+        "source_file": doc.metadata.filename,
+        "output_file": f"{filename_stem}.md",
+        "analysis": {
+            "domain": analysis.domain,
+            "topics": analysis.topics,
+            "audience": analysis.audience,
+            "content_type": analysis.content_type,
+            "key_concepts": analysis.key_concepts,
+            "suggested_tags": analysis.suggested_tags,
+            "summary": analysis.summary,
+        },
+        "scores": {
+            "overall": card.overall_score,
+            "readiness": card.readiness.value,
+            "criteria": {
+                r.category: {
+                    "score": r.score,
+                    "weight": r.weight,
+                    "issues": len(r.issues),
+                }
+                for r in card.results
+            },
+        },
+        "metrics": _serialize_metrics(metrics),
+        "entities": [{"name": e.name, "type": e.entity_type, "description": e.description} for e in analysis.entities],
+        "relationships": [
+            {"source": r.source, "target": r.target, "type": r.rel_type, "context": r.context}
+            for r in analysis.relationships
+        ],
+        "folder": folder,
+    }
+
+    out_path = Path(output_dir) / f"{filename_stem}.meta.json"
+    out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return str(out_path)
+
+
+def write_manifest(
+    output_dir: str,
+    docs: list[ParsedDocument],
+    analyses: list[ContentAnalysis],
+    cards: list[ScoreCard],
+    corpus_analysis: CorpusAnalysis,
+    recommendation: FolderRecommendation,
+    graph=None,
+) -> str:
+    """Write a corpus-level manifest.json to the output directory root."""
+    # Corpus stats
+    readiness_dist: dict[str, int] = {}
+    for card in cards:
+        r = card.readiness.value
+        readiness_dist[r] = readiness_dist.get(r, 0) + 1
+
+    total_entities = 0
+    total_relationships = 0
+    cross_doc_edges = 0
+    if graph and not graph.is_empty:
+        summary = graph.summarize()
+        total_entities = summary.total_entities
+        total_relationships = summary.total_relationships
+        cross_doc_edges = summary.cross_document_edges
+
+    avg_score = sum(c.overall_score for c in cards) / len(cards) if cards else 0.0
+
+    # Documents list
+    doc_entries = []
+    for doc, analysis, card in zip(docs, analyses, cards):
+        folder = recommendation.file_assignments.get(doc.metadata.filename, "")
+        doc_entries.append(
+            {
+                "source_file": doc.metadata.filename,
+                "folder": folder,
+                "overall_score": round(card.overall_score, 1),
+                "readiness": card.readiness.value,
+                "domain": analysis.domain,
+                "topics": analysis.topics,
+                "entity_count": len(analysis.entities),
+                "relationship_count": len(analysis.relationships),
+            }
+        )
+
+    # Folder structure
+    folders_list = _serialize_folder_tree(recommendation.root) if recommendation.root else []
+
+    # Knowledge graph
+    kg_data = None
+    if graph and not graph.is_empty:
+        kg_entities = [
+            {"name": e.name, "type": e.entity_type, "source_file": e.source_file, "description": e.description}
+            for e in graph._entities.values()
+        ]
+        kg_relationships = [
+            {
+                "source": r.source,
+                "target": r.target,
+                "type": r.rel_type,
+                "source_file": r.source_file,
+                "context": r.context,
+            }
+            for r in graph._relationships
+        ]
+        kg_clusters = []
+        for i, cluster in enumerate(graph.find_clusters()):
+            kg_clusters.append({"label": f"Cluster {i + 1}", "entities": cluster})
+        kg_data = {
+            "entities": kg_entities,
+            "relationships": kg_relationships,
+            "clusters": kg_clusters,
+        }
+
+    # Similarity matrix (skip for large corpora)
+    sim_data = None
+    if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
+        n = corpus_analysis.similarity_matrix.shape[0]
+        if n <= 100:
+            sim_data = {
+                "labels": corpus_analysis.doc_labels,
+                "matrix": corpus_analysis.similarity_matrix.tolist(),
+            }
+
+    data = {
+        "kb_prep_version": "0.1.0",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "corpus": {
+            "total_documents": len(docs),
+            "avg_score": round(avg_score, 1),
+            "readiness_distribution": readiness_dist,
+            "total_entities": total_entities,
+            "total_relationships": total_relationships,
+            "cross_document_edges": cross_doc_edges,
+        },
+        "documents": doc_entries,
+        "folders": folders_list,
+        "knowledge_graph": kg_data,
+        "similarity_matrix": sim_data,
+    }
+
+    out_path = Path(output_dir) / "manifest.json"
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return str(out_path)
+
+
+def _serialize_metrics(metrics: Optional[DocMetrics]) -> Optional[dict]:
+    """Serialize DocMetrics to a JSON-safe dict."""
+    if metrics is None:
+        return None
+    return {
+        "entropy": metrics.entropy,
+        "coherence": metrics.coherence,
+        "readability_grade": metrics.readability_grade,
+        "self_retrieval_score": metrics.self_retrieval_score,
+        "info_density": metrics.info_density,
+        "topic_boundaries": metrics.topic_boundaries,
+    }
+
+
+def _serialize_folder_tree(node: FolderNode) -> list[dict]:
+    """Recursively serialize FolderNode children to JSON-safe dicts."""
+    result = []
+    for child in node.children:
+        entry = {
+            "name": child.name,
+            "description": child.description,
+            "document_count": len(child.document_files),
+            "children": _serialize_folder_tree(child) if child.children else [],
+        }
+        result.append(entry)
+    return result

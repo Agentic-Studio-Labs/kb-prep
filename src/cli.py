@@ -142,6 +142,8 @@ def score(path: str, detail: bool, json_out: bool, exclude: tuple, no_report: bo
 @click.option(
     "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
 )
+@click.option("--no-export-meta", is_flag=True, help="Skip writing metadata export files")
+@click.option("--json-output", "json_out", is_flag=True, help="Output manifest JSON to stdout")
 def analyze(
     path: str,
     llm_key: str,
@@ -151,9 +153,12 @@ def analyze(
     no_report: bool,
     concurrency: int,
     folder_hints: str,
+    no_export_meta: bool,
+    json_out: bool,
 ):
     """Score documents + LLM content analysis and folder recommendation."""
     from .analyzer import ContentAnalyzer
+    from .export import write_manifest, write_sidecar
     from .recommender import FolderRecommender, format_folder_tree
 
     files = discover_files(path, exclude_patterns=list(exclude) if exclude else None)
@@ -256,6 +261,22 @@ def analyze(
         )
         console.print(f"\n[green]Report:[/green] {report_path}")
 
+    # Export metadata
+    meta_dir = os.path.join(path, ".kb-prep")
+    if json_out:
+        import json as _json
+
+        manifest_path = write_manifest(meta_dir, docs, analyses, cards, corpus_analysis, recommendation, graph)
+        print(_json.dumps(_json.loads(Path(manifest_path).read_text())))
+    elif not no_export_meta:
+        for doc, analysis, card in zip(docs, analyses, cards):
+            filename = doc.metadata.filename
+            doc_metrics = corpus_analysis.doc_metrics.get(filename)
+            folder = recommendation.file_assignments.get(filename, "")
+            write_sidecar(meta_dir, doc.metadata.stem, doc, analysis, card, doc_metrics, folder)
+        manifest_path = write_manifest(meta_dir, docs, analyses, cards, corpus_analysis, recommendation, graph)
+        console.print(f"[green]Metadata:[/green] {manifest_path}")
+
 
 # ---------------------------------------------------------------------------
 # fix command
@@ -274,6 +295,7 @@ def analyze(
 @click.option(
     "--folder-hints", default=None, type=click.Path(exists=True), help="File with domain-specific folder guidance"
 )
+@click.option("--no-export-meta", is_flag=True, help="Skip writing .meta.json sidecar files and manifest.json")
 def fix(
     path: str,
     llm_key: str,
@@ -284,11 +306,13 @@ def fix(
     no_report: bool,
     concurrency: int,
     folder_hints: str,
+    no_export_meta: bool,
 ):
     """Score + auto-fix issues, output improved Markdown files."""
     from datetime import datetime
 
     from .analyzer import ContentAnalyzer
+    from .export import write_manifest, write_sidecar
     from .fixer import DocumentFixer
     from .parser import to_markdown
     from .recommender import FolderRecommender, format_folder_tree
@@ -399,6 +423,10 @@ def fix(
     # Build a normalized lookup to handle this.
     _norm_assignments = _normalize_quote_keys(recommendation.file_assignments)
 
+    # Build per-filename lookup maps for analysis/card/metrics
+    _analysis_map = {doc.metadata.filename: analysis for doc, analysis in zip(docs, analyses)}
+    _card_map = {doc.metadata.filename: card for doc, card in zip(docs, cards)}
+
     for doc in docs:
         filename = doc.metadata.filename
         # Determine the .md name for this file in the output
@@ -421,6 +449,24 @@ def fix(
             md_content = to_markdown(doc)
             with open(target_path, "w", encoding="utf-8") as f:
                 f.write(md_content)
+
+        # Write sidecar metadata alongside the Markdown file
+        if not no_export_meta:
+            doc_metrics = corpus_analysis.doc_metrics.get(filename)
+            write_sidecar(
+                target_dir,
+                fixed_stem,
+                doc,
+                _analysis_map[filename],
+                _card_map[filename],
+                doc_metrics,
+                folder,
+            )
+
+    # Write corpus manifest to the output root
+    if not no_export_meta:
+        manifest_path = write_manifest(output, docs, analyses, cards, corpus_analysis, recommendation, graph)
+        console.print(f"[green]Metadata:[/green] {manifest_path} + per-doc .meta.json sidecars")
 
     # --- Console output: folder tree + assignments ---
     tree_str = format_folder_tree(recommendation.root)
