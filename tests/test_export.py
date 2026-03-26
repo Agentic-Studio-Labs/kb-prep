@@ -74,7 +74,7 @@ def test_write_sidecar_creates_file():
         path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics(), "Math")
         assert Path(path).exists()
         data = json.loads(Path(path).read_text())
-        assert data["kb_prep_version"] == "0.1.0"
+        assert data["ragprep_version"] == "0.1.0"
 
 
 def test_sidecar_schema_keys():
@@ -82,7 +82,7 @@ def test_sidecar_schema_keys():
         path = write_sidecar(td, "test-doc", _make_doc(), _make_analysis(), _make_card(), _make_metrics(), "Math")
         data = json.loads(Path(path).read_text())
         required = {
-            "kb_prep_version",
+            "ragprep_version",
             "source_file",
             "output_file",
             "analysis",

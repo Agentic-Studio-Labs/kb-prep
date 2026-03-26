@@ -38,8 +38,8 @@ htmlcov/
 # Output directories (user-generated)
 fixed/
 rag-files-*/
-kb-prep-*.md
-anam-prep-*.md
+ragprep-*.md
+CLAUDE_CODE_PROMPT_*.md
 .worktrees/
 .superpowers/
 test-data/corpora/

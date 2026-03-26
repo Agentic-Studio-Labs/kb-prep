@@ -1,6 +1,6 @@
 """Real-document PDF eval tests.
 
-Tests kb-prep's parsing and retrieval pipeline against three human-annotated
+Tests ragprep's parsing and retrieval pipeline against three human-annotated
 PDF datasets:
   - SCORE-Bench   : parse fidelity (char F1 vs ground-truth text)
   - SCORE-Bench   : chunk-through-retrieve hit@5 (BM25)

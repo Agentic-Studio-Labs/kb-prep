@@ -22,9 +22,9 @@ from .models import (
 # Supported file extensions
 SUPPORTED_EXTENSIONS = {".docx", ".pdf", ".txt", ".md"}
 
-# Anam file size limits
-ANAM_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
-ANAM_WARN_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
+# File size limits
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+WARN_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
 
 
 def discover_files(path: str, exclude_patterns: list[str] | None = None) -> list[str]:
@@ -345,17 +345,17 @@ def paragraphs_to_markdown(paragraphs: list[Paragraph]) -> str:
 def to_markdown(doc: ParsedDocument) -> str:
     """Convert a ParsedDocument to clean Markdown text.
 
-    Useful for reducing file size before upload to anam.ai,
+    Useful for reducing file size before upload to a knowledge base,
     since Markdown strips formatting bloat from DOCX/PDF.
     """
     return paragraphs_to_markdown(doc.paragraphs)
 
 
 def file_size_warning(file_size_bytes: int) -> Optional[str]:
-    """Return a warning string if file size is concerning for anam.ai."""
+    """Return a warning string if file size is concerning for RAG upload."""
     mb = file_size_bytes / (1024 * 1024)
-    if file_size_bytes > ANAM_MAX_FILE_SIZE:
-        return f"CRITICAL: File is {mb:.1f} MB — exceeds anam.ai 50 MB limit. Must reduce size."
-    elif file_size_bytes > ANAM_WARN_FILE_SIZE:
-        return f"WARNING: File is {mb:.1f} MB — approaching anam.ai 50 MB limit. Consider converting to Markdown."
+    if file_size_bytes > MAX_FILE_SIZE:
+        return f"CRITICAL: File is {mb:.1f} MB — exceeds 50 MB limit. Must reduce size."
+    elif file_size_bytes > WARN_FILE_SIZE:
+        return f"WARNING: File is {mb:.1f} MB — approaching 50 MB limit. Consider converting to Markdown."
     return None

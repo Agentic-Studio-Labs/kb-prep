@@ -1,7 +1,7 @@
 """End-to-end RAG round-trip evaluation.
 
 Takes SQuAD benchmark text, writes it as .docx/.md files,
-runs the full kb-prep pipeline, and measures retrieval quality
+runs the full ragprep pipeline, and measures retrieval quality
 against a naive baseline.
 
 This tests the complete path: parse → score → chunk → index → retrieve
@@ -121,7 +121,7 @@ def run_engine_pipeline(
     tmpdir: Path,
     squad_sample: list[dict],
 ) -> tuple[list[str], list[dict[str, object]]]:
-    """Parse, score, and chunk all files using the full kb-prep pipeline.
+    """Parse, score, and chunk all files using the full ragprep pipeline.
 
     Returns:
         (chunks, chunk_metadata) where chunk_metadata maps each chunk to

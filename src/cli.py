@@ -12,6 +12,7 @@ LLM commands support --concurrency N (default: 5) for parallel API calls.
 
 import asyncio
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -29,6 +30,74 @@ from .parser import DocumentParser, discover_files
 from .scorer import QualityScorer, generate_split_recommendations
 
 console = Console()
+
+
+_BENCHMARK_QUERY_STOPWORDS = {
+    "the",
+    "and",
+    "for",
+    "with",
+    "from",
+    "that",
+    "this",
+    "into",
+    "your",
+    "about",
+    "over",
+    "under",
+    "when",
+    "where",
+    "what",
+    "which",
+}
+_BENCHMARK_QUERY_NOTE = "query_source: heading+tfidf deterministic"
+
+
+def _extract_query_terms(text: str) -> list[str]:
+    """Tokenize text into stable lowercase query terms."""
+    return [
+        token.lower()
+        for token in re.findall(r"[a-zA-Z][a-zA-Z0-9-]{2,}", text)
+        if token.lower() not in _BENCHMARK_QUERY_STOPWORDS
+    ]
+
+
+def _build_benchmark_query(doc, corpus_analysis, max_terms: int = 6) -> str:
+    """Build a deterministic benchmark query from headings + top TF-IDF terms."""
+    terms: list[str] = []
+    seen: set[str] = set()
+
+    for heading in doc.headings:
+        for token in _extract_query_terms(heading.text):
+            if token not in seen:
+                terms.append(token)
+                seen.add(token)
+            if len(terms) >= max_terms:
+                return " ".join(terms)
+
+    if corpus_analysis and hasattr(corpus_analysis, "tfidf_matrix") and hasattr(corpus_analysis, "feature_names"):
+        try:
+            doc_idx = corpus_analysis.doc_labels.index(doc.metadata.filename)
+            row = corpus_analysis.tfidf_matrix[doc_idx]
+            if row.nnz > 0:
+                ranked = sorted(zip(row.indices.tolist(), row.data.tolist()), key=lambda x: x[1], reverse=True)
+                for term_idx, _score in ranked:
+                    token = corpus_analysis.feature_names[term_idx].lower()
+                    if token not in seen and token not in _BENCHMARK_QUERY_STOPWORDS:
+                        terms.append(token)
+                        seen.add(token)
+                    if len(terms) >= max_terms:
+                        break
+        except Exception:
+            pass
+
+    if not terms:
+        stem_tokens = _extract_query_terms(doc.metadata.stem)
+        if stem_tokens:
+            return " ".join(stem_tokens[:max_terms])
+        return doc.metadata.filename
+
+    return " ".join(terms[:max_terms])
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +314,7 @@ def analyze(
             queries = []
             gold_sets = []
             for doc in docs:
-                query = " ".join(doc.metadata.stem.replace("_", " ").replace("-", " ").split())
+                query = _build_benchmark_query(doc, corpus_analysis)
                 if not query:
                     continue
                 gold = {i for i, source in enumerate(chunk_source_files) if source == doc.metadata.filename}
@@ -254,6 +323,9 @@ def analyze(
                 queries.append(query)
                 gold_sets.append(gold)
             benchmarks = benchmark_chunk_retrieval(queries, gold_sets, all_chunks, top_k=5)
+            for benchmark in benchmarks:
+                if _BENCHMARK_QUERY_NOTE not in benchmark.notes:
+                    benchmark.notes.append(_BENCHMARK_QUERY_NOTE)
 
     # Show scores
     _print_score_table(cards, detail)

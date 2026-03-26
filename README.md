@@ -1,18 +1,21 @@
 # ragprep
 
-Document preparation pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database.
+Pre-ingestion quality pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database.
 
-Most RAG failures aren't embedding problems or chunk size problems. They're **document problems**: dangling references that make paragraphs meaningless in isolation, buried content that no query can find, headings that don't match the vocabulary users search with. ragprep catches these issues before upload, not after your users complain.
+RAG failures often start before embeddings - with the documents themselves: dangling references that break chunk independence, buried content that no query can find, and headings that miss the vocabulary users actually search. ragprep catches these issues before upload, not after users complain.
 
 **What it does:**
 
 - **Scores** documents across 10 criteria including a retrieval-aware metric that simulates search queries against your corpus to test whether each document can actually be found
 - **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
 - **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
-- **Recommends** document groupings using [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) and [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) similarity
-- **Exports** machine-readable metadata — per-document `.meta.json` sidecars and a corpus-level `manifest.json` for downstream pipeline integration
+- **Chunks** documents into heading-aware, overlapping segments with quality metadata and optional retrieval benchmarks (Recall@5, MRR, nDCG@5)
+- **Recommends** topic-focused document groupings (powered by [Louvain community detection](https://en.wikipedia.org/wiki/Louvain_method) + [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf))
+- **Exports** machine-readable metadata — `.meta.json`, `.chunks.json` sidecars and a corpus-level `manifest.json` for downstream pipeline integration
 
-Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) or RAG framework (LlamaIndex, LangChain, etc.).
+Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) and complements RAG frameworks (LlamaIndex, LangChain, etc.).
+
+ragprep is not a vector database, embedding service, or hosted RAG runtime. It is a quality gate that runs between parsing and ingestion.
 
 ### Pipeline
 
@@ -20,18 +23,22 @@ Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone,
 flowchart TD
     Input[DOCX · PDF · MD · TXT]
     Parse[Parse]
+    Clean[Clean — dedup headers/footers · drop page markers]
     CA[Corpus Analyzer — TF-IDF · entropy · coherence · similarity]
     Score[Score — 10 criteria incl. retrieval-aware]
     Analyze[LLM Analyze — entities · relationships · knowledge graph]
+    Chunk[Chunk — heading-aware splits · overlap · quality flags]
     Fix[Auto-Fix — rewrite refs · split paragraphs · headings]
     Recommend[Recommend Groupings — Louvain clusters · PageRank]
-    Output[Fixed Markdown + .meta.json sidecars + manifest.json]
+    Output[Fixed Markdown + .meta.json + .chunks.json + manifest.json]
 
-    Input --> Parse --> CA --> Score
+    Input --> Parse --> Clean --> CA --> Score
     Score -->|+ analyze| Analyze
+    Analyze --> Chunk
     Analyze --> Recommend
     Analyze -->|+ fix| Fix
     Fix --> Output
+    Chunk --> Output
 ```
 
 
@@ -40,8 +47,29 @@ flowchart TD
 | Command   | What runs                                                                |
 | --------- | ------------------------------------------------------------------------ |
 | `score`   | Parse → Corpus Analyzer → Score                                          |
-| `analyze` | + LLM analysis, knowledge graph, folder recommendations, metadata export |
+| `analyze` | + LLM analysis, knowledge graph, chunking, folder recommendations, metadata export |
 | `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory  |
+
+### Positioning
+
+- Platform services increasingly handle parsing/chunking/embedding.
+- ragprep focuses on what those platforms generally do not provide: pre-ingestion quality scoring, content-level fixes, retrieval benchmarking, and structured quality metadata.
+- For managed end-to-end offerings (for example Pinecone Assistant), ragprep still adds value as an upstream quality layer.
+
+### Current and Upcoming Vendor Landscape
+
+_Landscape snapshot as of 2026-03. This section should be revisited as platform capabilities evolve._
+
+Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
+
+| Area | Vendor trend (current + upcoming) | ragprep role |
+| ---- | ---- | ---- |
+| Parsing and chunking | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata |
+| Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals) |
+| Metadata enrichment | Platforms can store/filter metadata, and some add post-ingestion enrichment agents | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`) |
+| Quality assurance | No major vendor provides robust pre-ingestion quality scoring + content repair workflow | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
+
+Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
 
 
 ### Why retrieval-aware scoring?
@@ -156,6 +184,8 @@ Every command runs the scoring pipeline. It combines heuristic checks with corpu
 ```
 Parse (DOCX/PDF/TXT/MD)
   │
+  ├─ Clean ── dedup headers/footers, drop page markers
+  │
   ├─ Corpus Analyzer ── TF-IDF matrix, document similarity, per-doc metrics
   │
   └─ Scorer ── 8 heuristic criteria + 1 retrieval-aware + 1 graph-powered
@@ -218,9 +248,38 @@ When you run `fix` with `--llm-key`, targeted prompts are sent to Claude to fix 
 
 Originals are never modified. Fixed files are written as clean Markdown to the output directory.
 
+## Chunking
+
+Both `analyze` and `fix` produce heading-aware chunks for every document. The chunker splits text at heading boundaries first, then applies word-level windowing within each section.
+
+- **Heading-preserving** — chunks never cross heading boundaries. Each chunk carries its full heading path (e.g. `["Unit 3", "Budgeting", "Income Sources"]`).
+- **Configurable size** — `--chunk-size 220` (target words per chunk) and `--chunk-overlap 40` (words shared between adjacent chunks). Defaults produce chunks of roughly 200-250 words.
+- **Quality metadata** — each chunk records its source document, paragraph range, token estimate, and quality flags.
+
+Chunk output is written as `.chunks.json` sidecar files alongside `.meta.json` (suppress with `--no-export-chunks`).
+
+### Retrieval benchmarks
+
+Pass `--run-benchmark` to measure how well chunks retrieve against filename-derived queries using BM25+:
+
+```bash
+python -m src.cli analyze ./my-docs/ --llm-key $KEY --run-benchmark
+```
+
+Benchmark results (Recall@5, MRR, nDCG@5) are included in `manifest.json` under the `benchmarks` key.
+
+## Cleanup
+
+Before scoring and chunking, a deterministic cleaner runs on all parsed documents:
+
+- Removes repeated short phrases (headers/footers that appear on every page)
+- Drops `Page N` markers
+
+This runs automatically — no flags needed.
+
 ## Metadata Export
 
-Both `analyze` and `fix` produce machine-readable JSON metadata alongside their output — so downstream RAG pipelines (LlamaIndex, LangChain, Pinecone, Weaviate, etc.) can consume the analysis results programmatically.
+Both `analyze` and `fix` produce machine-readable JSON metadata alongside their output, designed for integration with downstream RAG pipelines (LlamaIndex, LangChain, Pinecone, Weaviate, etc.).
 
 ### Sidecar files
 
@@ -230,14 +289,18 @@ Each document gets a `.meta.json` file written next to its output:
 output/
 ├── Insurance Concepts/
 │   ├── insurance-types.md
-│   └── insurance-types.meta.json    ← sidecar
+│   ├── insurance-types.meta.json     ← analysis sidecar
+│   └── insurance-types.chunks.json   ← chunk sidecar
 ├── Goal Setting/
 │   ├── smart-goals.md
-│   └── smart-goals.meta.json        ← sidecar
-└── manifest.json                     ← corpus manifest
+│   ├── smart-goals.meta.json
+│   └── smart-goals.chunks.json
+└── manifest.json                      ← corpus manifest
 ```
 
-Each sidecar contains the document's analysis, scores, metrics, entities, relationships, and folder assignment:
+Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, relationships, and folder assignment. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
+
+Analysis sidecar example:
 
 ```json
 {
@@ -338,10 +401,10 @@ Two test suites: **unit tests** (fast, no downloads) and an **eval suite** (vali
 
 ```bash
 source .venv/bin/activate
-python3 -m pytest tests/ -v          # 76 tests, ~3 seconds
+python3 -m pytest tests/ -v          # 95 tests, ~3 seconds
 ```
 
-Tests the scoring pipeline, graph builder, corpus analyzer, parser, and CLI report generation using synthetic documents and mocked LLM calls. No API keys or downloads needed.
+Tests the scoring pipeline, graph builder, corpus analyzer, chunker, benchmark metrics, cleaner, parser, and CLI report generation using synthetic documents and mocked LLM calls. No API keys or downloads needed.
 
 ### Eval suite
 
@@ -438,11 +501,14 @@ ragprep/
 │   ├── graph_builder.py         # Knowledge graph (networkx) + spectral clustering + PageRank
 │   ├── fixer.py                 # LLM auto-fix engine (graph-aware)
 │   ├── recommender.py           # Document grouping + silhouette validation
+│   ├── chunker.py               # Structure-aware chunking (heading-preserving with overlap)
+│   ├── benchmark.py             # Chunk retrieval metrics (Recall@5, MRR, nDCG@5)
+│   ├── cleaner.py               # Deterministic cleanup (header/footer dedup, page markers)
 │   ├── export.py                # JSON metadata export (sidecars + manifest)
 │   ├── prompts.py               # LLM prompt templates
 │   ├── config.py                # Settings and API key management
 │   └── models.py                # All dataclasses
-├── tests/                       # Unit tests (76 tests, no downloads)
+├── tests/                       # Unit tests (95 tests, no downloads)
 │   ├── test_corpus_analyzer.py
 │   ├── test_scoring.py
 │   ├── test_graph.py
@@ -452,7 +518,15 @@ ragprep/
 │   ├── test_config.py
 │   ├── test_report.py
 │   ├── test_export.py           # Metadata export tests
-│   └── test_recommender.py      # Document grouping tests
+│   ├── test_recommender.py      # Document grouping tests
+│   ├── test_chunker.py          # Heading-aware chunking tests
+│   ├── test_benchmark.py        # Retrieval metric tests
+│   ├── test_cleaner.py          # Cleanup rule tests
+│   ├── test_chunk_export.py     # Chunk sidecar + manifest tests
+│   ├── test_chunk_models.py     # Chunk/ChunkSet/ChunkBenchmark model tests
+│   ├── test_chunk_safety.py     # Self-containment + fix integration tests
+│   ├── test_cli_enrichment.py   # CLI flag integration tests
+│   └── test_split_recommendations.py  # Split recommendation tests
 ├── test-data/                   # Eval suite (63 tests, needs setup.py)
 │   ├── setup.py                 # Downloads ~440MB of benchmark datasets
 │   ├── cleanup.sh               # Removes downloaded data
@@ -485,6 +559,7 @@ ragprep/
 
 ## TODO
 
+- **Vendor landscape refresh cadence** — review and update the "Current and Upcoming Vendor Landscape" section quarterly (next review: 2026-06)
 - **Structured LLM output** — replace JSON-in-markdown prompts with tool_use for reliable extraction
 - **Incremental analysis** — cache per-file LLM results so `fix` doesn't re-run the full `analyze` pipeline. Currently `fix` repeats all LLM analysis calls from scratch
 - **Relationship deduplication** — merge duplicate edges and track edge weight/frequency

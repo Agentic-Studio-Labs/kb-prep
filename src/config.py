@@ -23,10 +23,6 @@ except ImportError:
 class Config:
     """Application configuration."""
 
-    # anam.ai
-    anam_api_key: Optional[str] = None
-    anam_base_url: str = "https://api.anam.ai"
-
     # LLM (Anthropic Claude)
     anthropic_api_key: Optional[str] = None
     llm_model: str = "claude-sonnet-4-20250514"
@@ -34,8 +30,7 @@ class Config:
 
     # Processing defaults
     output_dir: str = "./fixed"
-    convert_to_markdown: bool = True  # Convert DOCX/PDF → MD before upload
-    min_score_for_upload: float = 50.0  # Don't upload below this score
+    convert_to_markdown: bool = True  # Convert DOCX/PDF → MD
     concurrency: int = 5  # Max parallel LLM calls
     folder_hints: str = ""  # Domain-specific guidance for folder organization
 
@@ -43,10 +38,8 @@ class Config:
     def from_env(cls) -> "Config":
         """Load config from environment variables."""
         return cls(
-            anam_api_key=os.environ.get("ANAM_API_KEY"),
             anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
-            anam_base_url=os.environ.get("ANAM_BASE_URL", "https://api.anam.ai"),
-            llm_model=os.environ.get("ANAM_PREP_MODEL", "claude-sonnet-4-20250514"),
+            llm_model=os.environ.get("KB_PREP_MODEL", "claude-sonnet-4-20250514"),
         )
 
     def with_overrides(self, **kwargs) -> "Config":

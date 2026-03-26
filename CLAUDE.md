@@ -103,3 +103,4 @@ Documents flow through the pipeline as `ParsedDocument` objects (defined in `src
 - `rag-files-*/` directories are timestamped output from `fix` runs
 - Louvain clustering (entity graph) is seeded with `seed=42` for determinism
 - Spectral clustering (document similarity) uses `random_state=42`
+- Vendor landscape note in `README.md` is a dated snapshot; refresh quarterly (next review: 2026-06)

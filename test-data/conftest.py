@@ -244,7 +244,7 @@ def newsgroups_tfidf(newsgroups_data):
 
 @pytest.fixture(scope="session")
 def engine():
-    """Adapter that wraps kb-prep's src modules into the eval test API."""
+    """Adapter that wraps ragprep's src modules into the eval test API."""
     try:
         from src.corpus_analyzer import (
             _bm25_score,
@@ -270,10 +270,10 @@ def engine():
             Relationship,
         )
     except ImportError as e:
-        pytest.fail(f"Engine not found. Install kb-prep first: {e}")
+        pytest.fail(f"Engine not found. Install ragprep first: {e}")
 
     class EngineAdapter:
-        """Wraps kb-prep functions into the API expected by eval tests."""
+        """Wraps ragprep functions into the API expected by eval tests."""
 
         # --- Layer 1: Information-Theoretic ---
 
