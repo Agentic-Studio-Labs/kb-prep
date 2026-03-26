@@ -55,7 +55,7 @@ Guidelines for entity and relationship extraction:
 # ---------------------------------------------------------------------------
 
 RECOMMEND_FOLDERS = """\
-You are organizing documents into a knowledge base folder structure for a RAG system (anam.ai).
+You are organizing documents into a knowledge base folder structure for a RAG system.
 
 Here are the documents and their analyzed metadata:
 
@@ -69,6 +69,10 @@ Design a folder hierarchy that:
 3. Each folder should contain 2-10 documents (split further if more)
 4. Folder names should be clear, short, and descriptive
 5. Each folder needs a description explaining what content it holds (this helps the LLM decide when to search it)
+6. Folder names must be SHORT TOPIC LABELS (2-4 words like "Insurance Basics", "Goal Setting"), NEVER document titles or filenames
+7. If a graph_cluster label is provided, use it as a grouping hint but generate your own descriptive folder name
+8. Documents that are clearly the same content in different formats (e.g., same title as .pdf and .docx) must go in the same folder
+9. NEVER use a document's filename or title as a folder name
 
 Return ONLY valid JSON:
 {{

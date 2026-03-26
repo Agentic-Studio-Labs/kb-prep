@@ -15,6 +15,7 @@ import asyncio
 import os
 import shutil
 from pathlib import Path
+from typing import Optional
 
 import click
 from rich.console import Console
@@ -224,6 +225,22 @@ def analyze(
             assign_table.add_row(filename, folder)
         console.print(assign_table)
 
+    # Validate folder assignments
+    sil_score = 0.0
+    misplaced: list[tuple[str, float]] = []
+    if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
+        sil_score, misplaced = recommender.validate_assignments(
+            recommendation.file_assignments,
+            corpus_analysis.similarity_matrix,
+            corpus_analysis.doc_labels,
+        )
+        if sil_score != 0:
+            console.print(f"\n[dim]Folder coherence (silhouette): {sil_score:.2f}[/dim]")
+        if misplaced:
+            console.print(f"[yellow]Warning: {len(misplaced)} document(s) may be misplaced:[/yellow]")
+            for filename, score in misplaced:
+                console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
+
     # Auto-generate report
     if not no_report:
         report_path = _generate_report_path("analyze")
@@ -234,7 +251,7 @@ def analyze(
                 _report_scores(cards, detail),
                 _report_analyses(docs, analyses),
                 _report_graph(graph),
-                _report_recommendations(recommendation),
+                _report_recommendations(recommendation, sil_score if sil_score != 0 else None, misplaced or None),
             ],
         )
         console.print(f"\n[green]Report:[/green] {report_path}")
@@ -417,6 +434,22 @@ def fix(
             assign_table.add_row(fname, folder)
         console.print(assign_table)
 
+    # Validate folder assignments
+    fix_sil_score = 0.0
+    fix_misplaced: list[tuple[str, float]] = []
+    if hasattr(corpus_analysis, "similarity_matrix") and corpus_analysis.similarity_matrix.size > 0:
+        fix_sil_score, fix_misplaced = recommender.validate_assignments(
+            recommendation.file_assignments,
+            corpus_analysis.similarity_matrix,
+            corpus_analysis.doc_labels,
+        )
+        if fix_sil_score != 0:
+            console.print(f"\n[dim]Folder coherence (silhouette): {fix_sil_score:.2f}[/dim]")
+        if fix_misplaced:
+            console.print(f"[yellow]Warning: {len(fix_misplaced)} document(s) may be misplaced:[/yellow]")
+            for filename, score in fix_misplaced:
+                console.print(f"  [yellow]{filename} (silhouette: {score:.2f})[/yellow]")
+
     console.print(f"\nOrganized files written to [cyan]{output}/[/cyan]")
 
     # --- Report inside output folder ---
@@ -429,7 +462,9 @@ def fix(
                 _report_header("fix", len(docs)),
                 _report_scores(cards, detail=False),
                 _report_fixes(fix_reports),
-                _report_recommendations(recommendation),
+                _report_recommendations(
+                    recommendation, fix_sil_score if fix_sil_score != 0 else None, fix_misplaced or None
+                ),
             ],
         )
         console.print(f"[green]Report:[/green] {report_path}")
@@ -1002,7 +1037,11 @@ def _report_graph(graph) -> list[str]:
     return lines
 
 
-def _report_recommendations(recommendation) -> list[str]:
+def _report_recommendations(
+    recommendation,
+    silhouette_score: Optional[float] = None,
+    misplaced: Optional[list[tuple[str, float]]] = None,
+) -> list[str]:
     """Folder structure + file assignments section."""
     from .recommender import format_folder_tree
 
@@ -1023,6 +1062,15 @@ def _report_recommendations(recommendation) -> list[str]:
         lines.append("|------|--------|")
         for filename, folder in recommendation.file_assignments.items():
             lines.append(f"| {filename} | {folder} |")
+        lines.append("")
+    if silhouette_score is not None:
+        lines.append(f"**Folder coherence (silhouette):** {silhouette_score:.2f}")
+        lines.append("")
+    if misplaced:
+        lines.append("**Potentially misplaced documents:**")
+        lines.append("")
+        for filename, score in misplaced:
+            lines.append(f"- {filename} (silhouette: {score:.2f})")
         lines.append("")
     return lines
 

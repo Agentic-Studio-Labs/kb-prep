@@ -278,19 +278,28 @@ class KnowledgeGraph:
         file_to_clusters: dict[str, list[int]] = defaultdict(list)
         cluster_labels: dict[int, str] = {}
 
+        # Compute PageRank once for the full graph
+        import networkx as nx
+
+        pr = nx.pagerank(self.graph, alpha=0.85) if self.graph.number_of_nodes() > 0 else {}
+
         for idx, component in enumerate(components):
-            # Label the cluster by most common non-unresolved entity type + top name
             type_counts: dict[str, int] = defaultdict(int)
-            names = []
+            # Find highest-PageRank entity in this component
+            best_name = ""
+            best_pr = -1.0
             for key in component:
                 node = self.graph.nodes[key]
                 etype = node.get("entity_type", "unknown")
                 if etype != "unresolved":
                     type_counts[etype] += 1
-                    names.append(node.get("name", ""))
+                    name = node.get("name", "")
+                    if pr.get(key, 0) > best_pr:
+                        best_pr = pr.get(key, 0)
+                        best_name = name
 
             top_type = max(type_counts, key=type_counts.get) if type_counts else "general"
-            top_name = names[0] if names else f"cluster-{idx}"
+            top_name = best_name or f"cluster-{idx}"
             cluster_labels[idx] = f"{top_type}: {top_name}"
 
             # Map files to this cluster

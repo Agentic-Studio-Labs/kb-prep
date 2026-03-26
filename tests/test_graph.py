@@ -316,3 +316,20 @@ def test_pagerank_returns_rankings():
     top_entity_name = graph._entities[top_entity].name if top_entity in graph._entities else top_entity
     leaf_keys = {e.key for e in graph._entities.values() if e.name in leaf_names}
     assert top_entity in leaf_keys, f"Top PageRank entity should be a leaf concept, got {top_entity_name!r}"
+
+
+def test_file_clusters_use_pagerank_labels():
+    """Cluster labels should use the highest-PageRank entity, not the first."""
+    graph = KnowledgeGraph()
+    # Create a cluster where "Insurance" has highest PageRank (most inbound links)
+    for name in ["Risk Assessment", "Coverage Types", "Premium Calculation"]:
+        graph._add_entity(Entity(name=name, entity_type="concept", source_file="a.md"), "a.md")
+    graph._add_entity(Entity(name="Insurance", entity_type="concept", source_file="a.md"), "a.md")
+    # All point to Insurance (giving it highest PageRank)
+    for name in ["Risk Assessment", "Coverage Types", "Premium Calculation"]:
+        graph._add_relationship(Relationship(source=name, target="Insurance", rel_type="part_of", source_file="a.md"))
+
+    clusters = graph.get_file_clusters()
+    # The label should contain "Insurance" (highest PR), not "Coverage Types" or "Premium Calculation"
+    labels = list(clusters.keys())
+    assert any("Insurance" in label for label in labels), f"Expected 'Insurance' in labels, got {labels}"

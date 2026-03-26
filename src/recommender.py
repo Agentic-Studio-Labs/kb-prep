@@ -20,6 +20,28 @@ from .models import (
 from .prompts import RECOMMEND_FOLDERS
 
 
+def _detect_format_duplicates(docs: list[ParsedDocument]) -> dict[str, str]:
+    """Map duplicate filenames to their primary.
+
+    Two files are duplicates if their stems match after normalizing
+    (e.g., "4-5.FL.10 Handout B.pdf" and "4-5.FL.10 Handout B.docx").
+    """
+    from pathlib import Path
+
+    stem_to_files: dict[str, list[str]] = {}
+    for doc in docs:
+        stem = Path(doc.metadata.filename).stem.strip().lower()
+        stem_to_files.setdefault(stem, []).append(doc.metadata.filename)
+
+    duplicates: dict[str, str] = {}
+    for stem, files in stem_to_files.items():
+        if len(files) > 1:
+            primary = files[0]
+            for dup in files[1:]:
+                duplicates[dup] = primary
+    return duplicates
+
+
 class FolderRecommender:
     """Recommend anam.ai KB folder structure based on content analysis.
 
@@ -99,6 +121,7 @@ class FolderRecommender:
     ) -> FolderRecommendation:
         """Use graph community detection to cluster, then LLM to name folders."""
         file_clusters = self.graph.get_file_clusters()
+        duplicates = _detect_format_duplicates(docs)
 
         # Build enriched document summaries with graph context
         doc_summaries = []
@@ -110,23 +133,28 @@ class FolderRecommender:
                     cluster_label = label
                     break
 
-            doc_summaries.append(
-                {
-                    "filename": doc.metadata.filename,
-                    "domain": analysis.domain,
-                    "topics": analysis.topics,
-                    "audience": analysis.audience,
-                    "content_type": analysis.content_type,
-                    "summary": analysis.summary,
-                    "graph_cluster": cluster_label,
-                    "entity_count": len(analysis.entities),
-                    "cross_doc_connections": len(self.graph.get_cross_document_references(doc.metadata.filename)),
-                }
-            )
+            entry: dict = {
+                "filename": doc.metadata.filename,
+                "domain": analysis.domain,
+                "topics": analysis.topics,
+                "audience": analysis.audience,
+                "content_type": analysis.content_type,
+                "summary": analysis.summary,
+                "graph_cluster": cluster_label,
+                "entity_count": len(analysis.entities),
+                "cross_doc_connections": len(self.graph.get_cross_document_references(doc.metadata.filename)),
+            }
+            if doc.metadata.filename in duplicates:
+                entry["duplicate_of"] = duplicates[doc.metadata.filename]
+            doc_summaries.append(entry)
 
         result = await self._call_llm_for_folders(doc_summaries)
         if result is None:
             return await self._graph_heuristic_recommend(docs, analyses)
+        if result:
+            for dup, primary in duplicates.items():
+                if primary in result.file_assignments:
+                    result.file_assignments[dup] = result.file_assignments[primary]
         return result
 
     # ------------------------------------------------------------------
@@ -187,22 +215,28 @@ class FolderRecommender:
         analyses: list[ContentAnalysis],
     ) -> FolderRecommendation:
         """Use LLM to design optimal folder structure."""
+        duplicates = _detect_format_duplicates(docs)
         doc_summaries = []
         for doc, analysis in zip(docs, analyses):
-            doc_summaries.append(
-                {
-                    "filename": doc.metadata.filename,
-                    "domain": analysis.domain,
-                    "topics": analysis.topics,
-                    "audience": analysis.audience,
-                    "content_type": analysis.content_type,
-                    "summary": analysis.summary,
-                }
-            )
+            entry: dict = {
+                "filename": doc.metadata.filename,
+                "domain": analysis.domain,
+                "topics": analysis.topics,
+                "audience": analysis.audience,
+                "content_type": analysis.content_type,
+                "summary": analysis.summary,
+            }
+            if doc.metadata.filename in duplicates:
+                entry["duplicate_of"] = duplicates[doc.metadata.filename]
+            doc_summaries.append(entry)
 
         result = await self._call_llm_for_folders(doc_summaries)
         if result is None:
             return await self._heuristic_recommend(docs, analyses)
+        if result:
+            for dup, primary in duplicates.items():
+                if primary in result.file_assignments:
+                    result.file_assignments[dup] = result.file_assignments[primary]
         return result
 
     def _json_to_folder_node(self, data: dict) -> FolderNode:
@@ -295,6 +329,41 @@ class FolderRecommender:
         per_doc = silhouette_samples(distance_matrix, numeric_labels, metric="precomputed")
         misplaced = [(doc_labels[i], float(per_doc[i])) for i in range(len(per_doc)) if per_doc[i] < 0]
         return score, misplaced
+
+    def reassign_misplaced(
+        self,
+        assignments: dict[str, str],
+        misplaced: list[tuple[str, float]],
+        similarity_matrix,
+        doc_labels: list[str],
+    ) -> dict[str, str]:
+        """Reassign documents with negative silhouette scores to their nearest folder."""
+        import numpy as np
+
+        misplaced_files = {f for f, _ in misplaced}
+        folder_centroids: dict[str, list[int]] = {}
+
+        for i, label in enumerate(doc_labels):
+            folder = assignments.get(label)
+            if folder and label not in misplaced_files:
+                folder_centroids.setdefault(folder, []).append(i)
+
+        new_assignments = dict(assignments)
+        for filename, _ in misplaced:
+            if filename not in doc_labels:
+                continue
+            doc_idx = doc_labels.index(filename)
+            best_folder = None
+            best_sim = -1.0
+            for folder, indices in folder_centroids.items():
+                avg_sim = float(np.mean([similarity_matrix[doc_idx, j] for j in indices]))
+                if avg_sim > best_sim:
+                    best_sim = avg_sim
+                    best_folder = folder
+            if best_folder:
+                new_assignments[filename] = best_folder
+
+        return new_assignments
 
 
 # ---------------------------------------------------------------------------
