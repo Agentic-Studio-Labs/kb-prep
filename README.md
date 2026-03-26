@@ -217,7 +217,7 @@ No API keys needed. All datasets are freely available.
 | Layer 1 — Scoring | Entropy distinguishes formulaic vs diverse text; coherence detects mismatched headings (Wilcoxon p<0.01); retrieval-aware scores are non-degenerate | SQuAD, CUAD, BEIR/SciFact, 20 Newsgroups | Contracts entropy < newsgroups entropy |
 | Layer 2 — Graph | Entity resolution F1 against published ER benchmarks; spectral clustering NMI/ARI on labeled categories; PageRank correlates with in-degree | Leipzig ER, FB15k-237, 20 Newsgroups | DBLP-ACM F1 >= 0.80 |
 | Layer 3 — Chunking | TextTiling Pk on annotated segmentation corpus; info-dense overlap selects higher TF-IDF sentences | Choi segmentation | Pk <= 0.44 |
-| Layer 4 — Retrieval | BM25 relevance ordering; Rocchio expansion adds domain terms; silhouette validates clustering quality | SQuAD, 20 Newsgroups | True labels > random labels |
+| Layer 4 — Retrieval | BM25+ relevance ordering; Rocchio expansion adds domain terms; silhouette validates clustering quality | SQuAD, 20 Newsgroups | True labels > random labels |
 | Layer 5 — End-to-end | Full round-trip: write .docx/.md files → parse → score → chunk → BM25 retrieve → measure hit rate. Also: parse real PDFs and compare against ground truth annotations | SQuAD (synthetic files), SCORE-Bench (real PDFs), Kleister NDA (real PDFs), OmniDocBench | Parse fidelity F1 >= 0.60 |
 | Cross-layer | Edge cases (empty/unicode/stopwords), TF-IDF consistency across layers, performance benchmarks (<30s for 20K docs) | Synthetic, 20 Newsgroups | No crashes, no NaN |
 

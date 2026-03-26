@@ -730,10 +730,6 @@ class QualityScorer:
         )
 
     # ------------------------------------------------------------------
-    # 9. Readability (corpus-powered, when available)
-    # ------------------------------------------------------------------
-
-    # ------------------------------------------------------------------
     # 9. Retrieval-Aware (corpus-powered, when available)
     # ------------------------------------------------------------------
 
@@ -774,7 +770,7 @@ class QualityScorer:
         )
 
     # ------------------------------------------------------------------
-    # 11. Knowledge Completeness (graph-powered, when available)
+    # 10. Knowledge Completeness (graph-powered, when available)
     # ------------------------------------------------------------------
 
     def _score_knowledge_completeness(self, doc: ParsedDocument) -> ScoringResult:
