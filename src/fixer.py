@@ -273,6 +273,9 @@ class DocumentFixer:
 
     async def _fix_acronym(self, paragraphs: list[Paragraph], acronym: str, full_text: str) -> Optional[FixAction]:
         """Define an undefined acronym on its first use."""
+        if _acronym_definition_exists(full_text, acronym):
+            return None
+
         # Get context around first occurrence
         context_start = full_text.find(acronym)
         if context_start == -1:
@@ -287,13 +290,17 @@ class DocumentFixer:
         expansion = await self._call_llm(prompt)
         if not expansion or expansion == "UNKNOWN":
             return None
+        expansion = _canonicalize_acronym_expansion(acronym, expansion)
 
         # Find the first paragraph containing the acronym and add definition
         for para in paragraphs:
             if acronym in para.text:
                 original = para.text
-                # Replace first occurrence with "ACRONYM (Full Form)"
-                para.text = para.text.replace(acronym, f"{acronym} ({expansion})", 1)
+                # Replace first standalone occurrence if it's not already defined.
+                pattern = re.compile(rf"\b{re.escape(acronym)}\b(?!\s*\()", re.IGNORECASE)
+                para.text = pattern.sub(f"{acronym} ({expansion})", para.text, count=1)
+                if para.text == original:
+                    return None
                 return FixAction(
                     category="acronym_definitions",
                     original_text=original,
@@ -433,3 +440,15 @@ def _has_positional_reference(text: str) -> bool:
         r"\bas\s+(?:noted|described|shown|outlined|discussed)\s+(?:above|below|earlier)",
     ]
     return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
+
+
+def _acronym_definition_exists(text: str, acronym: str) -> bool:
+    pattern = re.compile(rf"\b{re.escape(acronym)}\s*\([^)]+?\)", re.IGNORECASE)
+    return bool(pattern.search(text))
+
+
+def _canonicalize_acronym_expansion(acronym: str, expansion: str) -> str:
+    cleaned = " ".join(expansion.strip().split())
+    if acronym.upper() == "SMART":
+        return "Specific, Measurable, Achievable, Relevant, and Time-bound"
+    return cleaned

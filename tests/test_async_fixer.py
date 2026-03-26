@@ -170,3 +170,29 @@ def test_sync_helpers_unchanged():
     assert not inspect.iscoroutinefunction(DocumentFixer._find_paragraph)
     assert not inspect.iscoroutinefunction(DocumentFixer._get_graph_context_for_paragraph)
     assert not inspect.iscoroutinefunction(DocumentFixer._write_fixed)
+
+
+def test_fix_acronym_skips_when_already_defined():
+    from src.config import Config
+    from src.fixer import DocumentFixer
+    from src.models import Paragraph
+
+    config = Config(anthropic_api_key="test-key", output_dir="/tmp/test-fix-out")
+    with patch("src.fixer.AsyncAnthropic") as MockClient:
+        mock_instance = MockClient.return_value
+        msg = MagicMock()
+        msg.content = [MagicMock(text="Specific, Measurable, Achievable, Relevant, and Time-bound")]
+        mock_instance.messages.create = AsyncMock(return_value=msg)
+        fixer = DocumentFixer(config)
+
+        paragraphs = [
+            Paragraph(
+                text="SMART (Specific, Measurable, Achievable, Relevant, Time-bound) goals help.",
+                level=0,
+                style="Normal",
+                index=0,
+            )
+        ]
+        action = asyncio.run(fixer._fix_acronym(paragraphs, "SMART", paragraphs[0].text))
+        assert action is None
+        assert paragraphs[0].text.count("SMART") == 1

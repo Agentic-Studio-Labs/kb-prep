@@ -197,6 +197,7 @@ class DocumentParser:
                     )
                     idx += 1
 
+        paragraphs = self._filter_pdf_noise(paragraphs)
         # Merge consecutive body paragraphs that are likely the same paragraph
         paragraphs = self._merge_pdf_paragraphs(paragraphs)
 
@@ -217,6 +218,35 @@ class DocumentParser:
             paragraphs=paragraphs,
             heading_tree=heading_tree,
         )
+
+    @staticmethod
+    def _filter_pdf_noise(paragraphs: list[Paragraph]) -> list[Paragraph]:
+        """Drop common PDF extraction noise before paragraph merging."""
+        if not paragraphs:
+            return []
+
+        copyright_re = re.compile(r"©\s*\d{4}\s+by\s+.+all rights reserved", re.IGNORECASE)
+        filtered: list[Paragraph] = []
+
+        for p in paragraphs:
+            text = " ".join(p.text.split())
+            if not text:
+                continue
+            if re.fullmatch(r"\d+", text):
+                continue
+            if copyright_re.search(text):
+                continue
+
+            filtered.append(
+                Paragraph(
+                    text=text,
+                    level=p.level,
+                    style=p.style,
+                    index=p.index,
+                )
+            )
+
+        return [Paragraph(text=p.text, level=p.level, style=p.style, index=i) for i, p in enumerate(filtered)]
 
     @staticmethod
     def _estimate_heading_level(font_size: float, is_bold: bool) -> int:

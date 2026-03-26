@@ -814,6 +814,17 @@ def _report_scores(cards: list[ScoreCard], detail: bool) -> list[str]:
     lines.append(f"**Average score:** {avg_score:.1f}")
     lines.append("")
 
+    parse_fidelity_files: list[str] = []
+    for card in cards:
+        if any("Low parse fidelity" in issue.message for issue in card.all_issues):
+            parse_fidelity_files.append(Path(card.file_path).name)
+    if parse_fidelity_files:
+        lines.append(f"**Parse fidelity warnings:** {len(parse_fidelity_files)} file(s)")
+        lines.append("")
+        for filename in parse_fidelity_files:
+            lines.append(f"- {filename}")
+        lines.append("")
+
     if detail:
         lines.append("## Issues Detail")
         lines.append("")

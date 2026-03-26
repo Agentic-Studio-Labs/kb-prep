@@ -52,6 +52,21 @@ def test_report_scores_detail():
     assert "Bad heading" in text
 
 
+def test_report_scores_surfaces_parse_fidelity_warning():
+    from src.cli import _report_scores
+
+    issue = Issue(
+        severity=Severity.WARNING,
+        category="structure",
+        message="Low parse fidelity: only 98 words extracted from 124 KB file",
+    )
+    cards = [_make_card("sparse.pdf", 62, issues=[issue])]
+    lines = _report_scores(cards, detail=False)
+    text = "\n".join(lines)
+    assert "Parse fidelity warnings" in text
+    assert "sparse.pdf" in text
+
+
 def test_generate_report_path():
     """_generate_report_path returns timestamped filename."""
     from src.cli import _generate_report_path
