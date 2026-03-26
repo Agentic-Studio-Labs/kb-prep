@@ -1,10 +1,10 @@
-# Ingesting ragprep Output into Weaviate
+# Ingesting IngestGate Output into Weaviate
 
-This guide walks through loading ragprep's fixed Markdown, chunk sidecars, and quality metadata into a Weaviate instance for hybrid retrieval.
+This guide walks through loading IngestGate's fixed Markdown, chunk sidecars, and quality metadata into a Weaviate instance for hybrid retrieval.
 
 ## Prerequisites
 
-- ragprep output from `fix` or `analyze` (a directory with `.md`, `.meta.json`, `.chunks.json`, and `manifest.json`)
+- IngestGate output from `fix` or `analyze` (a directory with `.md`, `.meta.json`, `.chunks.json`, and `manifest.json`)
 - Weaviate instance running (local Docker or Weaviate Cloud)
 - Python 3.10+ with `weaviate-client` v4 installed
 
@@ -12,12 +12,12 @@ This guide walks through loading ragprep's fixed Markdown, chunk sidecars, and q
 pip install weaviate-client
 ```
 
-## What ragprep produces
+## What IngestGate produces
 
 After running `fix`:
 
 ```
-rag-files-20260326/
+ingestgate-files-20260326/
 ├── api-design-guide.md
 ├── api-design-guide.meta.json
 ├── api-design-guide.chunks.json
@@ -41,7 +41,7 @@ Before uploading anything, check the retrieval quality gate signals:
 jq -r '.documents[]
   | select(.retrieval_quality_gate.retrieval_mode_hint.recommended_mode != "text_hybrid_default")
   | [.source_file, .retrieval_quality_gate.retrieval_mode_hint.recommended_mode]
-  | @tsv' rag-files-20260326/manifest.json
+  | @tsv' ingestgate-files-20260326/manifest.json
 ```
 
 | Recommended mode | Action |
@@ -55,7 +55,7 @@ Skip or quarantine `multimodal_or_ocr_review` documents until you have a layout-
 
 ## Step 2: Define Weaviate collection schema
 
-Create a collection that stores chunks with ragprep metadata as filterable properties:
+Create a collection that stores chunks with IngestGate metadata as filterable properties:
 
 ```python
 import weaviate
@@ -95,7 +95,7 @@ import json
 from pathlib import Path
 
 
-def load_ragprep_output(output_dir: str) -> list[dict]:
+def load_ingestgate_output(output_dir: str) -> list[dict]:
     """Load all chunks with their document-level metadata."""
     output_path = Path(output_dir)
     manifest = json.loads((output_path / "manifest.json").read_text())
@@ -151,7 +151,7 @@ def upload_to_weaviate(client, chunks: list[dict]):
 Usage:
 
 ```python
-chunks = load_ragprep_output("rag-files-20260326/")
+chunks = load_ingestgate_output("ingestgate-files-20260326/")
 upload_to_weaviate(client, chunks)
 ```
 
@@ -230,7 +230,7 @@ print(f"api-design-guide.md: {len(response.objects)} chunks")
 
 ## Adapting for other vector databases
 
-The `load_ragprep_output()` function is database-agnostic — it returns a list of dicts. To adapt for a different target:
+The `load_ingestgate_output()` function is database-agnostic — it returns a list of dicts. To adapt for a different target:
 
 | Vector DB | What changes |
 |---|---|
@@ -239,7 +239,7 @@ The `load_ragprep_output()` function is database-agnostic — it returns a list 
 | **Chroma** | Use `collection.add()` with documents, metadatas, and ids |
 | **pgvector** | INSERT into a table with a vector column + metadata columns |
 
-The ragprep sidecar format is designed so that `text` is always the content to embed, and everything else is structured metadata for filtering.
+The IngestGate sidecar format is designed so that `text` is always the content to embed, and everything else is structured metadata for filtering.
 
 ## Entity-powered retrieval (advanced)
 
@@ -247,7 +247,7 @@ Each `.meta.json` sidecar includes extracted entities and relationships. You can
 
 ```python
 # Load entities from a sidecar
-meta = json.loads(Path("rag-files-20260326/api-design-guide.meta.json").read_text())
+meta = json.loads(Path("ingestgate-files-20260326/api-design-guide.meta.json").read_text())
 
 for entity in meta["entities"]:
     print(f"  {entity['type']}: {entity['name']} — {entity['description']}")
@@ -261,13 +261,13 @@ Use cases:
 ## Workflow summary
 
 ```
-ragprep fix ./docs/ --llm-key $KEY
+ingestgate fix ./docs/ --llm-key $KEY
     ↓
 review manifest.json signals
     ↓
 skip multimodal_or_ocr_review docs
     ↓
-load_ragprep_output() → list of chunk dicts
+load_ingestgate_output() → list of chunk dicts
     ↓
 upload_to_weaviate() → Weaviate collection
     ↓

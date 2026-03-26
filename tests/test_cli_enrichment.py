@@ -25,7 +25,7 @@ def test_analyze_chunk_export_flag_writes_chunks(tmp_path, monkeypatch):
 
     result = CliRunner().invoke(cli, ["analyze", str(tmp_path), "--llm-key", "test", "--export-chunks"])
     assert result.exit_code == 0
-    assert list((tmp_path / ".ragprep").glob("*.chunks.json"))
+    assert list((tmp_path / ".ingestgate").glob("*.chunks.json"))
 
 
 def test_benchmark_query_prefers_headings_and_tfidf_over_filename_stem():

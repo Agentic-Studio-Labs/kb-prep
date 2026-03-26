@@ -1,4 +1,4 @@
-"""Data models for ragprep document analysis pipeline."""
+"""Data models for the IngestGate analysis pipeline."""
 
 from dataclasses import dataclass, field
 from enum import Enum

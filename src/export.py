@@ -33,7 +33,7 @@ def write_sidecar(
     """Write a .meta.json sidecar file alongside the fixed Markdown."""
     retrieval_quality_gate = _build_retrieval_quality_gate(doc, card)
     data = {
-        "ragprep_version": "0.1.0",
+        "ingestgate_version": "0.1.0",
         "source_file": doc.metadata.filename,
         "output_file": f"{filename_stem}.md",
         "analysis": {
@@ -192,7 +192,7 @@ def build_manifest_data(
 
     return {
         "schema_version": "2.0",
-        "ragprep_version": "0.1.0",
+        "ingestgate_version": "0.1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "corpus": {
             "total_documents": len(docs),

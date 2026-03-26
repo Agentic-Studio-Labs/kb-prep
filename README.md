@@ -1,8 +1,8 @@
-# Retrieval Quality Gate
+# IngestGate
 
-Operational ingestion metadata and decision support for RAG pipelines.
+Retrieval Quality Gate for RAG pipelines.
 
-RAG failures often start before embeddings, rerankers, or vector databases. They start with documents that are hard to chunk cleanly, hard to retrieve reliably, or hard to route into the right ingestion path. This project acts as a **Retrieval Quality Gate** between parsing and ingestion.
+RAG failures often start before embeddings, rerankers, or vector databases. They start with documents that are hard to chunk cleanly, hard to retrieve reliably, or hard to route into the right ingestion path. **IngestGate** acts as a Retrieval Quality Gate between parsing and ingestion.
 
 It answers three practical questions:
 
@@ -14,7 +14,7 @@ What the gate produces:
 
 - **Score**: weighted health signals across structure, self-containment, headings, paragraph shape, retrieval-aware quality, and more
 - **Benchmark**: chunk-level retrieval evidence (`Recall@5`, `MRR`, `nDCG@5`) from deterministic queries
-- **Retrieval Quality Gate**: operational ingestion metadata and decision support via `retrieval_quality_gate` signals in sidecars and manifest output
+- **IngestGate decision support**: operational ingestion metadata and decision support via `retrieval_quality_gate` signals in sidecars and manifest output
 - **Remediation**: optional automatic fixes for chunk safety, headings, long paragraphs, and acronym definitions
 
 Supports DOCX, PDF, TXT, and Markdown. Works upstream of any vector database or retrieval stack (Pinecone, Weaviate, pgvector, Qdrant, Chroma, LangChain, LlamaIndex, custom pipelines).
@@ -29,23 +29,25 @@ flowchart TD
     Parse[Parse]
     Clean[Clean — dedup headers/footers · drop page markers]
     CA[Corpus Analyzer — TF-IDF · entropy · coherence · similarity]
-    Score[Score — 10 criteria incl. retrieval-aware]
-    Analyze[LLM Analyze — entities · relationships · knowledge graph]
+    Health[Health — score structure · self-containment · headings]
+    Analyze[Analyze — entities · relationships · knowledge graph]
     Chunk[Chunk — heading-aware splits · overlap · quality flags]
-    Fix[Auto-Fix — rewrite refs · split paragraphs · headings]
-    Output[Fixed Markdown + .meta.json + .chunks.json + manifest.json]
+    Benchmark[Findability — benchmark chunk retrieval]
+    Gate[Handling Decision — retrieval_quality_gate signals]
+    Fix[Optional Remediation — rewrite refs · split paragraphs · headings]
+    Output[Operational ingestion metadata + fixed Markdown]
 
-    Input --> Parse --> Clean --> CA --> Score
-    Score -->|+ analyze| Analyze
-    Analyze --> Chunk
-    Analyze -->|+ fix| Fix
-    Fix --> Output
-    Chunk --> Output
+    Input --> Parse --> Clean --> CA --> Health
+    CA --> Analyze
+    Analyze --> Chunk --> Benchmark --> Gate
+    Health --> Gate
+    Gate --> Output
+    Gate -->|needs remediation| Fix --> Output
 ```
 ### Positioning
 
 - Platform services increasingly handle parsing/chunking/embedding.
-- Retrieval Quality Gate focuses on what those platforms generally do not provide: pre-ingestion quality scoring, retrieval benchmarking, handling recommendations, and structured quality metadata.
+- IngestGate focuses on what those platforms generally do not provide: pre-ingestion quality scoring, retrieval benchmarking, handling recommendations, and structured quality metadata.
 - For managed end-to-end offerings (for example Pinecone Assistant), it still adds value as an upstream decision layer.
 
 ### Current and Upcoming Vendor Landscape
@@ -54,14 +56,14 @@ flowchart TD
 
 Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
 
-| Area                     | Vendor trend (current + upcoming)                                                                                                                              | Retrieval Quality Gate role                                                                       |
+| Area                     | Vendor trend (current + upcoming)                                                                                                                              | IngestGate role                                                                                   |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Parsing and chunking     | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata        |
 | Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly                                          | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals)               |
 | Metadata enrichment      | Platforms can store/filter metadata, and some add post-ingestion enrichment agents                                                                             | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)        |
 | Quality assurance        | No major vendor provides robust pre-ingestion quality scoring + content repair workflow                                                                        | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
 
-Bottom line: vendor platforms are getting better at ingestion mechanics; Retrieval Quality Gate is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
+Bottom line: vendor platforms are getting better at ingestion mechanics; IngestGate is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
 
 
 ### Recommended Workflow
@@ -70,7 +72,7 @@ Use this sequence for predictable quality-gate behavior:
 
 1. Run `score` first for a fast baseline without LLM cost.
 2. Run `analyze` with `--run-benchmark` to evaluate chunk-level retrieval quality before remediation.
-3. Review `.ragprep/manifest.json` for health, findability, and handling-decision signals.
+3. Review `.ingestgate/manifest.json` for health, findability, and handling-decision signals.
 4. Run `fix` only when results are below your bar, then re-run `analyze --run-benchmark` to confirm improvement.
 
 Example:
@@ -82,16 +84,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # 1) Baseline (no LLM)
-python -m src.cli score ./my-docs/ --detail
+ingestgate score ./my-docs/ --detail
 
 # 2) Retrieval evaluation
-python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
 
 # 3) Remediate if needed
-python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY
+ingestgate fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 
 # 4) Re-measure after fixes
-python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
 ```
 
 ### Why retrieval-aware scoring?
@@ -124,15 +126,15 @@ echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env
 
 ```bash
 # Score documents (no LLM, no API keys)
-python -m src.cli score ./my-docs/
-python -m src.cli score ./my-docs/ --detail        # show every issue
-python -m src.cli score ./my-docs/ --json-output   # machine-readable
+ingestgate score ./my-docs/
+ingestgate score ./my-docs/ --detail        # show every issue
+ingestgate score ./my-docs/ --json-output   # machine-readable
 
 # Analyze with LLM (topics, knowledge graph, chunking)
-python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
+ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 
 # Auto-fix issues and output improved Markdown
-python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
+ingestgate fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
 ```
 
 ## Commands
@@ -140,7 +142,7 @@ python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
 ### `score` — document health scan (no LLM)
 
 ```bash
-python -m src.cli score <path> [options]
+ingestgate score <path> [options]
 ```
 
 
@@ -155,7 +157,7 @@ python -m src.cli score <path> [options]
 ### `analyze` — findability benchmark + decision support
 
 ```bash
-python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
+ingestgate analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 ```
 
 
@@ -178,14 +180,14 @@ python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 ### `fix` — remediation before ingestion
 
 ```bash
-python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
+ingestgate fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 ```
 
 
 | Option                | Description                                                 |
 | --------------------- | ----------------------------------------------------------- |
 | `--llm-key TEXT`      | Anthropic API key (required)                                |
-| `-o, --output DIR`    | Output directory (default: `rag-files-{timestamp}/`)        |
+| `-o, --output DIR`    | Output directory (default: `ingestgate-files-{timestamp}/`) |
 | `--fix-below N`       | Only fix documents scoring below this threshold             |
 | `--model TEXT`        | LLM model override                                          |
 | `--concurrency N`     | Max parallel LLM calls (default: 5)                         |
@@ -198,7 +200,7 @@ python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 
 ### Common options
 
-All commands auto-generate a timestamped Markdown report (e.g. `ragprep-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
+All commands auto-generate a timestamped Markdown report (e.g. `ingestgate-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
 
 ## How Quality Is Measured
 
@@ -296,7 +298,7 @@ Chunk output is written as `.chunks.json` sidecar files alongside `.meta.json`. 
 Pass `--run-benchmark` to measure how well chunks retrieve against deterministic queries built from headings and top TF-IDF terms:
 
 ```bash
-python -m src.cli analyze ./my-docs/ --llm-key $KEY --run-benchmark
+ingestgate analyze ./my-docs/ --llm-key $KEY --run-benchmark
 ```
 
 Benchmark results (Recall@5, MRR, nDCG@5) are included in `manifest.json` under the `benchmarks` key.
@@ -335,7 +337,7 @@ Analysis sidecar example:
 
 ```json
 {
-  "ragprep_version": "0.1.0",
+  "ingestgate_version": "0.1.0",
   "source_file": "4-5.FL.10 Handout B. Types of Insurance.docx",
   "output_file": "insurance-types.md",
   "analysis": {
@@ -390,19 +392,19 @@ Need deeper interpretation guidance? See [`docs/manifest-deep-dive.md`](docs/man
 
 ```bash
 # fix writes sidecars + manifest by default
-python -m src.cli fix ./my-docs/ --llm-key $KEY
+ingestgate fix ./my-docs/ --llm-key $KEY
 
-# analyze writes metadata to ./my-docs/.ragprep/ (directory input expected)
-python -m src.cli analyze ./my-docs/ --llm-key $KEY
+# analyze writes metadata to ./my-docs/.ingestgate/ (directory input expected)
+ingestgate analyze ./my-docs/ --llm-key $KEY
 
 # for focused analysis, use --exclude to narrow the set within a directory
-python -m src.cli analyze ./my-docs/ --llm-key $KEY --exclude "draft"
+ingestgate analyze ./my-docs/ --llm-key $KEY --exclude "draft"
 
 # pipe manifest to jq
-python -m src.cli analyze ./my-docs/ --llm-key $KEY --json-output | jq .corpus
+ingestgate analyze ./my-docs/ --llm-key $KEY --json-output | jq .corpus
 
 # suppress metadata export
-python -m src.cli fix ./my-docs/ --llm-key $KEY --no-export-meta
+ingestgate fix ./my-docs/ --llm-key $KEY --no-export-meta
 ```
 
 ## Knowledge Graph
@@ -596,7 +598,7 @@ repo/
 ## TODO
 
 - **Vendor landscape refresh cadence** — review and update the "Current and Upcoming Vendor Landscape" section quarterly (next review: 2026-06)
-- **Readiness label rethink** — current `EXCELLENT/GOOD/FAIR/POOR` buckets are product-defined score bands; revisit whether gate-style labels (for example `PASS` / `REMEDIATION_RECOMMENDED`) better match the Retrieval Quality Gate framing
+- **Readiness label rethink** — current `EXCELLENT/GOOD/FAIR/POOR` buckets are product-defined score bands; revisit whether gate-style labels (for example `PASS` / `REMEDIATION_RECOMMENDED`) better match the IngestGate framing
 - **Structured LLM output** — replace JSON-in-markdown prompts with tool_use for reliable extraction
 - **Incremental analysis** — cache per-file LLM results so `fix` doesn't re-run the full `analyze` pipeline. Currently `fix` repeats all LLM analysis calls from scratch
 - **Relationship deduplication** — merge duplicate edges and track edge weight/frequency

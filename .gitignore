@@ -38,7 +38,11 @@ htmlcov/
 # Output directories (user-generated)
 fixed/
 rag-files-*/
+ingestgate-files-*/
 ragprep-*.md
+ingestgate-*.md
+.ragprep/
+.ingestgate/
 CLAUDE_CODE_PROMPT_*.md
 .worktrees/
 .superpowers/

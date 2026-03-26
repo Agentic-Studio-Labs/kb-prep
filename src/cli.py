@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""ragprep — Document preparation pipeline for RAG systems.
+"""IngestGate — Retrieval Quality Gate for RAG pipelines.
 
 Usage:
-    ragprep score   <path>                          Score documents for RAG readiness
-    ragprep analyze <path> --llm-key KEY            Score + LLM content analysis
-    ragprep fix     <path> --llm-key KEY            Score + analyze + auto-fix issues
+    ingestgate score   <path>                          Score documents for retrieval health
+    ingestgate analyze <path> --llm-key KEY            Analyze, benchmark, and emit decision support
+    ingestgate fix     <path> --llm-key KEY            Analyze + auto-fix issues before ingestion
 
 All commands auto-generate a timestamped Markdown report (suppress with --no-report).
 LLM commands support --concurrency N (default: 5) for parallel API calls.
@@ -104,9 +104,9 @@ def _build_benchmark_query(doc, corpus_analysis, max_terms: int = 6) -> str:
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="ragprep")
+@click.version_option(version="0.1.0", prog_name="ingestgate")
 def cli():
-    """Prepare documents for RAG knowledge bases."""
+    """Run the Retrieval Quality Gate before ingestion."""
     pass
 
 
@@ -367,7 +367,7 @@ def analyze(
         )
         print(_json.dumps(data))
     elif not no_export_meta:
-        meta_dir = os.path.join(path, ".ragprep")
+        meta_dir = os.path.join(path, ".ingestgate")
         if export_chunks:
             for chunk_set in chunk_sets:
                 write_chunk_sidecar(meta_dir, chunk_set)
@@ -398,7 +398,7 @@ def analyze(
 @click.argument("path", type=click.Path(exists=True))
 @click.option("--llm-key", envvar="ANTHROPIC_API_KEY", required=True, help="Anthropic API key")
 @click.option("--model", default=None, help="LLM model override")
-@click.option("--output", "-o", default=None, help="Output directory (default: rag-files-{timestamp}/)")
+@click.option("--output", "-o", default=None, help="Output directory (default: ingestgate-files-{timestamp}/)")
 @click.option("--fix-below", default=0.0, help="Only fix documents scoring below this threshold (e.g. --fix-below 70)")
 @click.option("--exclude", multiple=True, help="Exclude files containing this substring (repeatable)")
 @click.option("--no-report", is_flag=True, help="Suppress markdown report generation")
@@ -437,7 +437,7 @@ def fix(
     # Generate timestamped output directory if not specified
     if output is None:
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-        output = f"rag-files-{ts}"
+        output = f"ingestgate-files-{ts}"
 
     config = Config.from_env().with_overrides(
         anthropic_api_key=llm_key,
@@ -583,7 +583,7 @@ def fix(
 
     # --- Report inside output folder ---
     if not no_report:
-        report_name = f"ragprep-fix-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
+        report_name = f"ingestgate-fix-{datetime.now().strftime('%Y%m%d-%H%M%S')}.md"
         report_path = os.path.join(output, report_name)
         _write_report_file(
             report_path,
@@ -614,7 +614,7 @@ def fix(
 
 def _print_score_table(cards: list[ScoreCard], detail: bool):
     """Print a summary table of all scored documents."""
-    table = Table(title="RAG Readiness Scores")
+    table = Table(title="IngestGate Scores")
     table.add_column("File", style="cyan", max_width=40)
     table.add_column("Score", justify="right")
     table.add_column("Readiness", justify="center")
@@ -774,11 +774,11 @@ def _severity_color(severity: Severity) -> str:
 
 
 def _generate_report_path(command: str) -> str:
-    """Return a timestamped report filename: ragprep-{command}-{YYYYMMDD-HHMMSS}.md"""
+    """Return a timestamped report filename: ingestgate-{command}-{YYYYMMDD-HHMMSS}.md"""
     from datetime import datetime
 
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return f"ragprep-{command}-{ts}.md"
+    return f"ingestgate-{command}-{ts}.md"
 
 
 def _report_header(command: str, file_count: int, settings: dict | None = None) -> list[str]:
@@ -786,7 +786,7 @@ def _report_header(command: str, file_count: int, settings: dict | None = None) 
     from datetime import datetime
 
     lines: list[str] = []
-    lines.append(f"# ragprep {command} Report")
+    lines.append(f"# IngestGate {command} Report")
     lines.append("")
     lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     lines.append(f"**Files:** {file_count}")

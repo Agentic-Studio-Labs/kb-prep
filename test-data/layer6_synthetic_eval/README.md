@@ -1,6 +1,6 @@
 ## Layer 6 Synthetic Eval
 
-This suite is a small mixed corpus designed to make meaningful before/after deltas easy to see when running `score`, `analyze --run-benchmark`, and `fix`.
+This suite is a small mixed corpus designed to make meaningful before/after deltas easy to see when running IngestGate `score`, `analyze --run-benchmark`, and `fix`.
 
 It is intentionally adversarial rather than realistic at corpus scale. Each document is shaped to stress a different part of the pipeline.
 
@@ -25,11 +25,13 @@ It is intentionally adversarial rather than realistic at corpus scale. Each docu
 ### Suggested manual workflow
 
 ```bash
-python -m src.cli score test-data/layer6_synthetic_eval/corpus/
-python -m src.cli analyze test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
-python -m src.cli fix test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY
-python -m src.cli analyze test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate score test-data/layer6_synthetic_eval/corpus/
+ingestgate analyze test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+ingestgate fix test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY
+ingestgate analyze test-data/layer6_synthetic_eval/corpus/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
 ```
+
+`analyze` writes metadata to `test-data/layer6_synthetic_eval/corpus/.ingestgate/`.
 
 ### Expected directional outcomes
 

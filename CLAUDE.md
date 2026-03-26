@@ -2,15 +2,15 @@
 
 ## What This Project Does
 
-ragprep is a pre-ingestion retrieval quality gate for RAG. It parses DOCX/PDF/TXT/MD files, scores retrieval readiness, emits deterministic retrieval-mode/modality hints, and optionally auto-fixes issues with an LLM. Works with any RAG pipeline.
+IngestGate is a Retrieval Quality Gate for RAG. It parses DOCX/PDF/TXT/MD files, scores retrieval readiness, emits deterministic retrieval-mode/modality hints, and optionally auto-fixes issues with an LLM. Works with any RAG pipeline.
 
 ## Commands
 
 ```bash
-python -m src.cli score <path>                          # Heuristic + corpus scoring (no LLM)
-python -m src.cli analyze <path> --llm-key KEY          # + LLM analysis + knowledge graph + chunking
-python -m src.cli analyze <path> --llm-key KEY --chunk-size 220 --chunk-overlap 40 --run-benchmark
-python -m src.cli fix <path> --llm-key KEY              # + auto-fix, output Markdown + sidecars
+ingestgate score <path>                          # Heuristic + corpus scoring (no LLM)
+ingestgate analyze <path> --llm-key KEY          # + LLM analysis + knowledge graph + chunking
+ingestgate analyze <path> --llm-key KEY --chunk-size 220 --chunk-overlap 40 --run-benchmark
+ingestgate fix <path> --llm-key KEY              # + auto-fix, output Markdown + sidecars
 ```
 
 ## Running Tests
@@ -78,7 +78,7 @@ When the graph is available, weights are auto-scaled proportionally to keep the 
 - `AsyncAnthropic` for Claude API (async)
 - All LLM responses parsed from free-text JSON via `extract_json()` in src/analyzer.py
 - Reports auto-generated as timestamped Markdown (suppress with `--no-report`)
-- Analyze metadata writes to `.ragprep/` (manifest + sidecars)
+- Analyze metadata writes to `.ingestgate/` (manifest + sidecars)
 
 ## Data Flow
 
@@ -100,7 +100,7 @@ Documents flow through the pipeline as `ParsedDocument` objects (defined in `src
 
 - `corpus_analyzer.build_corpus_analysis()` must receive ALL docs at once (TF-IDF needs the full corpus)
 - The `fixed/` directory is gitignored — it contains auto-generated output
-- `rag-files-*/` directories are timestamped output from `fix` runs
+- `ingestgate-files-*/` directories are timestamped output from `fix` runs
 - Louvain clustering (entity graph) is seeded with `seed=42` for determinism
 - Spectral clustering (document similarity) uses `random_state=42`
 - Vendor landscape note in `README.md` is a dated snapshot; refresh quarterly (next review: 2026-06)

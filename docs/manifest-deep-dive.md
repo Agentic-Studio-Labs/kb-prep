@@ -1,6 +1,6 @@
-# Manifest Deep Dive
+# IngestGate Manifest Deep Dive
 
-This guide explains how to interpret `.ragprep/manifest.json` and convert signals into concrete next actions.
+This guide explains how to interpret `.ingestgate/manifest.json` and convert IngestGate signals into concrete next actions.
 
 ## Quick Triage Order
 
@@ -85,7 +85,7 @@ Useful diagnostics for audits and threshold tuning:
 Assume:
 
 ```bash
-MANIFEST=.ragprep/manifest.json
+MANIFEST=.ingestgate/manifest.json
 ```
 
 Show retrieval mode distribution:
