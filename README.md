@@ -1,20 +1,25 @@
-# ragprep
+# Retrieval Quality Gate
 
-Pre-ingestion quality pipeline for RAG systems. Scores, analyzes, and fixes documents before they reach your vector database.
+Operational ingestion metadata and decision support for RAG pipelines.
 
-RAG failures often start before embeddings - with the documents themselves: dangling references that break chunk independence, buried content that no query can find, and headings that miss the vocabulary users actually search. ragprep catches these issues before upload, not after users complain.
+RAG failures often start before embeddings, rerankers, or vector databases. They start with documents that are hard to chunk cleanly, hard to retrieve reliably, or hard to route into the right ingestion path. This project acts as a **Retrieval Quality Gate** between parsing and ingestion.
 
-**What it does:**
+It answers three practical questions:
 
-- **Scores** documents across 10 criteria including a retrieval-aware metric that simulates search queries against your corpus to test whether each document can actually be found
-- **Analyzes** content with an LLM to extract entities and relationships, building a knowledge graph across your entire corpus
-- **Fixes** issues automatically — rewrites dangling references, splits long paragraphs, replaces generic headings, defines acronyms
-- **Chunks** documents into heading-aware, overlapping segments with quality metadata and optional retrieval benchmarks (Recall@5, MRR, nDCG@5)
-- **Exports** rich metadata for ingestion (`.meta.json`, `.chunks.json`, `manifest.json`) including deterministic retrieval-mode and modality-readiness hints
+- **Health**: is the document structurally healthy enough for retrieval?
+- **Findability**: can the document's chunks actually be found by realistic queries?
+- **Handling decision**: how should this document be ingested and retrieved?
 
-Supports DOCX, PDF, TXT, and Markdown. Works with any vector database (Pinecone, Weaviate, Qdrant, Chroma, etc.) and complements RAG frameworks (LlamaIndex, LangChain, etc.).
+What the gate produces:
 
-ragprep is not a vector database, embedding service, or hosted RAG runtime. It is a quality gate that runs between parsing and ingestion.
+- **Score**: weighted health signals across structure, self-containment, headings, paragraph shape, retrieval-aware quality, and more
+- **Benchmark**: chunk-level retrieval evidence (`Recall@5`, `MRR`, `nDCG@5`) from deterministic queries
+- **Retrieval Quality Gate**: operational ingestion metadata and decision support via `retrieval_quality_gate` signals in sidecars and manifest output
+- **Remediation**: optional automatic fixes for chunk safety, headings, long paragraphs, and acronym definitions
+
+Supports DOCX, PDF, TXT, and Markdown. Works upstream of any vector database or retrieval stack (Pinecone, Weaviate, pgvector, Qdrant, Chroma, LangChain, LlamaIndex, custom pipelines).
+
+This project is not a vector database, embedding service, or hosted RAG runtime. It is the gate you run before ingestion.
 
 ### Pipeline
 
@@ -40,8 +45,8 @@ flowchart TD
 ### Positioning
 
 - Platform services increasingly handle parsing/chunking/embedding.
-- ragprep focuses on what those platforms generally do not provide: pre-ingestion quality scoring, content-level fixes, retrieval benchmarking, and structured quality metadata.
-- For managed end-to-end offerings (for example Pinecone Assistant), ragprep still adds value as an upstream quality layer.
+- Retrieval Quality Gate focuses on what those platforms generally do not provide: pre-ingestion quality scoring, retrieval benchmarking, handling recommendations, and structured quality metadata.
+- For managed end-to-end offerings (for example Pinecone Assistant), it still adds value as an upstream decision layer.
 
 ### Current and Upcoming Vendor Landscape
 
@@ -49,14 +54,14 @@ flowchart TD
 
 Parsing, chunking, embedding, and serving are increasingly bundled by vendors, but pre-ingestion quality control is still mostly user-owned.
 
-| Area                     | Vendor trend (current + upcoming)                                                                                                                              | ragprep role                                                                                      |
+| Area                     | Vendor trend (current + upcoming)                                                                                                                              | Retrieval Quality Gate role                                                                       |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Parsing and chunking     | Managed products (for example Pinecone Assistant) already parse/chunk automatically; PostgreSQL ecosystem tools like pgai are expanding parser/chunker support | Structure-aware chunking that preserves heading hierarchy and emits chunk quality metadata        |
 | Embeddings and retrieval | Pinecone/Weaviate/pgvector ecosystems all support strong vector retrieval; hybrid and reranking are improving quickly                                          | Retrieval-readiness scoring before ingestion (self-retrieval and benchmark signals)               |
 | Metadata enrichment      | Platforms can store/filter metadata, and some add post-ingestion enrichment agents                                                                             | Generate quality metadata before ingestion (`.meta.json`, `.chunks.json`, `manifest.json`)        |
 | Quality assurance        | No major vendor provides robust pre-ingestion quality scoring + content repair workflow                                                                        | Core differentiation: scoring, chunk-safe fixes, split recommendations, and quality-gate workflow |
 
-Bottom line: vendor platforms are getting better at ingestion mechanics; ragprep is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
+Bottom line: vendor platforms are getting better at ingestion mechanics; Retrieval Quality Gate is the quality layer that helps ensure what gets ingested is actually retrievable and understandable.
 
 
 ### Recommended Workflow
@@ -65,7 +70,7 @@ Use this sequence for predictable quality-gate behavior:
 
 1. Run `score` first for a fast baseline without LLM cost.
 2. Run `analyze` with `--run-benchmark` to evaluate chunk-level retrieval quality before remediation.
-3. Review `.ragprep/manifest.json` (benchmarks + `retrieval_quality_gate` signals).
+3. Review `.ragprep/manifest.json` for health, findability, and handling-decision signals.
 4. Run `fix` only when results are below your bar, then re-run `analyze --run-benchmark` to confirm improvement.
 
 Example:
@@ -93,7 +98,7 @@ python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmar
 
 Most document prep tools check structural quality — paragraph length, heading hierarchy, readability. These are useful but they're proxies. A document can pass every structural check and still be invisible to search if its vocabulary is too generic or too similar to other documents in the corpus.
 
-The retrieval-aware scorer tests this directly: it generates synthetic queries from each document's highest TF-IDF terms, runs them against the full corpus, and measures how often the document appears in the results. A document scoring 90% is easy to find. A document scoring 30% will frustrate your users — and you'll know before you upload it. See the [eval test](test-data/layer1_information_theoretic/test_retrieval_aware_score.py) for validation against real scientific documents.
+The retrieval-aware scorer tests this directly: it generates synthetic queries from each document's highest TF-IDF terms, runs them against the full corpus, and measures how often the document appears in the results. A document scoring 90% is easy to find. A document scoring 30% will frustrate your users, and you'll know before you upload it. See the [eval test](test-data/layer1_information_theoretic/test_retrieval_aware_score.py) for validation against real scientific documents.
 
 ## Install
 
@@ -113,9 +118,9 @@ echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env
 
 | Command   | What runs                                                                          |
 | --------- | ---------------------------------------------------------------------------------- |
-| `score`   | Parse → Corpus Analyzer → Score                                                    |
-| `analyze` | + LLM analysis, knowledge graph, chunking, metadata export |
-| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
+| `score`   | Parse → Corpus Analyzer → Score (`health`)                                         |
+| `analyze` | + LLM analysis, knowledge graph, chunking, benchmark, metadata export (`findability` + `handling decision`) |
+| `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory (`remediation`) |
 
 ```bash
 # Score documents (no LLM, no API keys)
@@ -132,7 +137,7 @@ python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
 
 ## Commands
 
-### `score` — RAG readiness scoring (no LLM)
+### `score` — document health scan (no LLM)
 
 ```bash
 python -m src.cli score <path> [options]
@@ -147,7 +152,7 @@ python -m src.cli score <path> [options]
 | `--no-report`    | Don't generate the Markdown report file         |
 
 
-### `analyze` — LLM content analysis + knowledge graph
+### `analyze` — findability benchmark + decision support
 
 ```bash
 python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
@@ -170,7 +175,7 @@ python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--no-report`         | Don't generate the Markdown report file                     |
 
 
-### `fix` — auto-fix issues and output improved Markdown
+### `fix` — remediation before ingestion
 
 ```bash
 python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
@@ -195,9 +200,15 @@ python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 
 All commands auto-generate a timestamped Markdown report (e.g. `ragprep-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
 
-## How Scoring Works
+## How Quality Is Measured
 
-Every command runs the scoring pipeline. It combines heuristic checks with corpus-level TF-IDF analysis — no LLM needed.
+The gate combines three layers of signal:
+
+1. **Health** — heuristic document quality checks such as self-containment, headings, paragraph shape, and structure.
+2. **Findability** — retrieval-aware scoring and optional chunk benchmarks that test whether content can actually be found.
+3. **Handling decision** — `retrieval_quality_gate` signals that recommend how a document should be ingested and retrieved.
+
+Every command runs the health layer. `analyze --run-benchmark` adds the strongest findability evidence. Metadata export captures the handling decision.
 
 ### Pipeline
 
@@ -211,7 +222,7 @@ Parse (DOCX/PDF/TXT/MD)
   └─ Scorer ── 8 heuristic criteria + 1 retrieval-aware + 1 graph-powered
 ```
 
-The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix across all documents in one pass, then derives per-document metrics: topic entropy, heading-content coherence, readability grade, topic boundaries, and a self-retrieval score. These feed into the scorer alongside the existing heuristic checks.
+The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix across all documents in one pass, then derives per-document metrics: topic entropy, heading-content coherence, readability grade, topic boundaries, and a self-retrieval score. These feed into the health score and benchmark workflow alongside the existing heuristic checks.
 
 ### Scoring Criteria
 
@@ -230,7 +241,9 @@ The **corpus analyzer** (`src/corpus_analyzer.py`) computes a TF-IDF matrix acro
 | File Size              | info   | Warns at 25MB, blocks at 50MB                                                                                                                        |
 
 
-**Readiness levels:** EXCELLENT (85+), GOOD (70-84), FAIR (50-69), POOR (<50)
+**Readiness levels:** `EXCELLENT` (85+), `GOOD` (70-84), `FAIR` (50-69), `POOR` (<50)
+
+These are product buckets over the numeric score, not an industry standard. The numeric score is the primary measurement; the label is a compact interpretation for operators.
 
 ### Retrieval-Aware Scoring
 
@@ -299,7 +312,7 @@ This runs automatically — no flags needed.
 
 ## Metadata Export
 
-Both `analyze` and `fix` produce machine-readable JSON metadata alongside their output, designed for integration with downstream RAG pipelines (LlamaIndex, LangChain, Pinecone, Weaviate, etc.).
+Both `analyze` and `fix` produce machine-readable JSON metadata alongside their output. This is the project’s main operational output: ingestion metadata and decision support for downstream RAG pipelines (LlamaIndex, LangChain, Pinecone, Weaviate, custom ingestion scripts, etc.).
 
 ### Sidecar files
 
@@ -316,7 +329,7 @@ output/
 └── manifest.json                 ← corpus manifest
 ```
 
-Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, relationships, and a `retrieval_quality_gate` block with deterministic retrieval-mode hints, modality readiness flags, and evidence. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
+Each `.meta.json` sidecar contains the document's analysis, scores, metrics, entities, relationships, and a `retrieval_quality_gate` block with deterministic handling recommendations, modality readiness flags, and evidence. Each `.chunks.json` sidecar contains the heading-aware chunks with metadata.
 
 Analysis sidecar example:
 
@@ -364,6 +377,12 @@ Analysis sidecar example:
 ### Corpus manifest
 
 A single `manifest.json` at the output root contains corpus-level stats (including `retrieval_mode_distribution`), all document entries (including per-document `retrieval_quality_gate`), knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
+
+In practice, operators usually read it in this order:
+
+1. `corpus` for overall health and mode distribution
+2. `benchmarks` for findability evidence
+3. `documents[*].retrieval_quality_gate` for per-document handling decisions
 
 Need deeper interpretation guidance? See [`docs/manifest-deep-dive.md`](docs/manifest-deep-dive.md) for field-by-field walkthrough, action mapping, and `jq` triage snippets. For a complete ingestion example, see [`docs/guides/weaviate-ingestion.md`](docs/guides/weaviate-ingestion.md).
 
@@ -510,7 +529,7 @@ python3 -m pytest test-data/ -m cross_layer -v
 ## Project Structure
 
 ```
-ragprep/
+repo/
 ├── src/                         # Source package
 │   ├── cli.py                   # CLI entry point (Click) — score, analyze, fix
 │   ├── corpus_analyzer.py       # TF-IDF matrix, entropy, coherence, retrieval-aware scoring
@@ -577,6 +596,7 @@ ragprep/
 ## TODO
 
 - **Vendor landscape refresh cadence** — review and update the "Current and Upcoming Vendor Landscape" section quarterly (next review: 2026-06)
+- **Readiness label rethink** — current `EXCELLENT/GOOD/FAIR/POOR` buckets are product-defined score bands; revisit whether gate-style labels (for example `PASS` / `REMEDIATION_RECOMMENDED`) better match the Retrieval Quality Gate framing
 - **Structured LLM output** — replace JSON-in-markdown prompts with tool_use for reliable extraction
 - **Incremental analysis** — cache per-file LLM results so `fix` doesn't re-run the full `analyze` pipeline. Currently `fix` repeats all LLM analysis calls from scratch
 - **Relationship deduplication** — merge duplicate edges and track edge weight/frequency
