@@ -48,6 +48,31 @@ flowchart TD
 | `fix`     | + auto-fix, writes improved Markdown + sidecar JSON to output directory            |
 
 
+### Recommended Workflow
+
+Use this sequence for predictable quality-gate behavior:
+
+1. Run `score` first for a fast baseline without LLM cost.
+2. Run `analyze` with `--run-benchmark` to evaluate chunk-level retrieval quality before remediation.
+3. Review `.ragprep/manifest.json` (benchmarks + `retrieval_quality_gate` signals).
+4. Run `fix` only when results are below your bar, then re-run `analyze --run-benchmark` to confirm improvement.
+
+Example:
+
+```bash
+# 1) Baseline (no LLM)
+python -m src.cli score ./my-docs/
+
+# 2) Retrieval evaluation
+python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+
+# 3) Remediate if needed
+python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY
+
+# 4) Re-measure after fixes
+python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark
+```
+
 ### Positioning
 
 - Platform services increasingly handle parsing/chunking/embedding.
@@ -340,6 +365,8 @@ Analysis sidecar example:
 ### Corpus manifest
 
 A single `manifest.json` at the output root contains corpus-level stats (including `retrieval_mode_distribution`), all document entries (including per-document `retrieval_quality_gate`), knowledge graph (entities, relationships, clusters), document similarity matrix (for corpora under 100 documents), chunk benchmarks, and `split_recommendations` for broad documents.
+
+Need deeper interpretation guidance? See [`docs/manifest-deep-dive.md`](docs/manifest-deep-dive.md) for field-by-field walkthrough, action mapping, and `jq` triage snippets.
 
 ### Usage
 
