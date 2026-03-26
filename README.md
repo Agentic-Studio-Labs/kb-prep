@@ -380,7 +380,7 @@ kb-prep/
 ## TODO
 
 - **Structured LLM output** — replace JSON-in-markdown prompts with tool_use for reliable extraction
-- **Incremental analysis** — cache per-file analysis results so re-runs only process changed files
+- **Incremental analysis** — cache per-file LLM results so `fix` doesn't re-run the full `analyze` pipeline. Currently `fix` repeats all LLM analysis calls from scratch
 - **Relationship deduplication** — merge duplicate edges and track edge weight/frequency
 - **Configurable thresholds** — entropy thresholds are now in corpus_analyzer; still need to expose scoring weights and cluster resolution as CLI flags or config
 - **Export graph** — write the knowledge graph as GraphML, JSON, or DOT
