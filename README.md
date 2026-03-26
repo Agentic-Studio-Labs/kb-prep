@@ -48,11 +48,79 @@ python -m src.cli analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY
 python -m src.cli fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY --output ./fixed/
 ```
 
-Set environment variables to avoid passing keys every time:
+## Commands
+
+### `score` — RAG readiness scoring (no LLM)
 
 ```bash
-export ANTHROPIC_API_KEY=your-anthropic-key
+python -m src.cli score <path> [options]
 ```
+
+| Option | Description |
+|--------|-------------|
+| `--detail` | Show per-issue breakdown for each document |
+| `--json-output` | Output scores as JSON |
+| `--exclude TEXT` | Skip files matching this substring (repeatable) |
+| `--no-report` | Don't generate the Markdown report file |
+
+### `analyze` — LLM content analysis + knowledge graph
+
+```bash
+python -m src.cli analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--llm-key TEXT` | Anthropic API key (required) |
+| `--model TEXT` | LLM model override (default: claude-sonnet-4-20250514) |
+| `--concurrency N` | Max parallel LLM calls (default: 5) |
+| `--folder-hints PATH` | File with domain-specific folder guidance |
+| `--detail` | Show per-issue breakdown |
+| `--exclude TEXT` | Skip files matching this substring (repeatable) |
+| `--no-report` | Don't generate the Markdown report file |
+
+### `fix` — auto-fix issues and output improved Markdown
+
+```bash
+python -m src.cli fix <path> --llm-key $ANTHROPIC_API_KEY [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--llm-key TEXT` | Anthropic API key (required) |
+| `-o, --output DIR` | Output directory (default: `rag-files-{timestamp}/`) |
+| `--fix-below N` | Only fix documents scoring below this threshold |
+| `--model TEXT` | LLM model override |
+| `--concurrency N` | Max parallel LLM calls (default: 5) |
+| `--folder-hints PATH` | File with domain-specific folder guidance |
+| `--exclude TEXT` | Skip files matching this substring (repeatable) |
+| `--no-report` | Don't generate the Markdown report file |
+
+### `upload` — full pipeline + upload to anam.ai
+
+```bash
+python -m src.cli upload <path> --api-key $ANAM_API_KEY [options]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--api-key TEXT` | anam.ai API key (required) |
+| `--llm-key TEXT` | Anthropic API key (enables analysis + auto-fix) |
+| `--no-fix` | Skip auto-fix, upload original files |
+| `--use-existing-folders` | Use subfolder layout on disk instead of recommender |
+| `--dry-run` | Show plan without uploading |
+| `--persona-id TEXT` | Attach knowledge tool to this persona |
+| `--tool-name TEXT` | Name for the knowledge tool |
+| `--tool-description TEXT` | When the LLM should search this knowledge base |
+| `--model TEXT` | LLM model override |
+| `--concurrency N` | Max parallel LLM calls (default: 5) |
+| `--folder-hints PATH` | File with domain-specific folder guidance |
+| `--exclude TEXT` | Skip files matching this substring (repeatable) |
+| `--no-report` | Don't generate the Markdown report file |
+
+### Common options
+
+All commands auto-generate a timestamped Markdown report (e.g. `kb-prep-score-20260325-143000.md`). Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
 
 ## How Scoring Works
 
