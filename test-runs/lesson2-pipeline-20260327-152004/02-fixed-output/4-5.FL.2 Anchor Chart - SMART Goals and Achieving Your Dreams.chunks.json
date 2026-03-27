@@ -1,0 +1,31 @@
+{
+  "schema_version": "2.0",
+  "document_id": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams",
+  "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+  "chunks": [
+    {
+      "chunk_id": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams::000",
+      "text": "The following anchor chart should be created together as a class on chart paper to reinforce the concepts used in 4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?. The anchor chart should then be displayed throughout the lesson activities and unit. If students have questions about the concepts, refer them back to the anchor chart and use it as a teaching tool. In each of the boxes write a question students can ask themself to ensure their goal meets that element. Students should brainstorm and create these questions themselves. However, examples are included in each box. The anchor chart created in class can also include drawings, term definitions, and examples of the components of a SMART Goal. Allow students to volunteer the definitions and examples of each term based on what they have learned and include them in the chart. • Page 2 provides a sample anchor chart with instructions to create the finished anchor chart together as a class. Page 3 provides an anchor chart template if you prefer to have students complete their own anchor charts in small groups or individually. You may also project the template and complete the anchor chart as a class using a SmartBoard or other technology.",
+      "heading_path": [],
+      "start_paragraph_index": 0,
+      "end_paragraph_index": 5,
+      "token_estimate": 306,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams::001",
+      "text": "MEASURABLE How can I track my progress toward this goal? Is this a goal I can accomplish? When do I want to achieve this goal by? What exactly do I want to accomplish? Is this an important goal that will help my future? RELEVANT SPECIFIC ACHIEVABLE TIME-BOUND",
+      "heading_path": [
+        "S M A R T"
+      ],
+      "start_paragraph_index": 8,
+      "end_paragraph_index": 17,
+      "token_estimate": 64,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    }
+  ]
+}

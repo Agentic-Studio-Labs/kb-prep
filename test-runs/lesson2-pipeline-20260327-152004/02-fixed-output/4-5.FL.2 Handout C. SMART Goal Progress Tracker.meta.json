@@ -1,0 +1,196 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+  "output_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "progress tracking"
+    ],
+    "audience": "students",
+    "content_type": "lesson plan",
+    "key_concepts": [
+      "SMART goals",
+      "progress tracking",
+      "self-reflection",
+      "goal achievement",
+      "learning assessment"
+    ],
+    "suggested_tags": [
+      "financial_literacy",
+      "smart_goals",
+      "progress_tracker",
+      "grades_4_5",
+      "lesson_2",
+      "handout",
+      "reflection",
+      "goal_setting"
+    ],
+    "summary": "This is a progress tracking handout for grades 4-5 students as part of Financial Literacy Lesson 2. It provides a structured format for students to monitor their SMART goal progress and includes reflection questions for learning assessment."
+  },
+  "scores": {
+    "overall": 87.745,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "heading_quality": {
+        "score": 92.0,
+        "weight": 0.1425,
+        "issues": 1
+      },
+      "paragraph_length": {
+        "score": 97.0,
+        "weight": 0.095,
+        "issues": 2
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 92.0,
+        "weight": 0.0475,
+        "issues": 1
+      },
+      "structure": {
+        "score": 50.0,
+        "weight": 0.095,
+        "issues": 3
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9833047304705473,
+    "coherence": 0.0,
+    "readability_grade": 4.6971428571428575,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.0
+    ],
+    "topic_boundaries": []
+  },
+  "entities": [
+    {
+      "name": "SMART Goal Progress Tracker",
+      "type": "tool",
+      "description": "A structured tracking sheet for monitoring goal progress with dates, tasks, progress status, and comments"
+    },
+    {
+      "name": "Grades 4-5 Financial Literacy Lesson 2",
+      "type": "lesson",
+      "description": "The second lesson in a financial literacy curriculum designed for elementary students in grades 4 and 5"
+    },
+    {
+      "name": "SMART Goals",
+      "type": "concept",
+      "description": "Specific, Measurable, Achievable, Relevant, Time-bound goal-setting framework"
+    },
+    {
+      "name": "Progress Status Categories",
+      "type": "assessment",
+      "description": "Three-tier classification system: Completed, In Progress, Not Started"
+    },
+    {
+      "name": "Final Reflection Questions",
+      "type": "assessment",
+      "description": "Three reflective questions focusing on goal achievement, learning outcomes, and future application"
+    },
+    {
+      "name": "Handout C",
+      "type": "resource",
+      "description": "The third handout resource in the lesson sequence"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "SMART Goal Progress Tracker",
+      "target": "Grades 4-5 Financial Literacy Lesson 2",
+      "type": "part_of",
+      "context": "The progress tracker is Handout C within the lesson structure"
+    },
+    {
+      "source": "SMART Goal Progress Tracker",
+      "target": "SMART Goals",
+      "type": "uses",
+      "context": "The tracker is specifically designed to monitor SMART goals"
+    },
+    {
+      "source": "Progress Status Categories",
+      "target": "SMART Goal Progress Tracker",
+      "type": "part_of",
+      "context": "The status categories are integrated into the tracking system"
+    },
+    {
+      "source": "Final Reflection Questions",
+      "target": "SMART Goal Progress Tracker",
+      "type": "part_of",
+      "context": "Reflection questions conclude the progress tracking process"
+    },
+    {
+      "source": "Final Reflection Questions",
+      "target": "SMART Goals",
+      "type": "assesses",
+      "context": "The reflection questions evaluate SMART goal achievement and learning outcomes"
+    },
+    {
+      "source": "Handout C",
+      "target": "SMART Goal Progress Tracker",
+      "type": "references",
+      "context": "Handout C is the document containing the progress tracker"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "multimodal_or_ocr_review",
+      "confidence": "medium",
+      "reasons": [
+        "template_like_sparse_content",
+        "layout_heavy_pdf"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": true,
+      "template_like_document": true,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": true
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 56,
+      "heading_count": 6,
+      "body_paragraph_count": 1,
+      "short_label_ratio": 1.0,
+      "heading_density": 0.17
+    }
+  }
+}

@@ -51,6 +51,12 @@ ingestgate fix ./my-docs/ --llm-key $ANTHROPIC_API_KEY \
 # 4) Re-check after fixes
 ingestgate analyze ./my-docs/ --llm-key $ANTHROPIC_API_KEY --run-benchmark \
   --pass-threshold 85 --pass-with-notes-threshold 70 --remediation-threshold 50
+
+# 5) Generate before/after diff markdown
+python -m src.manifest_diff \
+  ./run-folder/01-before-manifest.json \
+  ./run-folder/03-after-clean-manifest.json \
+  -o ./run-folder/04-before-after-diff.md
 ```
 
 ## Manifest Triage Checklist
@@ -99,3 +105,4 @@ At the end of each run, capture:
 - Blocked doc list with reasons
 - Benchmark summary
 - Fix/re-run delta (if remediation was performed)
+- Before/after diff markdown in the run folder (for example: `04-before-after-diff.md` comparing baseline and clean post-fix manifests)

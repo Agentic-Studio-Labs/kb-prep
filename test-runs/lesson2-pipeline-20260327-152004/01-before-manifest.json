@@ -1,0 +1,1816 @@
+{
+  "schema_version": "2.0",
+  "ingestgate_version": "0.1.0",
+  "generated_at": "2026-03-27T22:20:56.521358+00:00",
+  "corpus": {
+    "total_documents": 6,
+    "total_chunks": 38,
+    "avg_score": 84.5,
+    "readiness_distribution": {
+      "EXCELLENT": 5,
+      "FAIR": 1
+    },
+    "gate_decision_distribution": {
+      "PASS": 5,
+      "REMEDIATION_RECOMMENDED": 1
+    },
+    "retrieval_mode_distribution": {
+      "multimodal_or_ocr_review": 3,
+      "hybrid_sparse_template": 2,
+      "hybrid_with_structure_rewrite": 1
+    },
+    "total_entities": 66,
+    "total_relationships": 64,
+    "cross_document_edges": 22
+  },
+  "documents": [
+    {
+      "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+      "overall_score": 88.5,
+      "readiness": "EXCELLENT",
+      "gate_decision": "PASS",
+      "domain": "education",
+      "topics": [
+        "financial literacy",
+        "goal setting",
+        "SMART goals",
+        "classroom instruction",
+        "anchor charts"
+      ],
+      "entity_count": 12,
+      "relationship_count": 11,
+      "chunk_count": 2,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 3,
+        "info": 6
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 88.0,
+          "weight": 0.19,
+          "issue_count": 1
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 100.0,
+          "weight": 0.1425,
+          "issue_count": 0
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 67.0,
+          "weight": 0.095,
+          "issue_count": 6
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 92.0,
+          "weight": 0.0475,
+          "issue_count": 1
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 100.0,
+          "weight": 0.05,
+          "issue_count": 0
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "multimodal_or_ocr_review",
+          "confidence": "medium",
+          "reasons": [
+            "layout_heavy_pdf"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": true,
+          "template_like_document": false,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": false
+        },
+        "evidence": {
+          "file_type": "pdf",
+          "total_words": 273,
+          "heading_count": 2,
+          "body_paragraph_count": 15,
+          "short_label_ratio": 0.333,
+          "heading_density": 7.5
+        }
+      }
+    },
+    {
+      "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+      "overall_score": 91.4,
+      "readiness": "EXCELLENT",
+      "gate_decision": "PASS",
+      "domain": "education",
+      "topics": [
+        "financial literacy",
+        "goal setting",
+        "parent engagement",
+        "SMART goals",
+        "elementary education"
+      ],
+      "entity_count": 10,
+      "relationship_count": 9,
+      "chunk_count": 5,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 2,
+        "info": 6
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 100.0,
+          "weight": 0.1425,
+          "issue_count": 0
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 73.0,
+          "weight": 0.095,
+          "issue_count": 6
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 92.0,
+          "weight": 0.0475,
+          "issue_count": 1
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 100.0,
+          "weight": 0.05,
+          "issue_count": 0
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "hybrid_sparse_template",
+          "confidence": "medium",
+          "reasons": [
+            "clean_text_for_standard_retrieval"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": false,
+          "template_like_document": true,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": false
+        },
+        "evidence": {
+          "file_type": "pdf",
+          "total_words": 238,
+          "heading_count": 5,
+          "body_paragraph_count": 12,
+          "short_label_ratio": 0.0,
+          "heading_density": 2.4
+        }
+      }
+    },
+    {
+      "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+      "overall_score": 89.0,
+      "readiness": "EXCELLENT",
+      "gate_decision": "PASS",
+      "domain": "education",
+      "topics": [
+        "goal setting",
+        "SMART goals",
+        "financial literacy",
+        "personal development"
+      ],
+      "entity_count": 12,
+      "relationship_count": 10,
+      "chunk_count": 3,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 3,
+        "info": 7
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 92.0,
+          "weight": 0.1425,
+          "issue_count": 1
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 85.0,
+          "weight": 0.095,
+          "issue_count": 6
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 92.0,
+          "weight": 0.0475,
+          "issue_count": 1
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 75.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 100.0,
+          "weight": 0.05,
+          "issue_count": 0
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "multimodal_or_ocr_review",
+          "confidence": "medium",
+          "reasons": [
+            "layout_heavy_pdf"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": true,
+          "template_like_document": true,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": false
+        },
+        "evidence": {
+          "file_type": "pdf",
+          "total_words": 162,
+          "heading_count": 16,
+          "body_paragraph_count": 6,
+          "short_label_ratio": 0.167,
+          "heading_density": 0.38
+        }
+      }
+    },
+    {
+      "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+      "overall_score": 87.7,
+      "readiness": "EXCELLENT",
+      "gate_decision": "PASS",
+      "domain": "education",
+      "topics": [
+        "financial literacy",
+        "goal setting",
+        "SMART goals",
+        "progress tracking",
+        "self-reflection"
+      ],
+      "entity_count": 10,
+      "relationship_count": 10,
+      "chunk_count": 1,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 3,
+        "info": 5
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 92.0,
+          "weight": 0.1425,
+          "issue_count": 1
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 97.0,
+          "weight": 0.095,
+          "issue_count": 2
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 92.0,
+          "weight": 0.0475,
+          "issue_count": 1
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 50.0,
+          "weight": 0.095,
+          "issue_count": 3
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 100.0,
+          "weight": 0.05,
+          "issue_count": 0
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "multimodal_or_ocr_review",
+          "confidence": "medium",
+          "reasons": [
+            "template_like_sparse_content",
+            "layout_heavy_pdf"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": true,
+          "template_like_document": true,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": true
+        },
+        "evidence": {
+          "file_type": "pdf",
+          "total_words": 56,
+          "heading_count": 6,
+          "body_paragraph_count": 1,
+          "short_label_ratio": 1.0,
+          "heading_density": 0.17
+        }
+      }
+    },
+    {
+      "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+      "overall_score": 64.0,
+      "readiness": "FAIR",
+      "gate_decision": "REMEDIATION_RECOMMENDED",
+      "domain": "education",
+      "topics": [
+        "financial literacy",
+        "goal setting",
+        "SMART goals",
+        "personal finance",
+        "elementary education"
+      ],
+      "entity_count": 20,
+      "relationship_count": 17,
+      "chunk_count": 21,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 6,
+        "info": 8
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 76.0,
+          "weight": 0.19,
+          "issue_count": 2
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 30.0,
+          "weight": 0.1425,
+          "issue_count": 1
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 0.0,
+          "weight": 0.095,
+          "issue_count": 6
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 84.0,
+          "weight": 0.0475,
+          "issue_count": 2
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 50.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 85.0,
+          "weight": 0.05,
+          "issue_count": 1
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "hybrid_with_structure_rewrite",
+          "confidence": "medium",
+          "reasons": [
+            "low_structural_headings"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": false,
+          "template_like_document": false,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": false
+        },
+        "evidence": {
+          "file_type": "docx",
+          "total_words": 3753,
+          "heading_count": 0,
+          "body_paragraph_count": 194,
+          "short_label_ratio": 0.057,
+          "heading_density": null
+        }
+      }
+    },
+    {
+      "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+      "overall_score": 86.3,
+      "readiness": "EXCELLENT",
+      "gate_decision": "PASS",
+      "domain": "education",
+      "topics": [
+        "financial literacy",
+        "goal setting",
+        "SMART goals",
+        "assessment rubrics"
+      ],
+      "entity_count": 10,
+      "relationship_count": 9,
+      "chunk_count": 6,
+      "issues_by_severity": {
+        "critical": 0,
+        "warning": 2,
+        "info": 6
+      },
+      "criteria_scores": {
+        "self_containment": {
+          "label": "Self-Containment",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "heading_quality": {
+          "label": "Heading Quality",
+          "score": 92.0,
+          "weight": 0.1425,
+          "issue_count": 1
+        },
+        "paragraph_length": {
+          "label": "Paragraph Length",
+          "score": 28.0,
+          "weight": 0.095,
+          "issue_count": 6
+        },
+        "file_focus": {
+          "label": "File Focus",
+          "score": 40.0,
+          "weight": 0.095,
+          "issue_count": 1
+        },
+        "filename_quality": {
+          "label": "Filename Quality",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "acronym_definitions": {
+          "label": "Acronym Definitions",
+          "score": 100.0,
+          "weight": 0.0475,
+          "issue_count": 0
+        },
+        "structure": {
+          "label": "Structure Completeness",
+          "score": 100.0,
+          "weight": 0.095,
+          "issue_count": 0
+        },
+        "file_size": {
+          "label": "File Size",
+          "score": 100.0,
+          "weight": 0.0,
+          "issue_count": 0
+        },
+        "retrieval_aware": {
+          "label": "Retrieval-Aware",
+          "score": 100.0,
+          "weight": 0.19,
+          "issue_count": 0
+        },
+        "knowledge_completeness": {
+          "label": "Knowledge Completeness",
+          "score": 100.0,
+          "weight": 0.05,
+          "issue_count": 0
+        }
+      },
+      "retrieval_quality_gate": {
+        "retrieval_mode_hint": {
+          "recommended_mode": "hybrid_sparse_template",
+          "confidence": "medium",
+          "reasons": [
+            "clean_text_for_standard_retrieval"
+          ]
+        },
+        "modality_readiness": {
+          "text_only_ready": false,
+          "layout_heavy_pdf": false,
+          "template_like_document": true,
+          "parse_fidelity_warning": false,
+          "parse_fidelity_template_note": false
+        },
+        "evidence": {
+          "file_type": "pdf",
+          "total_words": 203,
+          "heading_count": 8,
+          "body_paragraph_count": 24,
+          "short_label_ratio": 0.0,
+          "heading_density": 3.0
+        }
+      }
+    }
+  ],
+  "knowledge_graph": {
+    "entities": [
+      {
+        "name": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Financial literacy lesson for grades 4-5 focused on SMART goal setting"
+      },
+      {
+        "name": "SMART Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Goal-setting framework with five criteria: Specific, Measurable, Achievable, Relevant, Time-bound"
+      },
+      {
+        "name": "Anchor Chart",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Visual classroom tool displaying SMART Goals concepts and student-generated questions"
+      },
+      {
+        "name": "Specific",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "SMART goal criterion asking 'What exactly do I want to accomplish?'"
+      },
+      {
+        "name": "Measurable",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "SMART goal criterion asking 'How can I track my progress toward this goal?'"
+      },
+      {
+        "name": "Achievable",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "SMART goal criterion asking 'Is this a goal I can accomplish?'"
+      },
+      {
+        "name": "Relevant",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "SMART goal criterion asking 'Is this an important goal that will help my future?'"
+      },
+      {
+        "name": "Time-bound",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "SMART goal criterion asking 'When do I want to achieve this goal by?'"
+      },
+      {
+        "name": "Grades 4-5 Financial Literacy",
+        "type": "standard",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Educational curriculum area for elementary financial literacy instruction"
+      },
+      {
+        "name": "Chart Paper Activity",
+        "type": "process",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Collaborative class activity to create anchor chart together"
+      },
+      {
+        "name": "SmartBoard Technology",
+        "type": "tool",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Interactive technology option for completing anchor chart digitally"
+      },
+      {
+        "name": "Small Group Work",
+        "type": "process",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "description": "Alternative instructional format for anchor chart completion"
+      },
+      {
+        "name": "4-5FL.2 SMART Goal Progress Tracker",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Handout C for tracking student progress on SMART goals in financial literacy"
+      },
+      {
+        "name": "Grades 4-5 Financial Literacy Lesson 2",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Second lesson in the grades 4-5 financial literacy curriculum focusing on SMART goals"
+      },
+      {
+        "name": "Financial Literacy",
+        "type": "topic",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Educational subject covering financial planning and money management skills"
+      },
+      {
+        "name": "SMART Goals at Home Letter",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Handout A providing parent guidance for supporting SMART goals learning at home"
+      },
+      {
+        "name": "Progress tracking",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Ability to monitor and record advancement toward goal achievement"
+      },
+      {
+        "name": "Goal-setting skills",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Lifelong skill for creating and achieving personal and financial objectives"
+      },
+      {
+        "name": "Family goal setting",
+        "type": "process",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Collaborative approach where families create shared SMART goals together"
+      },
+      {
+        "name": "Reflective questioning",
+        "type": "process",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Parent strategy using guided questions to help children think through their plans"
+      },
+      {
+        "name": "Parents and Caregivers",
+        "type": "person",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "description": "Target audience for home support of financial literacy learning"
+      },
+      {
+        "name": "Grades 4-5 Financial Literacy",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Educational program for elementary students covering financial literacy concepts"
+      },
+      {
+        "name": "Lesson 2",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Second lesson in the financial literacy curriculum focusing on SMART goal setting"
+      },
+      {
+        "name": "SMART Goal Brainstorm and Planning",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Handout B worksheet for students to practice creating SMART goals"
+      },
+      {
+        "name": "Specific Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Goals that are clearly defined and detailed rather than vague"
+      },
+      {
+        "name": "Measurable Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Goals that can be quantified and tracked for progress"
+      },
+      {
+        "name": "Achievable Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Goals that are realistic and attainable given current circumstances"
+      },
+      {
+        "name": "Relevant Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Goals that are meaningful and important to the individual"
+      },
+      {
+        "name": "Time-based Goals",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Goals that have specific deadlines or timeframes for completion"
+      },
+      {
+        "name": "School Year Goal",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Short-term goal to be accomplished within the current academic year"
+      },
+      {
+        "name": "Lifetime Goal",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Long-term goal to be accomplished over the course of one's lifetime"
+      },
+      {
+        "name": "Reading Example Goal",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Sample demonstration showing how to convert 'read more books' into a SMART goal"
+      },
+      {
+        "name": "SMART Goal Progress Tracker",
+        "type": "tool",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "A structured tracking tool for monitoring progress on SMART goals"
+      },
+      {
+        "name": "Handout C",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "The third handout material for lesson 2"
+      },
+      {
+        "name": "Self-reflection",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "The practice of examining one's own learning and experiences"
+      },
+      {
+        "name": "Goal achievement assessment",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "Evaluation of whether SMART goals were successfully completed"
+      },
+      {
+        "name": "Learning experience reflection",
+        "type": "process",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "Process of analyzing what was learned from the goal-setting experience"
+      },
+      {
+        "name": "Future application planning",
+        "type": "process",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "description": "Process of determining how to use learned concepts in future situations"
+      },
+      {
+        "name": "SMART Goals Framework",
+        "type": "concept",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Goal-setting framework using Specific, Measurable, Achievable, Relevant, Time-bound criteria"
+      },
+      {
+        "name": "SS.5.35",
+        "type": "standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Nevada State Standard describing the importance of setting financial goals"
+      },
+      {
+        "name": "Saving 4-2a",
+        "type": "standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "National Personal Financial Education standard for mapping savings plans"
+      },
+      {
+        "name": "Spending 4-1b",
+        "type": "standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "National Personal Financial Education standard for brainstorming consumption goals"
+      },
+      {
+        "name": "4-5.FL.2 Handout B",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SMART Goal Brainstorm and Planning worksheet"
+      },
+      {
+        "name": "4-5.FL.2 Handout C",
+        "type": "tool",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SMART Goal Progress Tracker for monitoring goal achievement"
+      },
+      {
+        "name": "4-5.FL.2 Rubric",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Grading rubric for SMART Goal Brainstorm and Planning handout"
+      },
+      {
+        "name": "Green Our Planet Studios Video",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Educational video introducing SMART goals concept"
+      },
+      {
+        "name": "Goal Setting Adventure",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Opening engagement activity for brainstorming dreams and goals"
+      },
+      {
+        "name": "Goal Ladder Activity",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Enrichment activity for breaking down long-term goals into steps"
+      },
+      {
+        "name": "Self-awareness",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SEL competency for reflecting on personal aspirations and strengths"
+      },
+      {
+        "name": "Self-management",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SEL competency for organizational skills and accountability"
+      },
+      {
+        "name": "Social awareness",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SEL competency for listening and providing peer feedback"
+      },
+      {
+        "name": "Responsible decision-making",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "SEL competency for evaluating goals using SMART framework"
+      },
+      {
+        "name": "Lesson 5",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Future lesson covering short-term and long-term goals in detail"
+      },
+      {
+        "name": "Progress Tracking",
+        "type": "process",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Method for monitoring and adjusting steps toward goal achievement"
+      },
+      {
+        "name": "Family Engagement Strategies",
+        "type": "process",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Methods for involving families in student goal-setting and tracking"
+      },
+      {
+        "name": "Math Cross-curricular Connection",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Calculating savings goals and using arithmetic for timelines"
+      },
+      {
+        "name": "ELA Cross-curricular Connection",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Writing and critical thinking for articulating SMART goals"
+      },
+      {
+        "name": "STEM Environmental Goals",
+        "type": "lesson",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "description": "Independent practice applying SMART goals to environmental conservation"
+      },
+      {
+        "name": "Handout B: SMART Goal Brainstorm and Planning",
+        "type": "resource",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "A student handout/worksheet for practicing SMART goal creation"
+      },
+      {
+        "name": "Goal Clarity",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to state goals in a clear and understandable manner"
+      },
+      {
+        "name": "Specific Criteria",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to define goals with specific details and precision"
+      },
+      {
+        "name": "Measurable Criteria",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to include clear criteria for measuring progress toward goals"
+      },
+      {
+        "name": "Achievable Planning",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to set realistic and attainable goals"
+      },
+      {
+        "name": "Relevant Goal Setting",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to create goals that are relevant and meaningful to oneself"
+      },
+      {
+        "name": "Time-based Planning",
+        "type": "skill",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "The ability to include clear timeframes for goal completion"
+      },
+      {
+        "name": "Four-Point Performance Scale",
+        "type": "assessment",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "description": "Assessment scale with Excellent, Satisfactory, Needs Improvement, and Incomplete levels"
+      }
+    ],
+    "relationships": [
+      {
+        "source": "Anchor Chart",
+        "target": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Anchor chart is created as part of the SMART Goals lesson"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "The lesson teaches students about SMART Goals framework"
+      },
+      {
+        "source": "Specific",
+        "target": "SMART Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Specific is the 'S' component of SMART Goals"
+      },
+      {
+        "source": "Measurable",
+        "target": "SMART Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Measurable is the 'M' component of SMART Goals"
+      },
+      {
+        "source": "Achievable",
+        "target": "SMART Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Achievable is the 'A' component of SMART Goals"
+      },
+      {
+        "source": "Relevant",
+        "target": "SMART Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Relevant is the 'R' component of SMART Goals"
+      },
+      {
+        "source": "Time-bound",
+        "target": "SMART Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Time-bound is the 'T' component of SMART Goals"
+      },
+      {
+        "source": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+        "target": "Grades 4-5 Financial Literacy",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "This lesson is part of the broader financial literacy curriculum"
+      },
+      {
+        "source": "Chart Paper Activity",
+        "target": "Anchor Chart",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Chart paper activity is used to create the anchor chart collaboratively"
+      },
+      {
+        "source": "SmartBoard Technology",
+        "target": "Anchor Chart",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "SmartBoard can be used as alternative method to complete anchor chart"
+      },
+      {
+        "source": "Small Group Work",
+        "target": "Anchor Chart",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+        "context": "Small groups can complete individual anchor charts as alternative format"
+      },
+      {
+        "source": "Grades 4-5 Financial Literacy Lesson 2",
+        "target": "SMART goals",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "The lesson focuses on teaching students the SMART goals framework"
+      },
+      {
+        "source": "SMART goals",
+        "target": "Goal-setting skills",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "SMART goals framework is a component of broader goal-setting skills"
+      },
+      {
+        "source": "4-5FL.2 SMART Goal Progress Tracker",
+        "target": "Progress tracking",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "The tracker handout helps students develop progress monitoring skills"
+      },
+      {
+        "source": "SMART Goals at Home Letter",
+        "target": "Parents and Caregivers",
+        "type": "references",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "The letter is addressed to and provides guidance for parents and caregivers"
+      },
+      {
+        "source": "Family goal setting",
+        "target": "SMART goals",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "Families are encouraged to create shared goals using the SMART framework"
+      },
+      {
+        "source": "Reflective questioning",
+        "target": "Goal-setting skills",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "Parent questions help children develop their goal-setting abilities"
+      },
+      {
+        "source": "Goal-setting skills",
+        "target": "Financial Literacy",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "Goal-setting is presented as a component of financial planning skills"
+      },
+      {
+        "source": "4-5FL.2 SMART Goal Progress Tracker",
+        "target": "Grades 4-5 Financial Literacy Lesson 2",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "The progress tracker is Handout C from the financial literacy lesson"
+      },
+      {
+        "source": "SMART Goals at Home Letter",
+        "target": "Grades 4-5 Financial Literacy Lesson 2",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+        "context": "The letter is Handout A from the financial literacy lesson"
+      },
+      {
+        "source": "SMART Goal Brainstorm and Planning",
+        "target": "Lesson 2",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "This handout is specifically designed for Lesson 2 of the financial literacy curriculum"
+      },
+      {
+        "source": "Lesson 2",
+        "target": "Grades 4-5 Financial Literacy",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Lesson 2 is a component of the broader financial literacy program"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Specific Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Specific is the first component of the SMART goal framework"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Measurable Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Measurable is a key component of the SMART goal framework"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Achievable Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Achievable is a component that ensures goals are realistic"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Relevant Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Relevant ensures goals are meaningful to the individual"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Time-based Goals",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Time-based provides deadlines and timeframes for goal completion"
+      },
+      {
+        "source": "Reading Example Goal",
+        "target": "SMART Goals",
+        "type": "references",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The reading example demonstrates how to apply SMART criteria to convert a vague goal into a structured one"
+      },
+      {
+        "source": "School Year Goal",
+        "target": "SMART Goals",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Students apply SMART criteria to transform their school year goals"
+      },
+      {
+        "source": "Lifetime Goal",
+        "target": "SMART Goals",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "Students apply SMART criteria to transform their lifetime goals"
+      },
+      {
+        "source": "SMART Goal Progress Tracker",
+        "target": "Lesson 2",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "The progress tracker is part of lesson 2 materials"
+      },
+      {
+        "source": "Handout C",
+        "target": "SMART Goal Progress Tracker",
+        "type": "references",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Handout C is the SMART Goal Progress Tracker document"
+      },
+      {
+        "source": "Lesson 2",
+        "target": "Grades 4-5 Financial Literacy",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Lesson 2 is part of the broader financial literacy curriculum"
+      },
+      {
+        "source": "SMART Goal Progress Tracker",
+        "target": "SMART goals",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "The tracker is designed to monitor SMART goals specifically"
+      },
+      {
+        "source": "Progress tracking",
+        "target": "SMART goals",
+        "type": "assesses",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Progress tracking evaluates advancement toward SMART goals"
+      },
+      {
+        "source": "Goal achievement assessment",
+        "target": "Self-reflection",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Assessing goal achievement requires self-reflection skills"
+      },
+      {
+        "source": "Learning experience reflection",
+        "target": "Self-reflection",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Reflecting on learning experiences requires self-reflection skills"
+      },
+      {
+        "source": "Future application planning",
+        "target": "Learning experience reflection",
+        "type": "follows",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "Planning future applications follows reflection on learning experiences"
+      },
+      {
+        "source": "SMART Goal Progress Tracker",
+        "target": "Progress tracking",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "The tracker helps students learn progress tracking skills"
+      },
+      {
+        "source": "SMART Goal Progress Tracker",
+        "target": "Self-reflection",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+        "context": "The tracker includes reflection questions to develop self-reflection skills"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "SS.5.35",
+        "type": "covers_standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The SMART framework teaches students to describe the importance of setting financial goals"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Saving 4-2a",
+        "type": "covers_standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students use SMART criteria to map out savings plans for future purchases"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Spending 4-1b",
+        "type": "covers_standard",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students brainstorm personal consumption goals using SMART criteria"
+      },
+      {
+        "source": "4-5.FL.2 Handout B",
+        "target": "4-5.FL.2 Rubric",
+        "type": "assesses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The rubric evaluates student performance on the goal brainstorming handout"
+      },
+      {
+        "source": "4-5.FL.2 Handout C",
+        "target": "Progress Tracking",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The progress tracker handout implements the progress monitoring process"
+      },
+      {
+        "source": "Green Our Planet Studios Video",
+        "target": "SMART Goals Framework",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The video introduces each element of the SMART goal framework"
+      },
+      {
+        "source": "Goal Setting Adventure",
+        "target": "SMART Goals Framework",
+        "type": "prerequisite",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The opening activity prepares students for learning the SMART framework"
+      },
+      {
+        "source": "Goal Ladder Activity",
+        "target": "SMART Goals Framework",
+        "type": "part_of",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The ladder activity is an enrichment extension of SMART goal concepts"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Self-awareness",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students use self-awareness to reflect on aspirations when developing SMART goals"
+      },
+      {
+        "source": "Progress Tracking",
+        "target": "Self-management",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Using progress trackers develops organizational skills and accountability"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Social awareness",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students demonstrate social awareness by providing feedback on peers' goals"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Responsible decision-making",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students use responsible decision-making to evaluate goals using SMART criteria"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Lesson 5",
+        "type": "prerequisite",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "This lesson prepares students for more detailed goal timeline concepts in Lesson 5"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "Math Cross-curricular Connection",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students apply math skills to calculate savings timelines for SMART goals"
+      },
+      {
+        "source": "SMART Goals Framework",
+        "target": "ELA Cross-curricular Connection",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Students use writing skills to articulate and explain their SMART goals"
+      },
+      {
+        "source": "Family Engagement Strategies",
+        "target": "Progress Tracking",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "Family engagement includes having students share progress trackers at home"
+      },
+      {
+        "source": "STEM Environmental Goals",
+        "target": "SMART Goals Framework",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+        "context": "The STEM activity applies SMART goal principles to environmental conservation"
+      },
+      {
+        "source": "Grades 4-5 Financial Literacy Lesson 2",
+        "target": "Handout B: SMART Goal Brainstorm and Planning",
+        "type": "uses",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The lesson uses this handout as a student activity resource"
+      },
+      {
+        "source": "Handout B: SMART Goal Brainstorm and Planning",
+        "target": "Four-Point Performance Scale",
+        "type": "assesses",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The handout is evaluated using this rubric with four performance levels"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Goal Clarity",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "SMART goals require clear statement of objectives"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Specific Criteria",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The 'S' in SMART stands for Specific"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Measurable Criteria",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The 'M' in SMART stands for Measurable"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Achievable Planning",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The 'A' in SMART stands for Achievable"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Relevant Goal Setting",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The 'R' in SMART stands for Relevant"
+      },
+      {
+        "source": "SMART Goals",
+        "target": "Time-based Planning",
+        "type": "requires",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The 'T' in SMART stands for Time-based"
+      },
+      {
+        "source": "Grades 4-5 Financial Literacy Lesson 2",
+        "target": "SMART Goals",
+        "type": "teaches",
+        "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+        "context": "The lesson teaches students how to create SMART goals"
+      }
+    ],
+    "clusters": [
+      {
+        "label": "Cluster 1",
+        "entities": [
+          "Achievable",
+          "Achievable Goals",
+          "Achievable Planning",
+          "Family goal setting",
+          "Goal Clarity",
+          "Lifetime Goal",
+          "Measurable",
+          "Measurable Criteria",
+          "Measurable Goals",
+          "Reading Example Goal",
+          "Relevant",
+          "Relevant Goal Setting",
+          "Relevant Goals",
+          "SMART Goals",
+          "School Year Goal",
+          "Specific",
+          "Specific Criteria",
+          "Specific Goals",
+          "Time-based Goals",
+          "Time-based Planning",
+          "Time-bound"
+        ]
+      },
+      {
+        "label": "Cluster 2",
+        "entities": [
+          "ELA Cross-curricular Connection",
+          "Goal Ladder Activity",
+          "Goal Setting Adventure",
+          "Green Our Planet Studios Video",
+          "Lesson 5",
+          "Math Cross-curricular Connection",
+          "Responsible decision-making",
+          "SMART Goals Framework",
+          "SS.5.35",
+          "STEM Environmental Goals",
+          "Saving 4-2a",
+          "Self-awareness",
+          "Social awareness",
+          "Spending 4-1b"
+        ]
+      },
+      {
+        "label": "Cluster 3",
+        "entities": [
+          "Future application planning",
+          "Goal achievement assessment",
+          "Grades 4-5 Financial Literacy",
+          "Handout C",
+          "Learning experience reflection",
+          "Lesson 2",
+          "SMART Goal Brainstorm and Planning",
+          "SMART Goal Progress Tracker",
+          "Self-reflection"
+        ]
+      },
+      {
+        "label": "Cluster 4",
+        "entities": [
+          "4-5FL.2 SMART Goal Progress Tracker",
+          "Four-Point Performance Scale",
+          "Grades 4-5 Financial Literacy Lesson 2",
+          "Handout B: SMART Goal Brainstorm and Planning",
+          "Parents and Caregivers",
+          "Progress tracking",
+          "SMART Goals at Home Letter"
+        ]
+      },
+      {
+        "label": "Cluster 5",
+        "entities": [
+          "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+          "Anchor Chart",
+          "Chart Paper Activity",
+          "Grades 4-5 Financial Literacy",
+          "Small Group Work",
+          "SmartBoard Technology"
+        ]
+      },
+      {
+        "label": "Cluster 6",
+        "entities": [
+          "4-5.FL.2 Handout C",
+          "Family Engagement Strategies",
+          "Progress Tracking",
+          "Self-management"
+        ]
+      },
+      {
+        "label": "Cluster 7",
+        "entities": [
+          "Financial Literacy",
+          "Goal-setting skills",
+          "Reflective questioning"
+        ]
+      },
+      {
+        "label": "Cluster 8",
+        "entities": [
+          "4-5.FL.2 Handout B",
+          "4-5.FL.2 Rubric"
+        ]
+      }
+    ]
+  },
+  "similarity_matrix": {
+    "labels": [
+      "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+      "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+      "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+      "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+      "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+      "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf"
+    ],
+    "matrix": [
+      [
+        1.0000000000000004,
+        0.07664458402792458,
+        0.04730637598076221,
+        0.047769218135521235,
+        0.35400247333661683,
+        0.044771246856100344
+      ],
+      [
+        0.07664458402792458,
+        1.0,
+        0.0626735590248254,
+        0.13813441173416133,
+        0.34893882069218507,
+        0.03579355586339219
+      ],
+      [
+        0.04730637598076221,
+        0.0626735590248254,
+        1.0000000000000004,
+        0.016221194968412806,
+        0.14189070261136066,
+        0.09123404629286087
+      ],
+      [
+        0.047769218135521235,
+        0.13813441173416133,
+        0.016221194968412806,
+        1.0,
+        0.15473811556012057,
+        0.021683795517276925
+      ],
+      [
+        0.35400247333661683,
+        0.34893882069218507,
+        0.14189070261136066,
+        0.15473811556012057,
+        1.0000000000000047,
+        0.09133740600137813
+      ],
+      [
+        0.044771246856100344,
+        0.03579355586339219,
+        0.09123404629286087,
+        0.021683795517276925,
+        0.09133740600137813,
+        1.0000000000000002
+      ]
+    ]
+  },
+  "benchmarks": [
+    {
+      "retrieval_mode": "lexical",
+      "recall_at_5": 0.6666666666666666,
+      "mrr": 0.38888888888888884,
+      "ndcg_at_5": 0.30875247013953583,
+      "query_count": 6,
+      "notes": [
+        "query_source: heading+tfidf deterministic"
+      ]
+    }
+  ],
+  "split_recommendations": [
+    {
+      "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+      "reason": "High topic entropy (0.93) — document covers many disparate topics",
+      "proposed_boundaries": [
+        7
+      ],
+      "suggested_titles": [
+        "Grades 4-5 Financial Literacy Lesson 2 Anchor Chart: “SMART Goals and Achieving Your Dreams”",
+        "S M A R T"
+      ]
+    },
+    {
+      "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+      "reason": "High topic entropy (0.97) — document covers many disparate topics",
+      "proposed_boundaries": [
+        5,
+        12,
+        14,
+        18
+      ],
+      "suggested_titles": [
+        "✅Review their SMART Goal Progress Tracker – Ask your child to explain their goal, why it matters",
+        "✅Ask reflective questions – Help your child think through their plan by asking questions like:",
+        "Set a family goal together – Consider creating a shared SMART goal, like saving for a special",
+        "Celebrate progress! – Recognize their hard work by celebrating milestones, such as completing a",
+        "Grades 4-5 Financial Literacy Lesson 2 Handout A: “SMART Goals at Home Letter”"
+      ]
+    },
+    {
+      "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+      "reason": "High topic entropy (0.93) — document covers many disparate topics",
+      "proposed_boundaries": [
+        18
+      ],
+      "suggested_titles": [
+        "Part 1: Two Goals",
+        "Part 2: SMART Goals",
+        "Specific: Read chapter books Measurable: Read 4 chapter books",
+        "Achievable: I usually read 2 or 3 books per month. Increasing this to 4 books is realistic for me.",
+        "Relevant: I like reading chapter books so this is relevant to me.",
+        "Time-based: Read 4 chapter books per month for 6 months."
+      ]
+    },
+    {
+      "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+      "reason": "High topic entropy (0.98) — document covers many disparate topics",
+      "proposed_boundaries": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "suggested_titles": [
+        "SMART Goal:",
+        "Grades 4-5 Financial Literacy Lesson 2 Handout C: “SMART Goal Progress Tracker”",
+        "Date Specific Task/Step Progress (Completed/In Progress/ Not Started) Comments Final Reflection",
+        "1. Did I achieve my SMART goals? Why or why not?",
+        "2. What did I learn from this experience?",
+        "3. How will I use what I learned in the future?"
+      ]
+    },
+    {
+      "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+      "reason": "High topic entropy (0.94) — document covers many disparate topics",
+      "proposed_boundaries": [
+        21,
+        81,
+        117,
+        123,
+        174
+      ],
+      "suggested_titles": []
+    },
+    {
+      "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+      "reason": "High topic entropy (0.94) — document covers many disparate topics",
+      "proposed_boundaries": [
+        1,
+        2,
+        7,
+        12,
+        17,
+        22,
+        27
+      ],
+      "suggested_titles": [
+        "Grades 4-5 Financial Literacy Lesson 2 Rubric for Handout B: “SMART Goal Brainstorm",
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific",
+        "Measurable",
+        "Achievable"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+  "output_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "goal setting",
+      "SMART goals",
+      "financial literacy",
+      "student planning"
+    ],
+    "audience": "students",
+    "content_type": "lesson plan",
+    "key_concepts": [
+      "SMART goal framework",
+      "specific goals",
+      "measurable outcomes",
+      "achievable targets",
+      "relevant objectives",
+      "time-based planning",
+      "personal goal setting",
+      "lifetime goals"
+    ],
+    "suggested_tags": [
+      "SMART goals",
+      "goal setting",
+      "grades 4-5",
+      "financial literacy",
+      "student worksheet",
+      "planning",
+      "brainstorming"
+    ],
+    "summary": "This is a student worksheet for grades 4-5 financial literacy that teaches students how to convert general goals into SMART goals using a structured framework. The handout guides students through setting both short-term school year goals and long-term lifetime goals using specific, measurable, achievable, relevant, and time-based criteria."
+  },
+  "scores": {
+    "overall": 88.98,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "heading_quality": {
+        "score": 92.0,
+        "weight": 0.1425,
+        "issues": 1
+      },
+      "paragraph_length": {
+        "score": 85.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 92.0,
+        "weight": 0.0475,
+        "issues": 1
+      },
+      "structure": {
+        "score": 75.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.930875831945494,
+    "coherence": 0.0,
+    "readability_grade": 6.279393939393945,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.0,
+      0.4151931991920589,
+      0.29653669753175904
+    ],
+    "topic_boundaries": [
+      18
+    ]
+  },
+  "entities": [
+    {
+      "name": "SMART Goal Framework",
+      "type": "concept",
+      "description": "Goal-setting methodology using Specific, Measurable, Achievable, Relevant, Time-based criteria"
+    },
+    {
+      "name": "Grades 4-5 Financial Literacy",
+      "type": "standard",
+      "description": "Educational curriculum level for elementary financial literacy instruction"
+    },
+    {
+      "name": "Lesson 2",
+      "type": "lesson",
+      "description": "Second lesson in the financial literacy curriculum sequence"
+    },
+    {
+      "name": "SMART Goal Brainstorm and Planning",
+      "type": "resource",
+      "description": "Student handout worksheet for goal setting activities"
+    },
+    {
+      "name": "School Year Goal",
+      "type": "concept",
+      "description": "Short-term goal to be accomplished within one academic year"
+    },
+    {
+      "name": "Lifetime Goal",
+      "type": "concept",
+      "description": "Long-term goal to be accomplished over a person's lifetime"
+    },
+    {
+      "name": "Specific Criteria",
+      "type": "concept",
+      "description": "SMART goal component requiring clear and well-defined objectives"
+    },
+    {
+      "name": "Measurable Criteria",
+      "type": "concept",
+      "description": "SMART goal component requiring quantifiable outcomes"
+    },
+    {
+      "name": "Achievable Criteria",
+      "type": "concept",
+      "description": "SMART goal component ensuring realistic and attainable goals"
+    },
+    {
+      "name": "Relevant Criteria",
+      "type": "concept",
+      "description": "SMART goal component ensuring goals align with personal interests and values"
+    },
+    {
+      "name": "Time-based Criteria",
+      "type": "concept",
+      "description": "SMART goal component requiring specific deadlines and timeframes"
+    },
+    {
+      "name": "Reading Example Goal",
+      "type": "concept",
+      "description": "Sample goal demonstrating SMART goal conversion process"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "SMART Goal Brainstorm and Planning",
+      "target": "Lesson 2",
+      "type": "part_of",
+      "context": "This handout is specifically designed for the second lesson in the curriculum"
+    },
+    {
+      "source": "Lesson 2",
+      "target": "Grades 4-5 Financial Literacy",
+      "type": "part_of",
+      "context": "This lesson is part of the elementary financial literacy curriculum"
+    },
+    {
+      "source": "SMART Goal Framework",
+      "target": "Specific Criteria",
+      "type": "uses",
+      "context": "The framework incorporates specific criteria as one of its components"
+    },
+    {
+      "source": "SMART Goal Framework",
+      "target": "Measurable Criteria",
+      "type": "uses",
+      "context": "The framework incorporates measurable criteria as one of its components"
+    },
+    {
+      "source": "SMART Goal Framework",
+      "target": "Achievable Criteria",
+      "type": "uses",
+      "context": "The framework incorporates achievable criteria as one of its components"
+    },
+    {
+      "source": "SMART Goal Framework",
+      "target": "Relevant Criteria",
+      "type": "uses",
+      "context": "The framework incorporates relevant criteria as one of its components"
+    },
+    {
+      "source": "SMART Goal Framework",
+      "target": "Time-based Criteria",
+      "type": "uses",
+      "context": "The framework incorporates time-based criteria as one of its components"
+    },
+    {
+      "source": "Reading Example Goal",
+      "target": "SMART Goal Framework",
+      "type": "references",
+      "context": "The reading example demonstrates how to apply the SMART goal framework"
+    },
+    {
+      "source": "School Year Goal",
+      "target": "SMART Goal Framework",
+      "type": "uses",
+      "context": "School year goals are converted using the SMART goal framework"
+    },
+    {
+      "source": "Lifetime Goal",
+      "target": "SMART Goal Framework",
+      "type": "uses",
+      "context": "Lifetime goals are converted using the SMART goal framework"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "multimodal_or_ocr_review",
+      "confidence": "medium",
+      "reasons": [
+        "layout_heavy_pdf"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": true,
+      "template_like_document": true,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 162,
+      "heading_count": 16,
+      "body_paragraph_count": 6,
+      "short_label_ratio": 0.167,
+      "heading_density": 0.38
+    }
+  }
+}

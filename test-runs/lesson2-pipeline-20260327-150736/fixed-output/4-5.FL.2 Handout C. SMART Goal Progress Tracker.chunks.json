@@ -1,0 +1,18 @@
+{
+  "schema_version": "2.0",
+  "document_id": "4-5.FL.2 Handout C. SMART Goal Progress Tracker",
+  "source_file": "4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf",
+  "chunks": [
+    {
+      "chunk_id": "4-5.FL.2 Handout C. SMART Goal Progress Tracker::000",
+      "text": "Name:",
+      "heading_path": [],
+      "start_paragraph_index": 0,
+      "end_paragraph_index": 0,
+      "token_estimate": 1,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    }
+  ]
+}

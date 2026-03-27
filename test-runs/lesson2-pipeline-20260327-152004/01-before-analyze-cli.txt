@@ -1,0 +1,126 @@
+  Parsing documents...                           
+⠦ Analyzing content & building knowledge graph...
+
+                               IngestGate Scores                                
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━┓
+┃ File                       ┃ Score ┃      Gate Decision      ┃ Issues ┃ Size ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━┩
+│ 4-5.FL.2 Anchor Chart -    │    89 │          PASS           │      9 │      │
+│ SMART Goals and Achieving  │       │                         │        │      │
+│ Your Dreams.pdf            │       │                         │        │      │
+│ 4-5.FL.2 Handout A. SMART  │    91 │          PASS           │      8 │      │
+│ Goals at Home Letter.pdf   │       │                         │        │      │
+│ 4-5.FL.2 Handout B. SMART  │    89 │          PASS           │     10 │      │
+│ Goal Brainstorm and        │       │                         │        │      │
+│ Planning.pdf               │       │                         │        │      │
+│ 4-5.FL.2 Handout C. SMART  │    88 │          PASS           │      8 │      │
+│ Goal Progress Tracker.pdf  │       │                         │        │      │
+│ 4-5.FL.2 Lesson - How Can  │    64 │ REMEDIATION_RECOMMENDED │     14 │      │
+│ SMART Goals Help You       │       │                         │        │      │
+│ Achieve Your Dreams_.docx  │       │                         │        │      │
+│ 4-5.FL.2 Rubric for        │    86 │          PASS           │      8 │      │
+│ Handout B. SMART Goal      │       │                         │        │      │
+│ Brainstorm and             │       │                         │        │      │
+│ Planning.pdf               │       │                         │        │      │
+└────────────────────────────┴───────┴─────────────────────────┴────────┴──────┘
+
+
+╭───── 4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf ──────╮
+│ Domain: education                                                            │
+│ Topics: financial literacy, goal setting, SMART goals, classroom             │
+│ instruction, anchor charts                                                   │
+│ Audience: teachers                                                           │
+│ Type: lesson plan                                                            │
+│ Concepts: SMART Goals framework, anchor chart creation, collaborative        │
+│ learning, goal achievement, student self-reflection                          │
+│                                                                              │
+│ This document provides instructions for creating a SMART Goals anchor chart  │
+│ as part of a 4th-5th grade financial literacy lesson. The anchor chart helps │
+│ students understand and apply the SMART criteria (Specific, Measurable,      │
+│ Achievable, Relevant, Time-bound) to set and achieve their dreams and goals. │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭───────────── 4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf ─────────────╮
+│ Domain: education                                                            │
+│ Topics: financial literacy, goal setting, parent engagement, SMART goals,    │
+│ elementary education                                                         │
+│ Audience: parents and caregivers                                             │
+│ Type: guide                                                                  │
+│ Concepts: SMART goals framework, financial literacy education, home learning │
+│ support, progress tracking, family goal setting                              │
+│                                                                              │
+│ This document is a parent communication letter explaining SMART goals        │
+│ learning in financial literacy education for grades 4-5 students. It         │
+│ provides specific strategies for parents to support their child's            │
+│ goal-setting skills at home using the SMART Goal Progress Tracker handout.   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭───────── 4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf ─────────╮
+│ Domain: education                                                            │
+│ Topics: goal setting, SMART goals, financial literacy, personal development  │
+│ Audience: students                                                           │
+│ Type: lesson plan                                                            │
+│ Concepts: SMART criteria, goal planning, specific goals, measurable goals,   │
+│ achievable goals, relevant goals, time-based goals                           │
+│                                                                              │
+│ This is a lesson handout for Grades 4-5 Financial Literacy that teaches      │
+│ students how to create SMART goals by converting general goals into          │
+│ specific, measurable, achievable, relevant, and time-based objectives. The   │
+│ worksheet provides a structured framework for students to practice           │
+│ goal-setting skills through guided exercises.                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭──────────── 4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf ─────────────╮
+│ Domain: education                                                            │
+│ Topics: financial literacy, goal setting, SMART goals, progress tracking,    │
+│ self-reflection                                                              │
+│ Audience: students                                                           │
+│ Type: lesson plan                                                            │
+│ Concepts: SMART goals, progress tracking, self-assessment, reflection, goal  │
+│ achievement                                                                  │
+│                                                                              │
+│ This is a progress tracking handout for grades 4-5 students in lesson 2 of a │
+│ financial literacy unit, designed to help students monitor their SMART goals │
+│ and reflect on their learning experience. The document provides a structured │
+│ framework for tracking tasks, progress, and includes reflection questions    │
+│ about goal achievement and future application of learning.                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭── 4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx ──╮
+│ Domain: education                                                            │
+│ Topics: financial literacy, goal setting, SMART goals, personal finance,     │
+│ elementary education                                                         │
+│ Audience: teachers                                                           │
+│ Type: lesson plan                                                            │
+│ Concepts: SMART goal framework, goal tracking, financial planning,           │
+│ self-management, progress monitoring                                         │
+│                                                                              │
+│ This is a comprehensive lesson plan for grades 4-5 that teaches students how │
+│ to use the SMART (Specific, Measurable, Achievable, Relevant, Time-bound)    │
+│ goal framework to set and achieve personal and financial goals. The lesson   │
+│ includes activities, assessments, family engagement strategies, and          │
+│ cross-curricular connections to help students develop essential life skills  │
+│ for planning and achieving their dreams.                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─── 4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf ────╮
+│ Domain: education                                                            │
+│ Topics: financial literacy, goal setting, SMART goals, assessment rubrics    │
+│ Audience: teachers                                                           │
+│ Type: assessment rubric                                                      │
+│ Concepts: SMART goals, goal clarity, specific objectives, measurable         │
+│ criteria, achievable targets, relevant goals, time-based planning,           │
+│ performance assessment                                                       │
+│                                                                              │
+│ This is an assessment rubric for evaluating student performance on SMART     │
+│ goal brainstorming and planning activities in a Grade 4-5 Financial Literacy │
+│ curriculum. The rubric assesses students across five criteria (Goals,        │
+│ Specific, Measurable, Achievable, Relevant, Time-based) with four            │
+│ performance levels each.                                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭────────────────────────────── Knowledge Graph ───────────────────────────────╮
+│ Entities: 66                                                                 │
+│ Relationships: 64                                                            │
+│ Cross-document edges: 22                                                     │
+│ Topic clusters: 8                                                            │
+│ Entity types: skill: 15, concept: 13, lesson: 8, process: 8, resource: 7,    │
+│ assessment: 6                                                                │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Report: ingestgate-analyze-20260327-152056.md
+Metadata: lesson-data/4-5 FinLit Lesson 2/.ingestgate/manifest.json

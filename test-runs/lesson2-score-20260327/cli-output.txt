@@ -1,0 +1,28 @@
+
+Found 6 file(s) to analyze.
+
+
+
+
+                               IngestGate Scores                                
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━┓
+┃ File                       ┃ Score ┃      Gate Decision      ┃ Issues ┃ Size ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━┩
+│ 4-5.FL.2 Anchor Chart -    │    88 │          PASS           │      9 │      │
+│ SMART Goals and Achieving  │       │                         │        │      │
+│ Your Dreams.pdf            │       │                         │        │      │
+│ 4-5.FL.2 Handout A. SMART  │    90 │          PASS           │      8 │      │
+│ Goals at Home Letter.pdf   │       │                         │        │      │
+│ 4-5.FL.2 Handout B. SMART  │    88 │          PASS           │     10 │      │
+│ Goal Brainstorm and        │       │                         │        │      │
+│ Planning.pdf               │       │                         │        │      │
+│ 4-5.FL.2 Handout C. SMART  │    87 │          PASS           │      8 │      │
+│ Goal Progress Tracker.pdf  │       │                         │        │      │
+│ 4-5.FL.2 Lesson - How Can  │    63 │ REMEDIATION_RECOMMENDED │     13 │      │
+│ SMART Goals Help You       │       │                         │        │      │
+│ Achieve Your Dreams_.docx  │       │                         │        │      │
+│ 4-5.FL.2 Rubric for        │    86 │          PASS           │      8 │      │
+│ Handout B. SMART Goal      │       │                         │        │      │
+│ Brainstorm and             │       │                         │        │      │
+│ Planning.pdf               │       │                         │        │      │
+└────────────────────────────┴───────┴─────────────────────────┴────────┴──────┘

@@ -1,0 +1,256 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf",
+  "output_file": "4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "student achievement",
+      "lesson planning"
+    ],
+    "audience": "teachers",
+    "content_type": "lesson plan",
+    "key_concepts": [
+      "SMART goals framework",
+      "anchor charts",
+      "collaborative learning",
+      "self-assessment",
+      "goal achievement"
+    ],
+    "suggested_tags": [
+      "grades-4-5",
+      "financial-literacy",
+      "smart-goals",
+      "anchor-chart",
+      "classroom-activity",
+      "goal-setting",
+      "student-engagement"
+    ],
+    "summary": "This document provides instructions for teachers to create an anchor chart with students that reinforces SMART goals concepts for grades 4-5 financial literacy education. The chart serves as a visual teaching tool to help students understand and apply the Specific, Measurable, Achievable, Relevant, and Time-bound framework for goal setting."
+  },
+  "scores": {
+    "overall": 88.505,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 88.0,
+        "weight": 0.19,
+        "issues": 1
+      },
+      "heading_quality": {
+        "score": 100.0,
+        "weight": 0.1425,
+        "issues": 0
+      },
+      "paragraph_length": {
+        "score": 67.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 92.0,
+        "weight": 0.0475,
+        "issues": 1
+      },
+      "structure": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9301025157966584,
+    "coherence": 0.0,
+    "readability_grade": 7.518741418764304,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.09101285135676436,
+      0.2449621250987209
+    ],
+    "topic_boundaries": []
+  },
+  "entities": [
+    {
+      "name": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+      "type": "lesson",
+      "description": "Primary financial literacy lesson for grades 4-5 focusing on SMART goals application"
+    },
+    {
+      "name": "SMART Goals",
+      "type": "concept",
+      "description": "Goal-setting framework with five criteria: Specific, Measurable, Achievable, Relevant, Time-bound"
+    },
+    {
+      "name": "Anchor Chart",
+      "type": "resource",
+      "description": "Visual teaching tool created collaboratively to reinforce lesson concepts"
+    },
+    {
+      "name": "Specific",
+      "type": "concept",
+      "description": "SMART goal component asking 'What exactly do I want to accomplish?'"
+    },
+    {
+      "name": "Measurable",
+      "type": "concept",
+      "description": "SMART goal component asking 'How can I track my progress toward this goal?'"
+    },
+    {
+      "name": "Achievable",
+      "type": "concept",
+      "description": "SMART goal component asking 'Is this a goal I can accomplish?'"
+    },
+    {
+      "name": "Relevant",
+      "type": "concept",
+      "description": "SMART goal component asking 'Is this an important goal that will help my future?'"
+    },
+    {
+      "name": "Time-bound",
+      "type": "concept",
+      "description": "SMART goal component asking 'When do I want to achieve this goal by?'"
+    },
+    {
+      "name": "Grades 4-5 Financial Literacy",
+      "type": "standard",
+      "description": "Educational curriculum level for elementary financial literacy instruction"
+    },
+    {
+      "name": "Chart Paper Activity",
+      "type": "process",
+      "description": "Collaborative classroom method for creating anchor charts"
+    },
+    {
+      "name": "SmartBoard Technology",
+      "type": "tool",
+      "description": "Alternative technology tool for creating digital anchor charts"
+    },
+    {
+      "name": "Small Group Work",
+      "type": "process",
+      "description": "Alternative method for students to complete anchor charts independently"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Anchor Chart",
+      "target": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+      "type": "reinforces",
+      "context": "The anchor chart reinforces concepts used in the SMART goals lesson"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Specific",
+      "type": "part_of",
+      "context": "Specific is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Measurable",
+      "type": "part_of",
+      "context": "Measurable is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Achievable",
+      "type": "part_of",
+      "context": "Achievable is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Relevant",
+      "type": "part_of",
+      "context": "Relevant is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Time-bound",
+      "type": "part_of",
+      "context": "Time-bound is one of the five components of SMART goals"
+    },
+    {
+      "source": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams?",
+      "target": "Grades 4-5 Financial Literacy",
+      "type": "part_of",
+      "context": "This lesson is part of the grades 4-5 financial literacy curriculum"
+    },
+    {
+      "source": "Chart Paper Activity",
+      "target": "Anchor Chart",
+      "type": "creates",
+      "context": "Chart paper activity is the primary method for creating the anchor chart"
+    },
+    {
+      "source": "SmartBoard Technology",
+      "target": "Anchor Chart",
+      "type": "creates",
+      "context": "SmartBoard can be used as an alternative method to create anchor charts"
+    },
+    {
+      "source": "Small Group Work",
+      "target": "Anchor Chart",
+      "type": "creates",
+      "context": "Students can complete individual anchor charts through small group work"
+    },
+    {
+      "source": "Anchor Chart",
+      "target": "SMART Goals",
+      "type": "teaches",
+      "context": "The anchor chart serves as a teaching tool for SMART goals concepts"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "multimodal_or_ocr_review",
+      "confidence": "medium",
+      "reasons": [
+        "layout_heavy_pdf"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": true,
+      "template_like_document": false,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 273,
+      "heading_count": 2,
+      "body_paragraph_count": 15,
+      "short_label_ratio": 0.333,
+      "heading_density": 7.5
+    }
+  }
+}

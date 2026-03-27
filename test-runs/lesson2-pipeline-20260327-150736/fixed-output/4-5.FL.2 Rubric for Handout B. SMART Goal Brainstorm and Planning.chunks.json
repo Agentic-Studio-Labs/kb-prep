@@ -1,0 +1,103 @@
+{
+  "schema_version": "2.0",
+  "document_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning",
+  "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+  "chunks": [
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::000",
+      "text": "My goals are clearly stated. My goals are stated, but are unclear. My goals are vague or not clearly stated. My goals are missing.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals"
+      ],
+      "start_paragraph_index": 3,
+      "end_paragraph_index": 6,
+      "token_estimate": 32,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::001",
+      "text": "My goals are clearly defined with specific details. My goals are somewhat defined but lack details. My goals are vague or not specific at all. My goals are unclear or missing.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific"
+      ],
+      "start_paragraph_index": 8,
+      "end_paragraph_index": 11,
+      "token_estimate": 43,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::002",
+      "text": "My goals include clear criteria for measuring progress. My goals are measurable, but they are not very clear My goals do not include any measurable criteria. My goals are missing measurable criteria.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific",
+        "Measurable"
+      ],
+      "start_paragraph_index": 13,
+      "end_paragraph_index": 16,
+      "token_estimate": 49,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::003",
+      "text": "My goals are realistic and attainable. My goals are realistic but may not be attainable. My goals are not realistic or attainable. My goals are missing achievability.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific",
+        "Measurable",
+        "Achievable"
+      ],
+      "start_paragraph_index": 18,
+      "end_paragraph_index": 21,
+      "token_estimate": 41,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::004",
+      "text": "My goals are relevant and meaningful to me. My goals are relevant, but not strongly meaningful. My goals are not very relevant or meaningful. My goals are not relevant or meaningful.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific",
+        "Measurable",
+        "Relevant"
+      ],
+      "start_paragraph_index": 23,
+      "end_paragraph_index": 26,
+      "token_estimate": 45,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning::005",
+      "text": "My goals include a clear timeframe for completion. My goals include a timeframe, but it is not clear. My goals do not include a timeframe. My goals are missing a timeframe.",
+      "heading_path": [
+        "and Planning”",
+        "Criteria Excellent Satisfactory Needs Improvement Incomplete Goals",
+        "Specific",
+        "Measurable",
+        "Time-based"
+      ],
+      "start_paragraph_index": 28,
+      "end_paragraph_index": 31,
+      "token_estimate": 43,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "2.0",
+  "document_id": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning",
+  "source_file": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf",
+  "chunks": [
+    {
+      "chunk_id": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning::000",
+      "text": "Name:",
+      "heading_path": [],
+      "start_paragraph_index": 0,
+      "end_paragraph_index": 0,
+      "token_estimate": 1,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning::001",
+      "text": "Goal 1: A goal you hope to accomplish this school year. Goal 2: A goal you hope to accomplish in your lifetime.",
+      "heading_path": [
+        "Part 1: Two Goals"
+      ],
+      "start_paragraph_index": 2,
+      "end_paragraph_index": 3,
+      "token_estimate": 27,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning::002",
+      "text": "Turn your goals into a SMART Goal! For each of the goals you created in Part 1, brainstorm how to turn your goal into a SMART Goal. Go through each of the steps and transition your goal into a SMART Goal. Use the example below as a guideline. Example Goal: Read more books",
+      "heading_path": [
+        "Part 1: Two Goals",
+        "Part 2: SMART Goals"
+      ],
+      "start_paragraph_index": 5,
+      "end_paragraph_index": 7,
+      "token_estimate": 68,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+  "output_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "parent engagement",
+      "home learning"
+    ],
+    "audience": "parents and caregivers",
+    "content_type": "guide",
+    "key_concepts": [
+      "SMART goals framework",
+      "financial planning skills",
+      "parent-child collaboration",
+      "progress tracking",
+      "goal accountability"
+    ],
+    "suggested_tags": [
+      "financial_literacy",
+      "smart_goals",
+      "parent_communication",
+      "grades_4_5",
+      "home_support",
+      "progress_tracking"
+    ],
+    "summary": "This document is a parent communication letter that explains SMART goals being taught in financial literacy lessons and provides specific strategies for parents to support their children's goal-setting learning at home. It includes practical suggestions for reinforcing classroom learning through family engagement and collaborative goal-setting activities."
+  },
+  "scores": {
+    "overall": 91.355,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "heading_quality": {
+        "score": 100.0,
+        "weight": 0.1425,
+        "issues": 0
+      },
+      "paragraph_length": {
+        "score": 73.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 92.0,
+        "weight": 0.0475,
+        "issues": 1
+      },
+      "structure": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9687218785073859,
+    "coherence": 0.04671798381308074,
+    "readability_grade": 8.003079497907951,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.16308233514032272,
+      0.6981772385787619,
+      0.3501568001151797,
+      0.4987737315420569,
+      0.24036222315089154
+    ],
+    "topic_boundaries": []
+  },
+  "entities": [
+    {
+      "name": "SMART Goals",
+      "type": "concept",
+      "description": "Goal framework that is Specific, Measurable, Achievable, Relevant, and Time-bound"
+    },
+    {
+      "name": "Financial Literacy Lesson",
+      "type": "lesson",
+      "description": "Classroom instruction focused on financial planning and literacy skills"
+    },
+    {
+      "name": "4-5FL.2 SMART Goal Progress Tracker",
+      "type": "resource",
+      "description": "Handout C - tracking tool for students to monitor their SMART goal progress"
+    },
+    {
+      "name": "Grades 4-5",
+      "type": "standard",
+      "description": "Target grade levels for this financial literacy curriculum"
+    },
+    {
+      "name": "Parents and Caregivers",
+      "type": "person",
+      "description": "Target audience for home support and reinforcement of learning"
+    },
+    {
+      "name": "Goal-Setting Skills",
+      "type": "skill",
+      "description": "Ability to create and work toward specific objectives using structured framework"
+    },
+    {
+      "name": "Financial Planning Skills",
+      "type": "skill",
+      "description": "Lifelong competencies related to managing money and financial decisions"
+    },
+    {
+      "name": "Progress Tracking",
+      "type": "process",
+      "description": "Method for monitoring advancement toward established goals"
+    },
+    {
+      "name": "Family Goal Setting",
+      "type": "process",
+      "description": "Collaborative goal creation between parents and children"
+    },
+    {
+      "name": "Reflective Questions",
+      "type": "tool",
+      "description": "Guided inquiry prompts to help students think through their planning process"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Financial Literacy Lesson",
+      "target": "SMART Goals",
+      "type": "teaches",
+      "context": "The financial literacy lesson introduces students to the SMART goals framework"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Goal-Setting Skills",
+      "type": "teaches",
+      "context": "SMART goals framework develops students' goal-setting abilities"
+    },
+    {
+      "source": "4-5FL.2 SMART Goal Progress Tracker",
+      "target": "Progress Tracking",
+      "type": "uses",
+      "context": "The handout serves as a tool for students to track their goal progress"
+    },
+    {
+      "source": "Parents and Caregivers",
+      "target": "4-5FL.2 SMART Goal Progress Tracker",
+      "type": "uses",
+      "context": "Parents review and discuss the progress tracker with their children"
+    },
+    {
+      "source": "Reflective Questions",
+      "target": "Goal-Setting Skills",
+      "type": "assesses",
+      "context": "Guided questions help evaluate and strengthen students' planning abilities"
+    },
+    {
+      "source": "Family Goal Setting",
+      "target": "SMART Goals",
+      "type": "uses",
+      "context": "Families are encouraged to create shared goals using the SMART framework"
+    },
+    {
+      "source": "Goal-Setting Skills",
+      "target": "Financial Planning Skills",
+      "type": "part_of",
+      "context": "Goal-setting is a component of broader financial planning competencies"
+    },
+    {
+      "source": "Grades 4-5",
+      "target": "Financial Literacy Lesson",
+      "type": "covers_standard",
+      "context": "The lesson is designed specifically for 4th and 5th grade students"
+    },
+    {
+      "source": "Parents and Caregivers",
+      "target": "Financial Planning Skills",
+      "type": "teaches",
+      "context": "Parent engagement helps students develop lifelong financial planning abilities"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "hybrid_sparse_template",
+      "confidence": "medium",
+      "reasons": [
+        "clean_text_for_standard_retrieval"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": false,
+      "template_like_document": true,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 238,
+      "heading_count": 5,
+      "body_paragraph_count": 12,
+      "short_label_ratio": 0.0,
+      "heading_density": 2.4
+    }
+  }
+}

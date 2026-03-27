@@ -1,0 +1,244 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf",
+  "output_file": "4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "assessment rubric"
+    ],
+    "audience": "teachers",
+    "content_type": "assessment rubric",
+    "key_concepts": [
+      "SMART goals",
+      "goal setting criteria",
+      "performance assessment",
+      "financial literacy education",
+      "rubric evaluation"
+    ],
+    "suggested_tags": [
+      "grades 4-5",
+      "financial literacy",
+      "SMART goals",
+      "assessment",
+      "rubric",
+      "lesson 2",
+      "goal planning",
+      "elementary education"
+    ],
+    "summary": "This is an assessment rubric for evaluating student performance on SMART goal brainstorming and planning in a grades 4-5 financial literacy curriculum. The rubric measures five criteria (Goals, Specific, Measurable, Achievable, Relevant, Time-based) across four performance levels (Excellent, Satisfactory, Needs Improvement, Incomplete)."
+  },
+  "scores": {
+    "overall": 86.32,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "heading_quality": {
+        "score": 92.0,
+        "weight": 0.1425,
+        "issues": 1
+      },
+      "paragraph_length": {
+        "score": 28.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 100.0,
+        "weight": 0.0475,
+        "issues": 0
+      },
+      "structure": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9402472599989212,
+    "coherence": 0.151023750551345,
+    "readability_grade": 6.996330858960768,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.39867463780887363,
+      0.34216697578104527,
+      0.3483903869448306,
+      0.4521116884615656,
+      0.5281334663716851,
+      0.38865250100902793
+    ],
+    "topic_boundaries": []
+  },
+  "entities": [
+    {
+      "name": "Grades 4-5 Financial Literacy",
+      "type": "lesson",
+      "description": "Elementary level financial literacy curriculum for students in grades 4 and 5"
+    },
+    {
+      "name": "Lesson 2",
+      "type": "lesson",
+      "description": "Second lesson in the financial literacy curriculum sequence"
+    },
+    {
+      "name": "Handout B: SMART Goal Brainstorm and Planning",
+      "type": "resource",
+      "description": "Student worksheet or handout focused on SMART goal development"
+    },
+    {
+      "name": "SMART Goals",
+      "type": "concept",
+      "description": "Goal-setting framework using Specific, Measurable, Achievable, Relevant, and Time-based criteria"
+    },
+    {
+      "name": "Specific Criteria",
+      "type": "skill",
+      "description": "Ability to define goals with clear, specific details"
+    },
+    {
+      "name": "Measurable Criteria",
+      "type": "skill",
+      "description": "Ability to include clear criteria for measuring progress in goals"
+    },
+    {
+      "name": "Achievable Criteria",
+      "type": "skill",
+      "description": "Ability to set realistic and attainable goals"
+    },
+    {
+      "name": "Relevant Criteria",
+      "type": "skill",
+      "description": "Ability to create goals that are relevant and meaningful"
+    },
+    {
+      "name": "Time-based Criteria",
+      "type": "skill",
+      "description": "Ability to include clear timeframes for goal completion"
+    },
+    {
+      "name": "Assessment Rubric",
+      "type": "assessment",
+      "description": "Evaluation tool with four performance levels: Excellent, Satisfactory, Needs Improvement, Incomplete"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Assessment Rubric",
+      "target": "Handout B: SMART Goal Brainstorm and Planning",
+      "type": "assesses",
+      "context": "The rubric is designed to evaluate student work on the SMART goal handout"
+    },
+    {
+      "source": "Handout B: SMART Goal Brainstorm and Planning",
+      "target": "Lesson 2",
+      "type": "part_of",
+      "context": "The handout is a component of Lesson 2 in the curriculum"
+    },
+    {
+      "source": "Lesson 2",
+      "target": "Grades 4-5 Financial Literacy",
+      "type": "part_of",
+      "context": "Lesson 2 is part of the broader financial literacy curriculum"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Specific Criteria",
+      "type": "part_of",
+      "context": "Specific is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Measurable Criteria",
+      "type": "part_of",
+      "context": "Measurable is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Achievable Criteria",
+      "type": "part_of",
+      "context": "Achievable is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Relevant Criteria",
+      "type": "part_of",
+      "context": "Relevant is one of the five components of SMART goals"
+    },
+    {
+      "source": "SMART Goals",
+      "target": "Time-based Criteria",
+      "type": "part_of",
+      "context": "Time-based is one of the five components of SMART goals"
+    },
+    {
+      "source": "Handout B: SMART Goal Brainstorm and Planning",
+      "target": "SMART Goals",
+      "type": "teaches",
+      "context": "The handout is designed to help students learn and apply SMART goal principles"
+    },
+    {
+      "source": "Assessment Rubric",
+      "target": "SMART Goals",
+      "type": "assesses",
+      "context": "The rubric evaluates student understanding and application of SMART goal criteria"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "hybrid_sparse_template",
+      "confidence": "medium",
+      "reasons": [
+        "clean_text_for_standard_retrieval"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": false,
+      "template_like_document": true,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 203,
+      "heading_count": 8,
+      "body_paragraph_count": 24,
+      "short_label_ratio": 0.0,
+      "heading_density": 3.0
+    }
+  }
+}

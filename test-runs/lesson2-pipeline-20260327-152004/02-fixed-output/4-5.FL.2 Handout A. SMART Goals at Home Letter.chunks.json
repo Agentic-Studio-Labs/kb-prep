@@ -1,0 +1,76 @@
+{
+  "schema_version": "2.0",
+  "document_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter",
+  "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+  "chunks": [
+    {
+      "chunk_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter::000",
+      "text": "Dear Parents and Caregivers, This week, your child is learning about SMART goals in their financial literacy lesson! A SMART goal is a goal that is Specific, Measurable, Achievable, Relevant, and Time-bound—a framework that helps students turn their dreams into actionable steps. To reinforce this learning, your child is bringing home the 4-5FL.2 SMART Goal Progress Tracker (Handout C) to share their goal with you. Your support in this process will help them stay motivated and accountable. How You Can Support at Home:",
+      "heading_path": [],
+      "start_paragraph_index": 0,
+      "end_paragraph_index": 2,
+      "token_estimate": 130,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter::001",
+      "text": "to them, and how they plan to achieve it.",
+      "heading_path": [
+        "✅Review their SMART Goal Progress Tracker – Ask your child to explain their goal, why it matters"
+      ],
+      "start_paragraph_index": 4,
+      "end_paragraph_index": 4,
+      "token_estimate": 10,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter::002",
+      "text": "• What small steps will you take this week? What challenges might you face, and how can we work through them? How will you track your progress?",
+      "heading_path": [
+        "✅Review their SMART Goal Progress Tracker – Ask your child to explain their goal, why it matters",
+        "✅Ask reflective questions – Help your child think through their plan by asking questions like:"
+      ],
+      "start_paragraph_index": 6,
+      "end_paragraph_index": 11,
+      "token_estimate": 35,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter::003",
+      "text": "activity or completing a project as a family.",
+      "heading_path": [
+        "✅Review their SMART Goal Progress Tracker – Ask your child to explain their goal, why it matters",
+        "✅Ask reflective questions – Help your child think through their plan by asking questions like:",
+        "Set a family goal together – Consider creating a shared SMART goal, like saving for a special"
+      ],
+      "start_paragraph_index": 13,
+      "end_paragraph_index": 13,
+      "token_estimate": 11,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    },
+    {
+      "chunk_id": "4-5.FL.2 Handout A. SMART Goals at Home Letter::004",
+      "text": "step on their tracker. By engaging in this activity together, you are helping your child develop lifelong goal-setting and financial planning skills. Thank you for your support! Thank you for your support, Your School Team",
+      "heading_path": [
+        "✅Review their SMART Goal Progress Tracker – Ask your child to explain their goal, why it matters",
+        "✅Ask reflective questions – Help your child think through their plan by asking questions like:",
+        "Set a family goal together – Consider creating a shared SMART goal, like saving for a special",
+        "Celebrate progress! – Recognize their hard work by celebrating milestones, such as completing a"
+      ],
+      "start_paragraph_index": 15,
+      "end_paragraph_index": 17,
+      "token_estimate": 55,
+      "chunk_type": "section",
+      "quality_flags": [],
+      "metadata": {}
+    }
+  ]
+}

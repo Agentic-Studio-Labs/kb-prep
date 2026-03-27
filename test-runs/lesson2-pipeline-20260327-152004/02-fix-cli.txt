@@ -1,0 +1,47 @@
+  Parsing documents...
+
+Building knowledge graph...
+Fixing 6 document(s) concurrently...
+✓ 4-5.FL.2 Anchor Chart - SMART Goals and Achieving Your Dreams.pdf → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Anchor Chart
+- SMART Goals and Achieving Your Dreams.md (2 fixes applied)
+  • Rewrote paragraph to be chunk-safe and self-contained
+  • Defined SMART as Specific, Measurable, Achievable, Relevant, and Time-bound
+✓ 4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Handout A. 
+SMART Goals at Home Letter.md (1 fixes applied)
+  • Defined SMART as Specific, Measurable, Achievable, Relevant, and Time-bound
+✓ 4-5.FL.2 Handout B. SMART Goal Brainstorm and Planning.pdf → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Handout B. 
+SMART Goal Brainstorm and Planning.md (1 fixes applied)
+  • Defined SMART as Specific, Measurable, Achievable, Relevant, and Time-bound
+✓ 4-5.FL.2 Handout C. SMART Goal Progress Tracker.pdf → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Handout C. 
+SMART Goal Progress Tracker.md (1 fixes applied)
+  • Defined SMART as Specific, Measurable, Achievable, Relevant, and Time-bound
+✓ 4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Lesson - How
+Can SMART Goals Help You Achieve Your Dreams_.md (3 fixes applied)
+  • Rewrote paragraph to be chunk-safe and self-contained
+  • Rewrote paragraph to be chunk-safe and self-contained
+  • Defined FL as Financial Literacy
+✓ 4-5.FL.2 Rubric for Handout B. SMART Goal Brainstorm and Planning.pdf → 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/4-5.FL.2 Rubric for 
+Handout B. SMART Goal Brainstorm and Planning.md (0 fixes applied)
+╭────────────────────────────── Knowledge Graph ───────────────────────────────╮
+│ Entities: 62                                                                 │
+│ Relationships: 60                                                            │
+│ Cross-document edges: 19                                                     │
+│ Topic clusters: 6                                                            │
+│ Entity types: concept: 21, resource: 10, assessment: 9, process: 5, lesson:  │
+│ 4, standard: 4                                                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Metadata: 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/manifest.json + 
+per-doc sidecars
+
+Fixed files written to 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/
+Report: 
+test-runs/lesson2-pipeline-20260327-152004/02-fixed-output/ingestgate-fix-202603
+27-152149.md

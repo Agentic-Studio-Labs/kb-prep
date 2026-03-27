@@ -86,6 +86,18 @@ def write_web_report(output_path: str, manifest_data: dict) -> str:
       gap: 8px;
       margin-bottom: 8px;
     }}
+    .decision-label {{
+      min-width: 280px;
+      white-space: nowrap;
+      font-size: 14px;
+    }}
+    .decision-pct {{
+      width: 48px;
+      text-align: right;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 13px;
+    }}
     .bar {{
       height: 10px;
       border-radius: 999px;
@@ -166,6 +178,11 @@ def write_web_report(output_path: str, manifest_data: dict) -> str:
       padding: 4px 6px;
       text-align: left;
     }}
+    @media (max-width: 900px) {{
+      .decision-label {{
+        min-width: 220px;
+      }}
+    }}
   </style>
 </head>
 <body>
@@ -229,9 +246,9 @@ def write_web_report(output_path: str, manifest_data: dict) -> str:
     document.getElementById("decision-bars").innerHTML = Object.keys(dist).map((k) => {{
       const pct = Math.round((dist[k] / total) * 100);
       return `<div class="row">
-        <div style="width:220px">${{k}} (${{dist[k]}})</div>
+        <div class="decision-label">${{k}} (${{dist[k]}})</div>
         <div class="bar"><div class="fill" style="width:${{pct}}%;background:${{color(k)}}"></div></div>
-        <div style="width:40px;text-align:right">${{pct}}%</div>
+        <div class="decision-pct">${{pct}}%</div>
       </div>`;
     }}).join("");
 

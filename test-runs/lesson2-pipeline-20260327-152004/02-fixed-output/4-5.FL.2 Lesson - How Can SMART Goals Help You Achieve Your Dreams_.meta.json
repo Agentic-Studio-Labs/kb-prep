@@ -1,0 +1,338 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+  "output_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "elementary education",
+      "personal finance"
+    ],
+    "audience": "teachers",
+    "content_type": "lesson plan",
+    "key_concepts": [
+      "SMART goal framework",
+      "Specific goals",
+      "Measurable goals",
+      "Achievable goals",
+      "Relevant goals",
+      "Time-bound goals",
+      "goal tracking",
+      "progress monitoring",
+      "financial planning",
+      "savings goals"
+    ],
+    "suggested_tags": [
+      "grades-4-5",
+      "financial-literacy",
+      "goal-setting",
+      "SMART-goals",
+      "lesson-plan",
+      "elementary-education",
+      "progress-tracking",
+      "family-engagement"
+    ],
+    "summary": "This is Lesson 2 of a Financial Literacy curriculum for grades 4-5 that teaches students how to use the SMART goal framework (Specific, Measurable, Achievable, Relevant, Time-bound) to set and achieve personal and financial goals. The lesson includes video content, handouts, progress tracking tools, and family engagement strategies to help students develop goal-setting skills."
+  },
+  "scores": {
+    "overall": 64.755,
+    "readiness": "FAIR",
+    "gate_decision": "REMEDIATION_RECOMMENDED",
+    "criteria": {
+      "self_containment": {
+        "score": 76.0,
+        "weight": 0.19,
+        "issues": 2
+      },
+      "heading_quality": {
+        "score": 30.0,
+        "weight": 0.1425,
+        "issues": 1
+      },
+      "paragraph_length": {
+        "score": 0.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 84.0,
+        "weight": 0.0475,
+        "issues": 2
+      },
+      "structure": {
+        "score": 50.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9374256747941304,
+    "coherence": 0.0,
+    "readability_grade": 8.31532273496725,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.022970244121914667
+    ],
+    "topic_boundaries": [
+      21,
+      81,
+      117,
+      123,
+      174
+    ]
+  },
+  "entities": [
+    {
+      "name": "SMART Goals Framework",
+      "type": "concept",
+      "description": "Goal-setting framework using Specific, Measurable, Achievable, Relevant, Time-bound criteria"
+    },
+    {
+      "name": "Financial Literacy Grades 4-5",
+      "type": "lesson",
+      "description": "Elementary financial literacy curriculum for 4th and 5th grade students"
+    },
+    {
+      "name": "SS.5.35",
+      "type": "standard",
+      "description": "Nevada State Standard describing the importance of setting financial goals"
+    },
+    {
+      "name": "Saving 4-2a",
+      "type": "standard",
+      "description": "National standard for mapping out savings plan for future purchase objective"
+    },
+    {
+      "name": "Spending 4-1b",
+      "type": "standard",
+      "description": "National standard for brainstorming personal list of consumption goals"
+    },
+    {
+      "name": "4-5.FL.2 Handout B SMART Goal Brainstorm and Planning",
+      "type": "resource",
+      "description": "Student handout for brainstorming and planning SMART goals"
+    },
+    {
+      "name": "4-5.FL.2 Handout C SMART Goal Progress Tracker",
+      "type": "resource",
+      "description": "Student tool for monitoring progress toward SMART goals"
+    },
+    {
+      "name": "4-5.FL.2 Anchor Chart SMART Goals and Achieving Your Dreams",
+      "type": "resource",
+      "description": "Visual reference chart for SMART goals concepts"
+    },
+    {
+      "name": "Green Our Planet Studios Video",
+      "type": "resource",
+      "description": "Educational video introducing SMART goals through character Quasar"
+    },
+    {
+      "name": "Goal Ladder Activity",
+      "type": "process",
+      "description": "Visual activity breaking long-term goals into manageable steps"
+    },
+    {
+      "name": "Specific Goals",
+      "type": "concept",
+      "description": "Clearly defined goals that explain exactly what you're trying to achieve"
+    },
+    {
+      "name": "Measurable Goals",
+      "type": "concept",
+      "description": "Goals that can be tracked with numbers to monitor progress"
+    },
+    {
+      "name": "Achievable Goals",
+      "type": "concept",
+      "description": "Realistic goals that can actually be accomplished"
+    },
+    {
+      "name": "Relevant Goals",
+      "type": "concept",
+      "description": "Goals connected to something important you want to accomplish"
+    },
+    {
+      "name": "Time-bound Goals",
+      "type": "concept",
+      "description": "Goals with specific deadlines or timeframes for completion"
+    },
+    {
+      "name": "Self-Awareness SEL Competency",
+      "type": "skill",
+      "description": "Social-emotional learning skill for reflecting on personal aspirations and strengths"
+    },
+    {
+      "name": "Self-Management SEL Competency",
+      "type": "skill",
+      "description": "Social-emotional learning skill for organizing and tracking goal progress"
+    },
+    {
+      "name": "Family Engagement Strategies",
+      "type": "process",
+      "description": "Methods for involving families in supporting student goal achievement"
+    },
+    {
+      "name": "Environmental Impact STEM Activity",
+      "type": "process",
+      "description": "Independent practice connecting SMART goals to environmental conservation"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Financial Literacy Grades 4-5",
+      "target": "SS.5.35",
+      "type": "covers_standard",
+      "context": "This lesson addresses Nevada State Standard SS.5.35 about setting financial goals"
+    },
+    {
+      "source": "Financial Literacy Grades 4-5",
+      "target": "Saving 4-2a",
+      "type": "covers_standard",
+      "context": "Lesson covers national standard for mapping savings plans"
+    },
+    {
+      "source": "Financial Literacy Grades 4-5",
+      "target": "Spending 4-1b",
+      "type": "covers_standard",
+      "context": "Lesson addresses standard for brainstorming consumption goals"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Specific Goals",
+      "type": "part_of",
+      "context": "Specific is the first component of the SMART framework"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Measurable Goals",
+      "type": "part_of",
+      "context": "Measurable is a key component of SMART goals"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Achievable Goals",
+      "type": "part_of",
+      "context": "Achievable ensures goals are realistic within SMART framework"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Relevant Goals",
+      "type": "part_of",
+      "context": "Relevant connects goals to personal importance in SMART framework"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Time-bound Goals",
+      "type": "part_of",
+      "context": "Time-bound provides deadlines within SMART framework"
+    },
+    {
+      "source": "4-5.FL.2 Handout B SMART Goal Brainstorm and Planning",
+      "target": "SMART Goals Framework",
+      "type": "uses",
+      "context": "Student handout applies SMART criteria to personal goals"
+    },
+    {
+      "source": "4-5.FL.2 Handout C SMART Goal Progress Tracker",
+      "target": "SMART Goals Framework",
+      "type": "assesses",
+      "context": "Progress tracker monitors achievement of SMART goals"
+    },
+    {
+      "source": "Green Our Planet Studios Video",
+      "target": "SMART Goals Framework",
+      "type": "teaches",
+      "context": "Video introduces SMART goal components through character Quasar"
+    },
+    {
+      "source": "Goal Ladder Activity",
+      "target": "SMART Goals Framework",
+      "type": "uses",
+      "context": "Activity breaks down long-term SMART goals into manageable steps"
+    },
+    {
+      "source": "Financial Literacy Grades 4-5",
+      "target": "Self-Awareness SEL Competency",
+      "type": "teaches",
+      "context": "Lesson develops self-awareness through personal goal reflection"
+    },
+    {
+      "source": "Financial Literacy Grades 4-5",
+      "target": "Self-Management SEL Competency",
+      "type": "teaches",
+      "context": "Students learn self-management through goal tracking and organization"
+    },
+    {
+      "source": "Family Engagement Strategies",
+      "target": "4-5.FL.2 Handout C SMART Goal Progress Tracker",
+      "type": "uses",
+      "context": "Families use progress tracker to support student accountability"
+    },
+    {
+      "source": "Environmental Impact STEM Activity",
+      "target": "SMART Goals Framework",
+      "type": "uses",
+      "context": "STEM activity applies SMART criteria to environmental conservation goals"
+    },
+    {
+      "source": "4-5.FL.2 Anchor Chart SMART Goals and Achieving Your Dreams",
+      "target": "SMART Goals Framework",
+      "type": "references",
+      "context": "Anchor chart provides visual reference for SMART goal components"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "hybrid_with_structure_rewrite",
+      "confidence": "medium",
+      "reasons": [
+        "low_structural_headings"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": false,
+      "template_like_document": false,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "docx",
+      "total_words": 3753,
+      "heading_count": 0,
+      "body_paragraph_count": 194,
+      "short_label_ratio": 0.057,
+      "heading_density": null
+    }
+  }
+}

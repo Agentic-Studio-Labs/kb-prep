@@ -1,0 +1,231 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.pdf",
+  "output_file": "4-5.FL.2 Handout A. SMART Goals at Home Letter.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "parent engagement",
+      "home learning support"
+    ],
+    "audience": "parents and caregivers",
+    "content_type": "guide",
+    "key_concepts": [
+      "SMART goals framework",
+      "financial planning skills",
+      "goal-setting accountability",
+      "parent-child learning collaboration",
+      "progress tracking"
+    ],
+    "suggested_tags": [
+      "financial_literacy",
+      "smart_goals",
+      "parent_letter",
+      "grades_4_5",
+      "home_support",
+      "goal_tracking",
+      "family_engagement"
+    ],
+    "summary": "This letter guides parents and caregivers on how to support their child's financial literacy learning at home by helping them work with SMART goals. It provides specific strategies for reinforcing classroom learning about goal-setting through family engagement and progress tracking."
+  },
+  "scores": {
+    "overall": 91.355,
+    "readiness": "EXCELLENT",
+    "gate_decision": "PASS",
+    "criteria": {
+      "self_containment": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "heading_quality": {
+        "score": 100.0,
+        "weight": 0.1425,
+        "issues": 0
+      },
+      "paragraph_length": {
+        "score": 73.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 92.0,
+        "weight": 0.0475,
+        "issues": 1
+      },
+      "structure": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9687218785073859,
+    "coherence": 0.04671798381308074,
+    "readability_grade": 8.003079497907951,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.16308233514032272,
+      0.6981772385787619,
+      0.3501568001151797,
+      0.4987737315420569,
+      0.24036222315089154
+    ],
+    "topic_boundaries": []
+  },
+  "entities": [
+    {
+      "name": "SMART goals",
+      "type": "concept",
+      "description": "Goal-setting framework that is Specific, Measurable, Achievable, Relevant, and Time-bound"
+    },
+    {
+      "name": "4-5FL.2 SMART Goal Progress Tracker",
+      "type": "resource",
+      "description": "Handout C that students bring home to share their goals with parents"
+    },
+    {
+      "name": "financial literacy",
+      "type": "topic",
+      "description": "Subject area focused on developing financial planning and money management skills"
+    },
+    {
+      "name": "Grades 4-5",
+      "type": "standard",
+      "description": "Target grade levels for this financial literacy curriculum"
+    },
+    {
+      "name": "Financial Literacy Lesson 2",
+      "type": "lesson",
+      "description": "Second lesson in the grades 4-5 financial literacy curriculum sequence"
+    },
+    {
+      "name": "Handout A",
+      "type": "resource",
+      "description": "SMART Goals at Home Letter for parent communication"
+    },
+    {
+      "name": "goal-setting skills",
+      "type": "skill",
+      "description": "Lifelong ability to create and work toward specific objectives"
+    },
+    {
+      "name": "financial planning skills",
+      "type": "skill",
+      "description": "Abilities related to managing money and making financial decisions"
+    },
+    {
+      "name": "progress tracking",
+      "type": "process",
+      "description": "Method for monitoring goal achievement through measurable steps"
+    },
+    {
+      "name": "reflective questions",
+      "type": "tool",
+      "description": "Questions parents can ask to help children think through their goal plans"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Financial Literacy Lesson 2",
+      "target": "SMART goals",
+      "type": "teaches",
+      "context": "The lesson focuses on teaching students about the SMART goals framework"
+    },
+    {
+      "source": "SMART goals",
+      "target": "goal-setting skills",
+      "type": "teaches",
+      "context": "Learning SMART goals helps develop lifelong goal-setting abilities"
+    },
+    {
+      "source": "SMART goals",
+      "target": "financial planning skills",
+      "type": "teaches",
+      "context": "SMART goals framework supports development of financial planning capabilities"
+    },
+    {
+      "source": "4-5FL.2 SMART Goal Progress Tracker",
+      "target": "progress tracking",
+      "type": "uses",
+      "context": "The tracker is a tool for implementing progress monitoring"
+    },
+    {
+      "source": "Handout A",
+      "target": "Financial Literacy Lesson 2",
+      "type": "part_of",
+      "context": "The letter is part of the lesson 2 materials for grades 4-5 financial literacy"
+    },
+    {
+      "source": "reflective questions",
+      "target": "goal-setting skills",
+      "type": "teaches",
+      "context": "Asking reflective questions helps develop critical thinking about goal planning"
+    },
+    {
+      "source": "Financial Literacy Lesson 2",
+      "target": "Grades 4-5",
+      "type": "covers_standard",
+      "context": "The lesson is designed for students in grades 4-5"
+    },
+    {
+      "source": "4-5FL.2 SMART Goal Progress Tracker",
+      "target": "Financial Literacy Lesson 2",
+      "type": "part_of",
+      "context": "The progress tracker is Handout C from lesson 2"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "hybrid_sparse_template",
+      "confidence": "medium",
+      "reasons": [
+        "clean_text_for_standard_retrieval"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": false,
+      "template_like_document": true,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "pdf",
+      "total_words": 238,
+      "heading_count": 5,
+      "body_paragraph_count": 12,
+      "short_label_ratio": 0.0,
+      "heading_density": 2.4
+    }
+  }
+}

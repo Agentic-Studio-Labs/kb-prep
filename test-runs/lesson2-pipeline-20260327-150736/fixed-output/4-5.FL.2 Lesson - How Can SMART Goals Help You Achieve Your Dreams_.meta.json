@@ -1,0 +1,327 @@
+{
+  "ingestgate_version": "0.1.0",
+  "source_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.docx",
+  "output_file": "4-5.FL.2 Lesson - How Can SMART Goals Help You Achieve Your Dreams_.md",
+  "analysis": {
+    "domain": "education",
+    "topics": [
+      "financial literacy",
+      "goal setting",
+      "SMART goals",
+      "elementary education",
+      "personal finance",
+      "savings planning"
+    ],
+    "audience": "teachers",
+    "content_type": "lesson plan",
+    "key_concepts": [
+      "SMART goals framework",
+      "specific measurable achievable relevant time-bound",
+      "goal tracking",
+      "progress monitoring",
+      "financial planning",
+      "savings goals",
+      "family engagement",
+      "cross-curricular connections"
+    ],
+    "suggested_tags": [
+      "grades-4-5",
+      "financial-literacy",
+      "smart-goals",
+      "lesson-plan",
+      "goal-setting",
+      "progress-tracking",
+      "family-engagement",
+      "cross-curricular",
+      "SEL",
+      "savings",
+      "budgeting"
+    ],
+    "summary": "This is a comprehensive lesson plan for grades 4-5 that teaches students the SMART goals framework (Specific, Measurable, Achievable, Relevant, Time-bound) to help them achieve personal and financial dreams. The lesson includes video content, hands-on activities, progress tracking tools, and family engagement strategies to build goal-setting skills."
+  },
+  "scores": {
+    "overall": 64.755,
+    "readiness": "FAIR",
+    "gate_decision": "REMEDIATION_RECOMMENDED",
+    "criteria": {
+      "self_containment": {
+        "score": 76.0,
+        "weight": 0.19,
+        "issues": 2
+      },
+      "heading_quality": {
+        "score": 30.0,
+        "weight": 0.1425,
+        "issues": 1
+      },
+      "paragraph_length": {
+        "score": 0.0,
+        "weight": 0.095,
+        "issues": 6
+      },
+      "file_focus": {
+        "score": 40.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "filename_quality": {
+        "score": 100.0,
+        "weight": 0.095,
+        "issues": 0
+      },
+      "acronym_definitions": {
+        "score": 84.0,
+        "weight": 0.0475,
+        "issues": 2
+      },
+      "structure": {
+        "score": 50.0,
+        "weight": 0.095,
+        "issues": 1
+      },
+      "file_size": {
+        "score": 100.0,
+        "weight": 0.0,
+        "issues": 0
+      },
+      "retrieval_aware": {
+        "score": 100.0,
+        "weight": 0.19,
+        "issues": 0
+      },
+      "knowledge_completeness": {
+        "score": 100.0,
+        "weight": 0.05,
+        "issues": 0
+      }
+    }
+  },
+  "metrics": {
+    "entropy": 0.9374256747941304,
+    "coherence": 0.0,
+    "readability_grade": 8.31532273496725,
+    "self_retrieval_score": 1.0,
+    "info_density": [
+      0.022970244121914667
+    ],
+    "topic_boundaries": [
+      21,
+      81,
+      117,
+      123,
+      174
+    ]
+  },
+  "entities": [
+    {
+      "name": "Lesson 2: How Can SMART Goals Help You Achieve Your Dreams?",
+      "type": "lesson",
+      "description": "A 45-minute financial literacy lesson for grades 4-5 focusing on SMART goals"
+    },
+    {
+      "name": "SMART Goals Framework",
+      "type": "concept",
+      "description": "Goal-setting methodology using Specific, Measurable, Achievable, Relevant, Time-bound criteria"
+    },
+    {
+      "name": "SS.5.35",
+      "type": "standard",
+      "description": "Nevada State Standard: Describe the importance of setting financial goals"
+    },
+    {
+      "name": "Saving 4-2a",
+      "type": "standard",
+      "description": "National Personal Financial Education Standard: Map out a savings plan for future purchase"
+    },
+    {
+      "name": "Spending 4-1b",
+      "type": "standard",
+      "description": "National Personal Financial Education Standard: Brainstorm personal consumption goals"
+    },
+    {
+      "name": "Green Our Planet Studios Video",
+      "type": "resource",
+      "description": "15-minute instructional video introducing SMART goals through character Quasar"
+    },
+    {
+      "name": "4-5.FL.2 Anchor Chart",
+      "type": "resource",
+      "description": "Visual reference chart for SMART Goals and Achieving Dreams"
+    },
+    {
+      "name": "4-5.FL.2 Handout A",
+      "type": "resource",
+      "description": "SMART Goals at Home Letter for family engagement"
+    },
+    {
+      "name": "4-5.FL.2 Handout B",
+      "type": "assessment",
+      "description": "SMART Goal Brainstorm and Planning worksheet"
+    },
+    {
+      "name": "4-5.FL.2 Handout C",
+      "type": "tool",
+      "description": "SMART Goal Progress Tracker for monitoring achievement"
+    },
+    {
+      "name": "4-5.FL.2 Rubric",
+      "type": "assessment",
+      "description": "Evaluation rubric for SMART Goal Brainstorm and Planning handout"
+    },
+    {
+      "name": "Goal Ladder Activity",
+      "type": "process",
+      "description": "Visual activity breaking long-term goals into manageable steps"
+    },
+    {
+      "name": "Environmental Impact STEM Activity",
+      "type": "process",
+      "description": "Independent practice applying SMART goals to environmental conservation"
+    },
+    {
+      "name": "Self-Awareness",
+      "type": "skill",
+      "description": "SEL competency for reflecting on personal aspirations and strengths"
+    },
+    {
+      "name": "Self-Management",
+      "type": "skill",
+      "description": "SEL competency for organizational skills and accountability"
+    },
+    {
+      "name": "Social Awareness",
+      "type": "skill",
+      "description": "SEL competency for active listening and peer feedback"
+    },
+    {
+      "name": "Responsible Decision-Making",
+      "type": "skill",
+      "description": "SEL competency for evaluating goal practicality and relevance"
+    },
+    {
+      "name": "Essential Question",
+      "type": "concept",
+      "description": "How can SMART goals help you achieve your dreams?"
+    },
+    {
+      "name": "Progress Tracking",
+      "type": "process",
+      "description": "Method for monitoring goal achievement through measurable steps"
+    },
+    {
+      "name": "Family Engagement Strategies",
+      "type": "process",
+      "description": "Methods for involving caregivers in student goal-setting and tracking"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "Lesson 2: How Can SMART Goals Help You Achieve Your Dreams?",
+      "target": "SS.5.35",
+      "type": "covers_standard",
+      "context": "Lesson addresses Nevada standard on financial goal setting importance"
+    },
+    {
+      "source": "Lesson 2: How Can SMART Goals Help You Achieve Your Dreams?",
+      "target": "Saving 4-2a",
+      "type": "covers_standard",
+      "context": "Students create savings plans for future purchases using SMART framework"
+    },
+    {
+      "source": "Lesson 2: How Can SMART Goals Help You Achieve Your Dreams?",
+      "target": "Spending 4-1b",
+      "type": "covers_standard",
+      "context": "Students brainstorm personal consumption goals during activities"
+    },
+    {
+      "source": "SMART Goals Framework",
+      "target": "Essential Question",
+      "type": "teaches",
+      "context": "Framework directly addresses how SMART goals help achieve dreams"
+    },
+    {
+      "source": "Green Our Planet Studios Video",
+      "target": "SMART Goals Framework",
+      "type": "teaches",
+      "context": "Video introduces SMART goal components through character Quasar"
+    },
+    {
+      "source": "4-5.FL.2 Handout B",
+      "target": "4-5.FL.2 Rubric",
+      "type": "assesses",
+      "context": "Rubric evaluates student completion of brainstorm and planning worksheet"
+    },
+    {
+      "source": "4-5.FL.2 Handout C",
+      "target": "Progress Tracking",
+      "type": "uses",
+      "context": "Progress tracker handout implements monitoring process"
+    },
+    {
+      "source": "Goal Ladder Activity",
+      "target": "SMART Goals Framework",
+      "type": "related_to",
+      "context": "Activity helps students break down goals into manageable SMART steps"
+    },
+    {
+      "source": "Environmental Impact STEM Activity",
+      "target": "SMART Goals Framework",
+      "type": "uses",
+      "context": "STEM activity applies SMART criteria to environmental conservation goals"
+    },
+    {
+      "source": "4-5.FL.2 Handout A",
+      "target": "Family Engagement Strategies",
+      "type": "part_of",
+      "context": "Home letter is component of family engagement approach"
+    },
+    {
+      "source": "Self-Awareness",
+      "target": "SMART Goals Framework",
+      "type": "requires",
+      "context": "Students need self-awareness to reflect on aspirations when setting SMART goals"
+    },
+    {
+      "source": "Self-Management",
+      "target": "Progress Tracking",
+      "type": "requires",
+      "context": "Progress tracking requires organizational skills and accountability"
+    },
+    {
+      "source": "4-5.FL.2 Anchor Chart",
+      "target": "SMART Goals Framework",
+      "type": "references",
+      "context": "Anchor chart provides visual reference for SMART goal concepts"
+    },
+    {
+      "source": "Progress Tracking",
+      "target": "Family Engagement Strategies",
+      "type": "part_of",
+      "context": "Family members review progress trackers as part of engagement strategy"
+    }
+  ],
+  "retrieval_quality_gate": {
+    "retrieval_mode_hint": {
+      "recommended_mode": "hybrid_with_structure_rewrite",
+      "confidence": "medium",
+      "reasons": [
+        "low_structural_headings"
+      ]
+    },
+    "modality_readiness": {
+      "text_only_ready": false,
+      "layout_heavy_pdf": false,
+      "template_like_document": false,
+      "parse_fidelity_warning": false,
+      "parse_fidelity_template_note": false
+    },
+    "evidence": {
+      "file_type": "docx",
+      "total_words": 3753,
+      "heading_count": 0,
+      "body_paragraph_count": 194,
+      "short_label_ratio": 0.057,
+      "heading_density": null
+    }
+  }
+}
