@@ -98,6 +98,16 @@ def test_generate_report_path():
     assert len(parts) == 15  # YYYYMMDD-HHMMSS
 
 
+def test_generate_web_report_path():
+    from src.cli import _generate_web_report_path
+
+    path = _generate_web_report_path("analyze")
+    assert path.startswith("ingestgate-analyze-")
+    assert path.endswith(".html")
+    parts = path.replace("ingestgate-analyze-", "").replace(".html", "")
+    assert len(parts) == 15  # YYYYMMDD-HHMMSS
+
+
 def test_gate_decision_mapping_and_legacy_readiness():
     issue = Issue(severity=Severity.CRITICAL, category="structure", message="Major parse failure")
 

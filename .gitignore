@@ -41,6 +41,7 @@ rag-files-*/
 ingestgate-files-*/
 ragprep-*.md
 ingestgate-*.md
+ingestgate-*.html
 .ragprep/
 .ingestgate/
 CLAUDE_CODE_PROMPT_*.md

@@ -194,6 +194,7 @@ ingestgate analyze <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--chunk-size N`      | Target words per chunk (default: 220)                       |
 | `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
 | `--run-benchmark`     | Run chunk-level retrieval benchmarks and export metrics     |
+| `--web-report`        | Generate an interactive local HTML dashboard                |
 | `--detail`            | Show per-issue breakdown                                    |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
@@ -219,6 +220,7 @@ ingestgate fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 | `--no-export-meta`    | Skip writing `.meta.json` sidecar files and `manifest.json` |
 | `--chunk-size N`      | Target words per chunk (default: 220)                       |
 | `--chunk-overlap N`   | Overlap words between chunks (default: 40)                  |
+| `--web-report`        | Generate an interactive local HTML dashboard                |
 | `--exclude TEXT`      | Skip files matching this substring (repeatable)             |
 | `--no-report`         | Don't generate the Markdown report file                     |
 | `--pass-threshold N`  | Minimum score for `PASS` (default: 85)                      |
@@ -228,7 +230,7 @@ ingestgate fix <path> --llm-key $ANTHROPIC_API_KEY [options]
 
 ### Common options
 
-All commands auto-generate a timestamped Markdown report (e.g. `ingestgate-score-20260325-143000.md`). Reports now include a Gate Decision Rationale section with decision counts and per-document drivers. Suppress with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
+All commands auto-generate a timestamped Markdown report (e.g. `ingestgate-score-20260325-143000.md`). Reports now include a Gate Decision Rationale section with decision counts and per-document drivers. Use `--web-report` on `analyze`/`fix` to also emit an interactive local HTML dashboard. Suppress Markdown output with `--no-report`. API keys can be set via `.env` file or environment variables instead of flags.
 
 ## How Quality Is Measured
 

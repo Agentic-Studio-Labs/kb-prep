@@ -154,6 +154,8 @@ def test_manifest_corpus_stats():
             "REMEDIATION_RECOMMENDED": 1,
         }
         assert "retrieval_mode_distribution" in data["corpus"]
+        assert "issues_by_severity" in data["documents"][0]
+        assert "criteria_scores" in data["documents"][0]
 
 
 def test_sidecar_retrieval_quality_gate_for_template_note():

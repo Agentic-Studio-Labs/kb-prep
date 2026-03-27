@@ -62,6 +62,8 @@ def test_manifest_includes_chunk_summary():
     assert data["documents"][0]["readiness"] == "GOOD"
     assert data["documents"][0]["gate_decision"] == "PASS_WITH_NOTES"
     assert "retrieval_quality_gate" in data["documents"][0]
+    assert data["documents"][0]["issues_by_severity"] == {"critical": 0, "warning": 0, "info": 0}
+    assert data["documents"][0]["criteria_scores"] == {}
     assert "retrieval_mode_distribution" in data["corpus"]
     assert "gate_decision_distribution" in data["corpus"]
     assert data["schema_version"] == "2.0"

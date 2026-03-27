@@ -148,6 +148,11 @@ def build_manifest_data(
         rqg = _build_retrieval_quality_gate(doc, card)
         mode = rqg["retrieval_mode_hint"]["recommended_mode"]
         retrieval_mode_distribution[mode] = retrieval_mode_distribution.get(mode, 0) + 1
+        severity_counts = {"critical": 0, "warning": 0, "info": 0}
+        for issue in card.all_issues:
+            key = issue.severity.value
+            if key in severity_counts:
+                severity_counts[key] += 1
         doc_entries.append(
             {
                 "source_file": doc.metadata.filename,
@@ -161,6 +166,16 @@ def build_manifest_data(
                 "entity_count": len(analysis.entities),
                 "relationship_count": len(analysis.relationships),
                 "chunk_count": chunk_count_by_file.get(doc.metadata.filename, 0),
+                "issues_by_severity": severity_counts,
+                "criteria_scores": {
+                    result.category: {
+                        "label": result.label,
+                        "score": round(result.score, 1),
+                        "weight": result.weight,
+                        "issue_count": len(result.issues),
+                    }
+                    for result in card.results
+                },
                 "retrieval_quality_gate": rqg,
             }
         )
