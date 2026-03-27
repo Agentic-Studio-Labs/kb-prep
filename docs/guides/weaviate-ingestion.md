@@ -32,26 +32,33 @@ ingestgate-files-20260326/
 
 Each `.chunks.json` contains heading-aware chunks with metadata. Each `.meta.json` contains scores, entities, relationships, and a `retrieval_quality_gate` block. The `manifest.json` has corpus-level stats and per-document summaries.
 
-## Step 1: Review manifest signals before ingesting
+## Step 1: Apply ingestion policy from manifest
 
 Before uploading anything, check the retrieval quality gate signals:
 
 ```bash
-# Which docs need special handling?
-jq -r '.documents[]
-  | select(.retrieval_quality_gate.retrieval_mode_hint.recommended_mode != "text_hybrid_default")
-  | [.source_file, .retrieval_quality_gate.retrieval_mode_hint.recommended_mode]
-  | @tsv' ingestgate-files-20260326/manifest.json
+# Quick gate decision triage
+jq -r '.documents[] | [.source_file, .gate_decision, .retrieval_quality_gate.retrieval_mode_hint.recommended_mode] | @tsv' \
+  ingestgate-files-20260326/manifest.json
 ```
 
-| Recommended mode | Action |
+Recommended policy:
+
+| Gate decision | Ingestion action |
+|---|---|
+| `PASS` | Ingest automatically |
+| `PASS_WITH_NOTES` | Ingest, but flag for later cleanup |
+| `REMEDIATION_RECOMMENDED` | Block ingestion and run `fix` first |
+| `HOLD_FOR_REVIEW` | Block ingestion and require manual review |
+
+| Retrieval mode hint | Action |
 |---|---|
 | `text_hybrid_default` | Ingest normally |
 | `hybrid_sparse_template` | Ingest with metadata filters, lower embedding weight |
 | `hybrid_with_structure_rewrite` | Consider running `fix` first, then re-analyze |
 | `multimodal_or_ocr_review` | Manual review — text extraction may be incomplete |
 
-Skip or quarantine `multimodal_or_ocr_review` documents until you have a layout-aware pipeline.
+In practice, gate decision should be the primary policy control; retrieval mode is secondary handling guidance.
 
 ## Step 2: Define Weaviate collection schema
 
@@ -76,6 +83,7 @@ client.collections.create(
         Property(name="topics", data_type=DataType.TEXT_ARRAY),
         Property(name="overall_score", data_type=DataType.NUMBER),
         Property(name="readiness", data_type=DataType.TEXT),
+        Property(name="gate_decision", data_type=DataType.TEXT),
         Property(name="retrieval_mode", data_type=DataType.TEXT),
         Property(name="token_estimate", data_type=DataType.INT),
     ],
@@ -86,6 +94,7 @@ client.collections.create(
 - `heading_path` enables scoped retrieval ("search only within the API Authentication section")
 - `domain` and `topics` enable metadata-filtered hybrid search
 - `overall_score` lets you filter out low-quality documents at query time
+- `gate_decision` lets ingestion and query layers enforce your quality policy
 - `retrieval_mode` lets your query router treat template docs differently from prose docs
 
 ## Step 3: Load and upload chunks
@@ -95,8 +104,8 @@ import json
 from pathlib import Path
 
 
-def load_ingestgate_output(output_dir: str) -> list[dict]:
-    """Load all chunks with their document-level metadata."""
+def load_ingestgate_output(output_dir: str) -> tuple[list[dict], list[dict]]:
+    """Load ingestable chunks and a skip log from manifest policy."""
     output_path = Path(output_dir)
     manifest = json.loads((output_path / "manifest.json").read_text())
 
@@ -105,18 +114,26 @@ def load_ingestgate_output(output_dir: str) -> list[dict]:
     for doc_entry in manifest["documents"]:
         doc_lookup[doc_entry["source_file"]] = doc_entry
 
-    chunks_to_upload = []
+    chunks_to_upload: list[dict] = []
+    skipped_docs: list[dict] = []
 
     for chunks_file in output_path.glob("*.chunks.json"):
         chunk_data = json.loads(chunks_file.read_text())
         source_file = chunk_data["source_file"]
         doc_meta = doc_lookup.get(source_file, {})
+        gate_decision = doc_meta.get("gate_decision", "")
         rqg = doc_meta.get("retrieval_quality_gate", {})
         mode = rqg.get("retrieval_mode_hint", {}).get("recommended_mode", "text_hybrid_default")
 
-        # Skip documents flagged for manual review
-        if mode == "multimodal_or_ocr_review":
-            print(f"  Skipping {source_file} (needs OCR/multimodal review)")
+        # Primary policy gate: block non-ingestable decisions.
+        if gate_decision in {"REMEDIATION_RECOMMENDED", "HOLD_FOR_REVIEW"}:
+            skipped_docs.append({
+                "source_file": source_file,
+                "gate_decision": gate_decision,
+                "retrieval_mode": mode,
+                "reason": "blocked_by_gate_decision",
+            })
+            print(f"  Skipping {source_file} ({gate_decision})")
             continue
 
         for chunk in chunk_data["chunks"]:
@@ -131,10 +148,11 @@ def load_ingestgate_output(output_dir: str) -> list[dict]:
                 "topics": doc_meta.get("topics", []),
                 "overall_score": doc_meta.get("overall_score", 0.0),
                 "readiness": doc_meta.get("readiness", ""),
+                "gate_decision": gate_decision,
                 "retrieval_mode": mode,
             })
 
-    return chunks_to_upload
+    return chunks_to_upload, skipped_docs
 
 
 def upload_to_weaviate(client, chunks: list[dict]):
@@ -151,8 +169,11 @@ def upload_to_weaviate(client, chunks: list[dict]):
 Usage:
 
 ```python
-chunks = load_ingestgate_output("ingestgate-files-20260326/")
+chunks, skipped = load_ingestgate_output("ingestgate-files-20260326/")
 upload_to_weaviate(client, chunks)
+print(f"Skipped docs: {len(skipped)}")
+for item in skipped:
+    print(f"  - {item['source_file']}: {item['gate_decision']} ({item['retrieval_mode']})")
 ```
 
 ## Step 4: Query with metadata filters
@@ -265,7 +286,7 @@ ingestgate fix ./docs/ --llm-key $KEY
     ↓
 review manifest.json signals
     ↓
-skip multimodal_or_ocr_review docs
+apply gate_decision policy (ingest PASS/PASS_WITH_NOTES)
     ↓
 load_ingestgate_output() → list of chunk dicts
     ↓
